@@ -33,6 +33,32 @@ function App() {
     return () => clearTimeout(timer);
   }, []);
 
+  // 브라우저 히스토리 관리 (모바일 뒤로가기 지원)
+  useEffect(() => {
+    const handlePopState = () => {
+      // 열린 패널이 있으면 닫기
+      if (isChatOpen) {
+        setIsChatOpen(false);
+      } else if (isPOIDetailOpen) {
+        setIsPOIDetailOpen(false);
+      } else if (isWeatherDetailOpen) {
+        setIsWeatherDetailOpen(false);
+      } else if (isHomePanelOpen) {
+        setIsHomePanelOpen(false);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [isChatOpen, isPOIDetailOpen, isWeatherDetailOpen, isHomePanelOpen]);
+
+  // 패널이 열릴 때 히스토리 추가
+  useEffect(() => {
+    if (isChatOpen || isPOIDetailOpen || isWeatherDetailOpen || isHomePanelOpen) {
+      window.history.pushState(null, '', window.location.href);
+    }
+  }, [isChatOpen, isPOIDetailOpen, isWeatherDetailOpen, isHomePanelOpen]);
+
   const handleSendMessage = (message: string) => {
     console.log('Sending message:', message);
 
