@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MdClose, MdHelpOutline } from 'react-icons/md';
-import BeatyBubble from '../beaty/BeatyBubble';
+import { MdClose } from 'react-icons/md';
 import './HomePanel.css';
 
 interface HomePanelProps {

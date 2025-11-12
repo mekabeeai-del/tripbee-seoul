@@ -1,5 +1,4 @@
 import { useRef, useState, useEffect } from 'react';
-import mapboxgl from 'mapbox-gl';
 import MapContainer from './components/map/MapContainer';
 import CompassButton from './components/compass/CompassButton';
 import WeatherButton from './components/weather/WeatherButton';
@@ -15,14 +14,12 @@ import BeatyBubble from './components/beaty/BeatyBubble';
 import './App.css';
 
 function App() {
-  const map = useRef<mapboxgl.Map | null>(null);
-  const geolocateControl = useRef<mapboxgl.GeolocateControl | null>(null);
+  const map = useRef<any>(null);
+  const geolocateControl = useRef<any>(null);
   const [isAppLoading, setIsAppLoading] = useState(true);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isPOIDetailOpen, setIsPOIDetailOpen] = useState(false);
-  const [isPOIDetailClosing, setIsPOIDetailClosing] = useState(false);
   const [isWeatherDetailOpen, setIsWeatherDetailOpen] = useState(false);
-  const [isWeatherDetailClosing, setIsWeatherDetailClosing] = useState(false);
   const [isHomePanelOpen, setIsHomePanelOpen] = useState(false);
   const [isHomePanelClosing, setIsHomePanelClosing] = useState(false);
   const [isBeatyBubbleVisible, setIsBeatyBubbleVisible] = useState(true);
@@ -213,7 +210,6 @@ function App() {
       <POIDetailPanel
         isOpen={isPOIDetailOpen}
         onClose={() => setIsPOIDetailOpen(false)}
-        onClosing={setIsPOIDetailClosing}
         name="경복궁"
         imageUrl="https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=800&h=600&fit=crop"
       />
@@ -230,7 +226,6 @@ function App() {
       <WeatherDetailPanel
         isOpen={isWeatherDetailOpen}
         onClose={() => setIsWeatherDetailOpen(false)}
-        onClosing={setIsWeatherDetailClosing}
       />
 
       {/* Home Panel */}

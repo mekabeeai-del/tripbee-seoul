@@ -16,7 +16,7 @@ interface ChatWindowProps {
   onSendMessage: (message: string) => void;
 }
 
-export default function ChatWindow({ isOpen, onClose, onSendMessage }: ChatWindowProps) {
+export default function ChatWindow({ isOpen, onClose }: ChatWindowProps) {
   const [isClosing, setIsClosing] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 

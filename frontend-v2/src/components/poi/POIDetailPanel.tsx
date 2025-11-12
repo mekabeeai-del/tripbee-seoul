@@ -31,7 +31,7 @@ interface POIDetailPanelProps {
   description?: string;
 }
 
-export default function POIDetailPanel({ isOpen, onClose, onClosing, name, imageUrl, description }: POIDetailPanelProps) {
+export default function POIDetailPanel({ isOpen, onClose, onClosing, name, imageUrl }: POIDetailPanelProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);

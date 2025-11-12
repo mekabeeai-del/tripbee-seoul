@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { MdClose } from 'react-icons/md';
 import { WiDaySunny, WiCloudy, WiRain } from 'react-icons/wi';
 import BeatyBubble from '../beaty/BeatyBubble';
 import './HomePanel.css';

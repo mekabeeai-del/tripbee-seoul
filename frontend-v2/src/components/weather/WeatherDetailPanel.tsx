@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { MdClose } from 'react-icons/md';
-import { WiDaySunny, WiCloudy, WiRain, WiDaySunnyOvercast } from 'react-icons/wi';
+import { WiDaySunny, WiCloudy, WiDaySunnyOvercast } from 'react-icons/wi';
 import BeatyBubble from '../beaty/BeatyBubble';
 import './WeatherDetailPanel.css';
 

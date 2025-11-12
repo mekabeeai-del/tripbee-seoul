@@ -20,7 +20,7 @@ export default function BeatyBubble({
 }: BeatyBubbleProps) {
   const [displayedText, setDisplayedText] = useState('');
   const [isClosing, setIsClosing] = useState(false);
-  const autoHideTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const autoHideTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (isVisible && message) {
