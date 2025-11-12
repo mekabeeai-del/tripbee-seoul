@@ -27,7 +27,7 @@ export default function HomePanel({ isOpen, onClose, onClosing }: HomePanelProps
   const visitedPlaces = 3;
   const travelTime = 0.76;
 
-  const fullMessage = '멋진 여행 하고 계신가요?\n어떤 장소를 원하시나요?';
+  const fullMessage = '새로운 여행을 할수록\n비티가 함께 성장해요!';
 
   // isOpen 변경 감지
   useEffect(() => {
