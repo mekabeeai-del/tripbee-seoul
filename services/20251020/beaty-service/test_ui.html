@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beaty Service - RECOMMEND Pipeline Test</title>
+    <script src='https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css' rel='stylesheet' />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* 왼쪽: 검색 영역 */
+        .left-panel {
+            width: 30%;
+            background: #f5f5f5;
+            padding: 20px;
+            overflow-y: auto;
+            border-right: 1px solid #ddd;
+        }
+
+        /* 중간: JSON 결과 영역 */
+        .center-panel {
+            width: 35%;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            overflow-y: auto;
+            border-right: 1px solid #ddd;
+        }
+
+        /* 오른쪽: 지도 영역 */
+        .right-panel {
+            width: 35%;
+            position: relative;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .input-group input,
+        .input-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .input-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .input-row .input-group {
+            flex: 1;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background: #0056b3;
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .steps-container {
+            margin-top: 30px;
+            display: none; /* 초기에는 숨김 */
+        }
+
+        .steps-container.visible {
+            display: block;
+        }
+
+        .step-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .step-card:hover {
+            border-color: #007bff;
+            box-shadow: 0 2px 8px rgba(0,123,255,0.1);
+        }
+
+        .step-card.active {
+            border-color: #007bff;
+            background: #f0f8ff;
+        }
+
+        .step-card.loading {
+            border-color: #ffc107;
+            background: #fff9e6;
+        }
+
+        .step-card.success {
+            border-color: #28a745;
+        }
+
+        .step-card.error {
+            border-color: #dc3545;
+            background: #ffe6e6;
+        }
+
+        .step-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .step-title {
+            font-weight: 600;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .step-status {
+            font-size: 12px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            background: #e0e0e0;
+            color: #666;
+        }
+
+        .step-status.loading {
+            background: #ffc107;
+            color: white;
+        }
+
+        .step-status.success {
+            background: #28a745;
+            color: white;
+        }
+
+        .step-status.error {
+            background: #dc3545;
+            color: white;
+        }
+
+        #jsonResult {
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            line-height: 1.6;
+        }
+
+        .json-placeholder {
+            color: #666;
+            text-align: center;
+            padding: 40px;
+            font-size: 14px;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 왼쪽: 검색 영역 -->
+        <div class="left-panel">
+            <h1>🤖 Beaty Test</h1>
+
+            <div class="input-group">
+                <label>질문</label>
+                <textarea id="queryInput" placeholder="예: 홍대 맛집 추천해줘"></textarea>
+            </div>
+
+            <div class="input-row">
+                <div class="input-group">
+                    <label>위도 (Latitude)</label>
+                    <input type="number" id="userLat" value="37.5665" step="0.0001">
+                </div>
+                <div class="input-group">
+                    <label>경도 (Longitude)</label>
+                    <input type="number" id="userLng" value="126.9780" step="0.0001">
+                </div>
+            </div>
+
+            <button class="btn" id="runBtn" onclick="runPipeline()">파이프라인 실행</button>
+
+            <div class="steps-container" id="stepsContainer">
+                <!-- Step 카드들이 여기에 동적으로 추가됨 -->
+            </div>
+        </div>
+
+        <!-- 중간: JSON 결과 -->
+        <div class="center-panel">
+            <div id="jsonResult" class="json-placeholder">
+                파이프라인을 실행하거나 Step 카드를 클릭하면<br>
+                JSON 결과가 여기에 표시됩니다.
+            </div>
+        </div>
+
+        <!-- 오른쪽: 지도 -->
+        <div class="right-panel">
+            <div id="map"></div>
+        </div>
+    </div>
+
+    <script>
+        // Mapbox 초기화
+        mapboxgl.accessToken = 'pk.eyJ1IjoieWVhaGhhIiwiYSI6ImNtZTk4bTY2czBvcjUya29pc2NmdzM2aDQifQ.Nv8VEnrxJ5BDqBDOHH518Q';
+        const map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/streets-v12',
+            center: [126.9780, 37.5665],
+            zoom: 12
+        });
+
+        // 현재 위치 마커
+        let userLocationMarker = null;
+
+        // 지도 클릭으로 현재 위치 설정
+        map.on('click', (e) => {
+            const { lng, lat } = e.lngLat;
+
+            // 입력 필드 업데이트
+            document.getElementById('userLat').value = lat.toFixed(4);
+            document.getElementById('userLng').value = lng.toFixed(4);
+
+            // 기존 마커 제거
+            if (userLocationMarker) {
+                userLocationMarker.remove();
+            }
+
+            // 새 마커 생성
+            const el = document.createElement('div');
+            el.style.width = '30px';
+            el.style.height = '30px';
+            el.style.backgroundColor = '#007bff';
+            el.style.borderRadius = '50%';
+            el.style.border = '3px solid white';
+            el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
+            el.style.cursor = 'pointer';
+
+            userLocationMarker = new mapboxgl.Marker(el)
+                .setLngLat([lng, lat])
+                .setPopup(
+                    new mapboxgl.Popup({ offset: 25 })
+                    .setHTML(`
+                        <div style="font-size: 13px;">
+                            <strong>현재 위치</strong><br>
+                            위도: ${lat.toFixed(4)}<br>
+                            경도: ${lng.toFixed(4)}
+                        </div>
+                    `)
+                )
+                .addTo(map);
+        });
+
+        // 상태 관리
+        const state = {
+            steps: [],
+            currentStepIndex: null,
+            currentIntent: null
+        };
+
+        const stepDefinitions = {
+            'RECOMMEND': [
+                { step: 1, name: '의도분류', key: 'classification' },
+                { step: 2, name: '카테고리 해결', key: 'category' },
+                { step: 3, name: '위치 해결', key: 'position' },
+                { step: 4, name: '쿼리 리라이트', key: 'rewrite' },
+                { step: 5, name: '추천검색', key: 'recommend' },
+                { step: 6, name: '최종응답', key: 'final_response' }
+            ],
+            'FIND_PLACE': [
+                { step: 1, name: '의도분류', key: 'classification' },
+                { step: 2, name: '쿼리 리라이트 (FIND_PLACE)', key: 'rewrite' },
+                { step: 3, name: '장소검색 (Google Places)', key: 'search' },
+                { step: 4, name: '최종응답', key: 'final_response' }
+            ],
+            'LANDMARK': [
+                { step: 1, name: '의도분류', key: 'classification' },
+                { step: 2, name: '위치 키워드 추출', key: 'location' },
+                { step: 3, name: '랜드마크 조회', key: 'landmark' },
+                { step: 4, name: '최종응답', key: 'final_response' }
+            ],
+            'ROUTE': [
+                { step: 1, name: '의도분류', key: 'classification' },
+                { step: 2, name: '출발지/도착지 추출', key: 'extract_locations' },
+                { step: 3, name: '좌표변환 (Geocoding)', key: 'geocoding' },
+                { step: 4, name: '경로검색', key: 'route_search' },
+                { step: 5, name: '최종응답', key: 'final_response' }
+            ]
+        };
+
+        // Step 카드 생성 (의도 전환 포함)
+        function createStepCards(intent) {
+            const container = document.getElementById('stepsContainer');
+            container.innerHTML = '';
+            container.classList.add('visible');
+
+            state.currentIntent = intent;
+
+            // 의도 전환이 있는지 확인
+            const intentChangeStep = state.steps.find(s =>
+                s.name && s.name.includes('의도 전환')
+            );
+
+            if (intentChangeStep) {
+                // 의도 전환이 있으면 모든 step을 순차적으로 표시
+                state.steps.forEach((step, index) => {
+                    // error step은 제외
+                    if (step.step === 'error') return;
+
+                    const card = document.createElement('div');
+                    card.className = 'step-card';
+                    card.id = `step-card-${index}`;
+
+                    // Step 번호와 이름 표시
+                    const stepLabel = typeof step.step === 'number' ? `Step ${step.step}` : step.step;
+
+                    card.innerHTML = `
+                        <div class="step-header">
+                            <div class="step-title">${stepLabel}: ${step.name}</div>
+                            <div class="step-status" id="step-status-${index}">완료</div>
+                        </div>
+                    `;
+
+                    card.onclick = () => showStepResult(index);
+                    container.appendChild(card);
+                });
+            } else {
+                // 일반적인 경우: stepDefinitions 사용
+                const stepDefs = stepDefinitions[intent] || stepDefinitions['RECOMMEND'];
+
+                stepDefs.forEach((stepDef, defIndex) => {
+                    const card = document.createElement('div');
+                    card.className = 'step-card';
+                    card.id = `step-card-${stepDef.step}`;
+                    card.innerHTML = `
+                        <div class="step-header">
+                            <div class="step-title">Step ${stepDef.step}: ${stepDef.name}</div>
+                            <div class="step-status" id="step-status-${stepDef.step}">대기</div>
+                        </div>
+                    `;
+
+                    card.onclick = () => {
+                        const actualIndex = state.steps.findIndex(s =>
+                            s.step === stepDef.step && s.name === stepDef.name
+                        );
+                        if (actualIndex >= 0) {
+                            showStepResult(actualIndex);
+                        }
+                    };
+
+                    container.appendChild(card);
+                });
+            }
+        }
+
+        // Step 카드 상태 업데이트
+        function updateStepStatus(stepNum, status) {
+            // 의도 전환이 있으면 index 기반으로 업데이트
+            const intentChangeStep = state.steps.find(s =>
+                s.name && s.name.includes('의도 전환')
+            );
+
+            let card, statusEl;
+
+            if (intentChangeStep) {
+                // 의도 전환 모드: state.steps에서 해당 step 찾기
+                const stepIndex = state.steps.findIndex(s => s.step === stepNum);
+                if (stepIndex >= 0) {
+                    card = document.getElementById(`step-card-${stepIndex}`);
+                    statusEl = document.getElementById(`step-status-${stepIndex}`);
+                }
+            } else {
+                // 일반 모드
+                card = document.getElementById(`step-card-${stepNum}`);
+                statusEl = document.getElementById(`step-status-${stepNum}`);
+            }
+
+            // 카드나 상태 요소가 없으면 무시
+            if (!card || !statusEl) {
+                return;
+            }
+
+            card.className = 'step-card ' + status;
+            statusEl.className = 'step-status ' + status;
+
+            if (status === 'loading') {
+                statusEl.innerHTML = '<span class="loading-spinner"></span>';
+            } else if (status === 'success') {
+                statusEl.textContent = '완료';
+            } else if (status === 'error') {
+                statusEl.textContent = '오류';
+            }
+        }
+
+        // Step 결과 표시
+        function showStepResult(index) {
+            if (!state.steps[index]) {
+                console.warn(`Cannot show step result for index ${index}`);
+                return;
+            }
+
+            // 모든 카드의 active 클래스 제거
+            document.querySelectorAll('.step-card').forEach(card => {
+                card.classList.remove('active');
+            });
+
+            // 선택된 카드에 active 추가
+            const card = document.getElementById(`step-card-${index}`);
+            if (card) {
+                card.classList.add('active');
+            }
+
+            const stepData = state.steps[index];
+
+            // 최종 응답인 경우 특별 포맷팅
+            if (stepData.name === '최종응답' && stepData.result && stepData.result.answer) {
+                showFinalAnswer(stepData.result);
+            } else {
+                // 일반 JSON 결과 표시
+                showJSON(stepData.result);
+            }
+
+            state.currentStepIndex = index;
+        }
+
+        // 최종 응답 표시 (특별 포맷팅)
+        function showFinalAnswer(data) {
+            // 그냥 일반 JSON으로 표시
+            showJSON(data);
+        }
+
+        // JSON 표시
+        function showJSON(data) {
+            const jsonResult = document.getElementById('jsonResult');
+            jsonResult.className = '';
+            jsonResult.textContent = JSON.stringify(data, null, 2);
+        }
+
+        // 파이프라인 실행
+        async function runPipeline() {
+            const query = document.getElementById('queryInput').value.trim();
+            if (!query) {
+                alert('질문을 입력해주세요.');
+                return;
+            }
+
+            const lat = parseFloat(document.getElementById('userLat').value);
+            const lng = parseFloat(document.getElementById('userLng').value);
+
+            // 초기화
+            state.steps = [];
+            state.currentStepIndex = null;
+            document.getElementById('jsonResult').innerHTML = '<div class="json-placeholder">파이프라인 실행 중...</div>';
+
+            // 버튼 비활성화
+            const btn = document.getElementById('runBtn');
+            btn.disabled = true;
+            btn.textContent = '실행 중...';
+
+            try {
+                // /api/query 호출 (mode=test)
+                const response = await fetch('http://localhost:8000/api/query', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        query: query,
+                        user_location: { lat, lng },
+                        mode: 'test'
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                console.log('Pipeline result:', result);
+
+                // 실제 intent 확인
+                const actualIntent = result.intent;
+
+                // steps 저장 (먼저!)
+                state.steps = result.steps || [];
+                console.log('Steps:', state.steps);
+
+                // Step 카드 생성 (state.steps가 설정된 후)
+                createStepCards(actualIntent);
+
+                // Step 카드 업데이트
+                state.steps.forEach((step, index) => {
+                    // step과 step.step이 유효한 경우만 업데이트
+                    if (step && typeof step.step === 'number') {
+                        updateStepStatus(step.step, 'success');
+                    }
+                });
+
+                // 첫 번째 step 자동 선택
+                if (state.steps.length > 0) {
+                    showStepResult(0);
+                }
+
+                // 지도에 POI/Places/Routes/Landmarks 표시
+                if (result.final_response) {
+                    if (result.final_response.pois) {
+                        displayPOIsOnMap(result.final_response.pois);
+                    } else if (result.final_response.places) {
+                        displayPlacesOnMap(result.final_response.places);
+                    } else if (result.final_response.landmarks) {
+                        displayLandmarksOnMap(result.final_response.landmarks);
+                    } else if (result.final_response.routes) {
+                        // ROUTE 의도: final_response에서 직접 geojson 가져오기
+                        if (result.final_response.geojson) {
+                            displayRouteOnMap(result.final_response.geojson);
+                        }
+                    }
+                }
+
+            } catch (error) {
+                console.error('Pipeline error:', error);
+                alert('파이프라인 실행 중 오류가 발생했습니다:\n' + error.message);
+                document.getElementById('jsonResult').innerHTML = `<div class="json-placeholder" style="color: #dc3545;">오류: ${error.message}</div>`;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '파이프라인 실행';
+            }
+        }
+
+        // 지도에 POI 표시
+        function displayPOIsOnMap(pois) {
+            // 기존 마커 제거
+            const existingMarkers = document.querySelectorAll('.mapboxgl-marker');
+            existingMarkers.forEach(marker => marker.remove());
+
+            if (!pois || pois.length === 0) return;
+
+            const bounds = new mapboxgl.LngLatBounds();
+
+            pois.forEach((poi, index) => {
+                if (!poi.mapx || !poi.mapy) return;
+
+                // keyword_match_count > 0 이면 빨간색, 아니면 파란색
+                const hasKeywordMatch = poi.keyword_match_count && poi.keyword_match_count > 0;
+                const markerColor = hasKeywordMatch ? '#dc3545' : '#007bff';
+
+                // 마커 생성
+                const el = document.createElement('div');
+                el.style.width = '30px';
+                el.style.height = '30px';
+                el.style.backgroundColor = markerColor;
+                el.style.borderRadius = '50%';
+                el.style.border = '3px solid white';
+                el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
+                el.style.display = 'flex';
+                el.style.alignItems = 'center';
+                el.style.justifyContent = 'center';
+                el.style.color = 'white';
+                el.style.fontWeight = 'bold';
+                el.style.fontSize = '12px';
+                el.textContent = index + 1;
+
+                // 팝업 생성
+                const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
+                    <div style="font-size: 13px;">
+                        <strong>${poi.title || poi.name || 'N/A'}</strong><br>
+                        ${poi.addr1 || poi.address || 'N/A'}<br>
+                        ${poi.keyword_match_count > 0 ? `<span style="color: #dc3545; font-weight: bold;">🎯 키워드 매칭: ${poi.keyword_match_count}개</span><br>` : ''}
+                        ${poi.emotion_score ? `감정점수: ${poi.emotion_score.toFixed(2)}<br>` : ''}
+                        ${poi.distance_km ? `거리: ${poi.distance_km.toFixed(2)}km` : ''}
+                    </div>
+                `);
+
+                new mapboxgl.Marker(el)
+                    .setLngLat([poi.mapx, poi.mapy])
+                    .setPopup(popup)
+                    .addTo(map);
+
+                bounds.extend([poi.mapx, poi.mapy]);
+            });
+
+            // 지도 범위 조정
+            if (pois.length > 0) {
+                map.fitBounds(bounds, { padding: 50 });
+            }
+        }
+
+        // 지도에 Places 표시 (FIND_PLACE용)
+        function displayPlacesOnMap(places) {
+            // 기존 마커 제거
+            const existingMarkers = document.querySelectorAll('.mapboxgl-marker');
+            existingMarkers.forEach(marker => marker.remove());
+
+            if (!places || places.length === 0) return;
+
+            const bounds = new mapboxgl.LngLatBounds();
+
+            places.forEach((place, index) => {
+                if (!place.lng || !place.lat) return;
+
+                // FIND_PLACE는 keyword_match_count 없음 - 항상 파란색
+                const markerColor = '#007bff';
+
+                // 마커 생성
+                const el = document.createElement('div');
+                el.style.width = '30px';
+                el.style.height = '30px';
+                el.style.backgroundColor = markerColor;
+                el.style.borderRadius = '50%';
+                el.style.border = '3px solid white';
+                el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
+                el.style.display = 'flex';
+                el.style.alignItems = 'center';
+                el.style.justifyContent = 'center';
+                el.style.color = 'white';
+                el.style.fontWeight = 'bold';
+                el.style.fontSize = '12px';
+                el.textContent = index + 1;
+
+                // 팝업 생성
+                const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
+                    <div style="font-size: 13px;">
+                        <strong>${place.name || 'N/A'}</strong><br>
+                        ${place.address || 'N/A'}<br>
+                        ${place.rating ? `평점: ⭐ ${place.rating}` : ''}
+                    </div>
+                `);
+
+                new mapboxgl.Marker(el)
+                    .setLngLat([place.lng, place.lat])
+                    .setPopup(popup)
+                    .addTo(map);
+
+                bounds.extend([place.lng, place.lat]);
+            });
+
+            // 지도 범위 조정
+            if (places.length > 0) {
+                map.fitBounds(bounds, { padding: 50 });
+            }
+        }
+
+        // 지도에 Landmarks 표시 (LANDMARK용)
+        function displayLandmarksOnMap(landmarks) {
+            // 기존 마커 제거
+            const existingMarkers = document.querySelectorAll('.mapboxgl-marker');
+            existingMarkers.forEach(marker => marker.remove());
+
+            if (!landmarks || landmarks.length === 0) return;
+
+            const bounds = new mapboxgl.LngLatBounds();
+
+            landmarks.forEach((landmark) => {
+                if (!landmark.mapx || !landmark.mapy) return;
+
+                // 랜드마크는 보라색으로 표시
+                const markerColor = '#6f42c1';
+
+                // 마커 생성 (rank 숫자 표시)
+                const el = document.createElement('div');
+                el.style.width = '35px';
+                el.style.height = '35px';
+                el.style.backgroundColor = markerColor;
+                el.style.borderRadius = '50%';
+                el.style.border = '3px solid white';
+                el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
+                el.style.display = 'flex';
+                el.style.alignItems = 'center';
+                el.style.justifyContent = 'center';
+                el.style.color = 'white';
+                el.style.fontWeight = 'bold';
+                el.style.fontSize = '13px';
+                el.textContent = landmark.rank || '?';
+
+                // 팝업 생성
+                let popupHtml = `
+                    <div style="font-size: 13px; max-width: 250px;">
+                        <strong>${landmark.title || 'N/A'}</strong><br>
+                        ${landmark.addr1 ? `📍 ${landmark.addr1}<br>` : ''}
+                `;
+
+                // 이미지가 있으면 표시
+                if (landmark.first_image) {
+                    popupHtml += `
+                        <div style="margin-top: 8px;">
+                            <img src="${landmark.first_image}"
+                                 style="width: 100%; max-width: 250px; border-radius: 6px; object-fit: cover;"
+                                 onerror="this.style.display='none'">
+                        </div>
+                    `;
+                }
+
+                if (landmark.description) {
+                    popupHtml += `<div style="margin-top: 5px; color: #666;">💬 ${landmark.description}</div>`;
+                }
+
+                popupHtml += `</div>`;
+
+                const popup = new mapboxgl.Popup({ offset: 30 }).setHTML(popupHtml);
+
+                new mapboxgl.Marker(el)
+                    .setLngLat([landmark.mapx, landmark.mapy])
+                    .setPopup(popup)
+                    .addTo(map);
+
+                bounds.extend([landmark.mapx, landmark.mapy]);
+            });
+
+            // 지도 범위 조정
+            if (landmarks.length > 0) {
+                map.fitBounds(bounds, { padding: 50 });
+            }
+        }
+
+        // 지도에 경로 표시 (ROUTE용)
+        function displayRouteOnMap(geojson) {
+            // 기존 마커/레이어 제거
+            const existingMarkers = document.querySelectorAll('.mapboxgl-marker');
+            existingMarkers.forEach(marker => marker.remove());
+
+            // 기존 경로 레이어들 제거
+            const layers = map.getStyle().layers;
+            layers.forEach(layer => {
+                if (layer.id.startsWith('route-line-')) {
+                    map.removeLayer(layer.id);
+                }
+            });
+
+            const sources = Object.keys(map.getStyle().sources);
+            sources.forEach(source => {
+                if (source.startsWith('route-')) {
+                    map.removeSource(source);
+                }
+            });
+
+            if (!geojson || !geojson.features) return;
+
+            const bounds = new mapboxgl.LngLatBounds();
+
+            // 색상 팔레트 (11개 이상)
+            const routeColors = [
+                '#007bff',  // 파란색 (첫 번째 경로 - 추천)
+                '#dc3545',  // 빨간색
+                '#28a745',  // 녹색
+                '#ffc107',  // 노란색
+                '#17a2b8',  // 청록색
+                '#6f42c1',  // 보라색
+                '#fd7e14',  // 주황색
+                '#e83e8c',  // 분홍색
+                '#20c997',  // 민트색
+                '#6c757d',  // 회색
+                '#343a40',  // 어두운 회색
+                '#f8f9fa',  // 밝은 회색
+            ];
+
+            geojson.features.forEach(feature => {
+                const props = feature.properties;
+
+                if (feature.geometry.type === 'Point') {
+                    // 출발지/도착지 마커
+                    const isOrigin = props.type === 'origin';
+                    const markerColor = isOrigin ? '#28a745' : '#dc3545';
+                    const label = isOrigin ? '출발' : '도착';
+
+                    const el = document.createElement('div');
+                    el.style.width = '40px';
+                    el.style.height = '40px';
+                    el.style.backgroundColor = markerColor;
+                    el.style.borderRadius = '50%';
+                    el.style.border = '3px solid white';
+                    el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
+                    el.style.display = 'flex';
+                    el.style.alignItems = 'center';
+                    el.style.justifyContent = 'center';
+                    el.style.color = 'white';
+                    el.style.fontWeight = 'bold';
+                    el.style.fontSize = '11px';
+                    el.textContent = label;
+
+                    const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
+                        <div style="font-size: 13px;">
+                            <strong>${props.name}</strong>
+                        </div>
+                    `);
+
+                    new mapboxgl.Marker(el)
+                        .setLngLat(feature.geometry.coordinates)
+                        .setPopup(popup)
+                        .addTo(map);
+
+                    bounds.extend(feature.geometry.coordinates);
+                }
+            });
+
+            // 경로 라인들 그리기 (각각 다른 색상)
+            const routeLines = geojson.features.filter(f => f.geometry.type === 'LineString');
+
+            routeLines.forEach((routeLine, index) => {
+                const routeIndex = routeLine.properties.routeIndex || index;
+                const color = routeColors[routeIndex % routeColors.length];
+                const isFirstRoute = routeIndex === 0;
+
+                // 각 경로별로 source와 layer 생성
+                const sourceId = `route-${routeIndex}`;
+                const layerId = `route-line-${routeIndex}`;
+
+                map.addSource(sourceId, {
+                    type: 'geojson',
+                    data: {
+                        type: 'Feature',
+                        geometry: routeLine.geometry
+                    }
+                });
+
+                map.addLayer({
+                    id: layerId,
+                    type: 'line',
+                    source: sourceId,
+                    layout: {
+                        'line-join': 'round',
+                        'line-cap': 'round'
+                    },
+                    paint: {
+                        'line-color': color,
+                        'line-width': isFirstRoute ? 5 : 3,  // 첫 번째 경로는 더 굵게
+                        'line-opacity': isFirstRoute ? 0.9 : 0.6
+                    }
+                });
+
+                // 경로 클릭 시 정보 표시
+                map.on('click', layerId, (e) => {
+                    const props = routeLine.properties;
+                    new mapboxgl.Popup()
+                        .setLngLat(e.lngLat)
+                        .setHTML(`
+                            <div style="font-size: 13px;">
+                                <strong>경로 ${routeIndex + 1}</strong><br>
+                                소요시간: ${props.totalTime}분<br>
+                                요금: ${props.payment.toLocaleString()}원<br>
+                                거리: ${(props.totalDistance / 1000).toFixed(1)}km
+                            </div>
+                        `)
+                        .addTo(map);
+                });
+
+                // 마우스 커서 변경
+                map.on('mouseenter', layerId, () => {
+                    map.getCanvas().style.cursor = 'pointer';
+                });
+                map.on('mouseleave', layerId, () => {
+                    map.getCanvas().style.cursor = '';
+                });
+
+                // bounds 확장
+                routeLine.geometry.coordinates.forEach(coord => {
+                    bounds.extend(coord);
+                });
+            });
+
+            // 지도 범위 조정
+            if (!bounds.isEmpty()) {
+                map.fitBounds(bounds, { padding: 80 });
+            }
+        }
+
+        // Enter 키로 실행
+        document.getElementById('queryInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                runPipeline();
+            }
+        });
+    </script>
+</body>
+</html>

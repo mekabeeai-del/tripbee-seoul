@@ -1,0 +1,132 @@
+/* Compass Button - Bottom Center (Highlighted) */
+.compass-container {
+  position: absolute;
+  bottom: 120px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 150;
+}
+
+.compass-button {
+  width: 75px;
+  height: 75px;
+  background: #0066CC;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
+  transition: all 0.3s ease;
+}
+
+.compass-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(0, 102, 204, 0.4);
+}
+
+.compass-button:active {
+  transform: scale(0.95);
+}
+
+.compass-button.highlighted {
+  animation: compassSwing 2s ease-in-out infinite;
+  position: relative;
+}
+
+.compass-button.highlighted::before,
+.compass-button.highlighted::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  border: 2px solid #0066CC;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  animation: ripple 2s ease-out infinite;
+}
+
+.compass-button.highlighted::after {
+  animation-delay: 1s;
+}
+
+/* Green variant for POI detail */
+.compass-button.green {
+  background: #00A86B;
+  box-shadow: 0 4px 12px rgba(0, 168, 107, 0.3);
+}
+
+.compass-button.green:hover {
+  box-shadow: 0 6px 16px rgba(0, 168, 107, 0.4);
+}
+
+.compass-button.green.highlighted::before,
+.compass-button.green.highlighted::after {
+  border-color: #00A86B;
+}
+
+@keyframes compassSwing {
+  0%, 100% {
+    transform: rotate(-30deg);
+  }
+  50% {
+    transform: rotate(30deg);
+  }
+}
+
+@keyframes ripple {
+  0% {
+    width: 100%;
+    height: 100%;
+    opacity: 0.6;
+  }
+  100% {
+    width: 200%;
+    height: 200%;
+    opacity: 0;
+  }
+}
+
+/* Blue -> Green (지도 화면) */
+.compass-button.blue.spinning {
+  animation: spin1080 2.5s ease-in-out !important;
+  background: #00A86B !important;
+  box-shadow: 0 4px 12px rgba(0, 168, 107, 0.4) !important;
+}
+
+.compass-button.blue.spinning::before,
+.compass-button.blue.spinning::after {
+  border-color: #00A86B !important;
+}
+
+/* Green -> Yellow (POI 상세) */
+.compass-button.green.spinning {
+  animation: spin1080 2.5s ease-in-out !important;
+  background: #FFB300 !important;
+  box-shadow: 0 4px 12px rgba(255, 179, 0, 0.4) !important;
+}
+
+.compass-button.green.spinning::before,
+.compass-button.green.spinning::after {
+  border-color: #FFB300 !important;
+}
+
+@keyframes spin1080 {
+  0% {
+    transform: scale(1) rotate(0deg);
+  }
+  10% {
+    transform: scale(1.2) rotate(108deg);
+  }
+  90% {
+    transform: scale(1.2) rotate(972deg);
+  }
+  100% {
+    transform: scale(1) rotate(1080deg);
+  }
+}

@@ -1,0 +1,253 @@
+/* 오버레이 - 원형 확장 애니메이션 */
+.home-panel-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 300;
+  animation: circleExpand 1s cubic-bezier(0.4, 0.0, 0.2, 1);
+  transform-origin: top left;
+}
+
+.home-panel-overlay.closing {
+  animation: circleShrink 0.8s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+}
+
+@keyframes circleExpand {
+  0% {
+    clip-path: circle(0% at 70px 35px);
+    opacity: 0;
+  }
+  1% {
+    opacity: 1;
+  }
+  100% {
+    clip-path: circle(150% at 70px 35px);
+    opacity: 1;
+  }
+}
+
+@keyframes circleShrink {
+  from {
+    clip-path: circle(150% at 70px 35px);
+    opacity: 1;
+  }
+  99% {
+    opacity: 1;
+  }
+  to {
+    clip-path: circle(0% at 70px 35px);
+    opacity: 0;
+  }
+}
+
+/* 배경 */
+.home-panel-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* 패널 - 전체 화면 */
+.home-panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: white;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 헤더 - 고정 */
+.home-panel-header {
+  flex-shrink: 0;
+  background: transparent;
+  height: 80px;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 1;
+}
+
+/* 스크롤 가능한 콘텐츠 영역 */
+.home-panel-content {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 40px;
+}
+
+.home-panel-spacer {
+  width: 150px;
+}
+
+.home-panel-weather-icons {
+  display: flex;
+  gap: 8px;
+}
+
+.home-weather-icon-item {
+  width: 32px;
+  height: 32px;
+  background: white;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.home-panel-close {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: #F5F5F5;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.home-panel-close:hover {
+  background: #E0E0E0;
+}
+
+/* 추천 장소 */
+.home-recommendations {
+  padding: 0 20px 20px 20px;
+}
+
+.home-recommendations h3 {
+  margin: 0 0 15px 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #333;
+}
+
+.home-recommendations-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.home-recommendation-card {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.home-recommendation-card:hover {
+  transform: scale(1.02);
+}
+
+.home-recommendation-icon {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  font-size: 24px;
+  z-index: 2;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.home-recommendation-image {
+  width: 100%;
+  height: 120px;
+  overflow: hidden;
+}
+
+.home-recommendation-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.home-recommendation-name {
+  padding: 10px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+  background: white;
+}
+
+/* 여행 기록 */
+.home-trip-record {
+  padding: 0 20px 20px 20px;
+}
+
+.home-trip-record h3 {
+  margin: 0 0 15px 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #333;
+}
+
+.home-trip-map {
+  width: 100%;
+  height: 250px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.home-trip-map img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 해시태그 */
+.home-hashtags {
+  padding: 0 20px 20px 20px;
+}
+
+.home-hashtags-scroll {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.home-hashtag {
+  display: inline-block;
+  padding: 6px 14px;
+  background: #F5F5F5;
+  border-radius: 16px;
+  font-size: 12px;
+  color: #666;
+  white-space: nowrap;
+}
+
+/* 스크롤바 */
+.home-panel-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.home-panel-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.home-panel-content::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 3px;
+}

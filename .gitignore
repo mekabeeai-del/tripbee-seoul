@@ -1,0 +1,49 @@
+# Environment Variables
+.env
+.env.*
+!.env.example
+
+# Markdown files (containing sensitive info)
+*.md
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Database
+database/
+
+# DQProcess (not needed for deployment)
+DQProcess/
+
+# UI exam files
+ui-exam/
+
+# Temp files
+temp/
+*.tmp
