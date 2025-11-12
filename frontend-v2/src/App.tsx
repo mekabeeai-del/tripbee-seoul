@@ -79,9 +79,26 @@ function App() {
   // ===== Compass Button Actions =====
   // 지도 화면: 랜덤 POI 추천
   const handleCompassInMap = () => {
+    // 지도 빙글 회전 애니메이션
+    if (map.current) {
+      map.current.easeTo({
+        bearing: 360,
+        duration: 1000
+      });
+      // 회전 후 원래대로
+      setTimeout(() => {
+        map.current?.easeTo({
+          bearing: 0,
+          duration: 0
+        });
+      }, 1000);
+    }
+
     // 비티 버블로 랜덤 추천
-    setBeatyBubbleMessage('빙글빙글~ 근처에 숨은 맛집을 찾았어요! 한번 가보실래요?');
-    setIsBeatyBubbleVisible(true);
+    setTimeout(() => {
+      setBeatyBubbleMessage('빙글빙글~ 근처에 숨은 맛집을 찾았어요! 한번 가보실래요?');
+      setIsBeatyBubbleVisible(true);
+    }, 1000);
   };
 
   // POI 상세 화면: 길찾기
