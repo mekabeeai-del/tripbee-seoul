@@ -27,6 +27,7 @@ function App() {
   const [beatyBubbleMessage, setBeatyBubbleMessage] = useState('멋진 여행 하고 계신가요? 어떤 장소를 원하시나요?');
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; lng: number; lat: number } | null>(null);
   const longPressTimer = useRef<number | null>(null);
+  const touchStartPos = useRef<{ x: number; y: number } | null>(null);
 
   // 앱 초기 로딩
   useEffect(() => {
@@ -173,8 +174,22 @@ function App() {
       // 패널이 열려있으면 무시
       if (isChatOpen || isPOIDetailOpen || isWeatherDetailOpen || isHomePanelOpen) return;
 
+      // 두 손가락 이상 터치(핀치 줌 등)면 무시
+      if (e.touches.length > 1) {
+        console.log('Multi-touch detected, ignoring long press');
+        // 기존 타이머도 취소
+        if (longPressTimer.current) {
+          clearTimeout(longPressTimer.current);
+          longPressTimer.current = null;
+        }
+        touchStartPos.current = null;
+        return;
+      }
+
       const touch = e.touches[0];
-      console.log('Touch start');
+      touchStartPos.current = { x: touch.clientX, y: touch.clientY };
+      console.log('Touch start - single finger');
+
       longPressTimer.current = window.setTimeout(() => {
         console.log('Long press detected - showing context menu');
 
@@ -196,12 +211,32 @@ function App() {
         clearTimeout(longPressTimer.current);
         longPressTimer.current = null;
       }
+      touchStartPos.current = null;
     };
 
-    const handleTouchMove = () => {
-      if (longPressTimer.current) {
-        clearTimeout(longPressTimer.current);
-        longPressTimer.current = null;
+    const handleTouchMove = (e: TouchEvent) => {
+      // 두 손가락 이상이면 타이머 취소
+      if (e.touches.length > 1) {
+        if (longPressTimer.current) {
+          clearTimeout(longPressTimer.current);
+          longPressTimer.current = null;
+        }
+        touchStartPos.current = null;
+        return;
+      }
+
+      // 손가락을 많이 움직였으면 취소 (10px 이상)
+      if (longPressTimer.current && touchStartPos.current) {
+        const touch = e.touches[0];
+        const deltaX = Math.abs(touch.clientX - touchStartPos.current.x);
+        const deltaY = Math.abs(touch.clientY - touchStartPos.current.y);
+
+        if (deltaX > 10 || deltaY > 10) {
+          console.log('Touch moved too much, canceling long press');
+          clearTimeout(longPressTimer.current);
+          longPressTimer.current = null;
+          touchStartPos.current = null;
+        }
       }
     };
 
