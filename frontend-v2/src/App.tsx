@@ -187,18 +187,21 @@ function App() {
       }
 
       const touch = e.touches[0];
-      touchStartPos.current = { x: touch.clientX, y: touch.clientY };
-      console.log('Touch start - single finger');
+      const touchX = touch.clientX;
+      const touchY = touch.clientY;
+      touchStartPos.current = { x: touchX, y: touchY };
+      console.log('Touch start - single finger at', touchX, touchY);
 
       longPressTimer.current = window.setTimeout(() => {
-        console.log('Long press detected - showing context menu');
+        console.log('Long press timer fired - showing context menu');
 
         // 터치한 화면 좌표를 지도 좌표로 변환
-        const lngLat = map.current?.unproject([touch.clientX, touch.clientY]);
+        const lngLat = map.current?.unproject([touchX, touchY]);
         if (lngLat) {
+          console.log('Context menu created at', lngLat.lng, lngLat.lat);
           setContextMenu({
-            x: touch.clientX,
-            y: touch.clientY,
+            x: touchX,
+            y: touchY,
             lng: lngLat.lng,
             lat: lngLat.lat
           });
