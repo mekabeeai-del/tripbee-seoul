@@ -25,7 +25,7 @@ function App() {
   const [isHomePanelClosing, setIsHomePanelClosing] = useState(false);
   const [isBeatyBubbleVisible, setIsBeatyBubbleVisible] = useState(true);
   const [beatyBubbleMessage, setBeatyBubbleMessage] = useState('멋진 여행 하고 계신가요? 어떤 장소를 원하시나요?');
-  const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; lng: number; lat: number } | null>(null);
   const longPressTimer = useRef<number | null>(null);
 
   // 앱 초기 로딩
@@ -165,9 +165,11 @@ function App() {
   useEffect(() => {
     if (!map.current) return;
 
-    console.log('Setting up context menu listeners');
+    // 지도 로드 완료까지 대기
+    const setupListeners = () => {
+      console.log('Setting up context menu listeners');
 
-    const handleTouchStart = (e: TouchEvent) => {
+      const handleTouchStart = (e: TouchEvent) => {
       // 패널이 열려있으면 무시
       if (isChatOpen || isPOIDetailOpen || isWeatherDetailOpen || isHomePanelOpen) return;
 
@@ -175,7 +177,17 @@ function App() {
       console.log('Touch start');
       longPressTimer.current = window.setTimeout(() => {
         console.log('Long press detected - showing context menu');
-        setContextMenu({ x: touch.clientX, y: touch.clientY });
+
+        // 터치한 화면 좌표를 지도 좌표로 변환
+        const lngLat = map.current?.unproject([touch.clientX, touch.clientY]);
+        if (lngLat) {
+          setContextMenu({
+            x: touch.clientX,
+            y: touch.clientY,
+            lng: lngLat.lng,
+            lat: lngLat.lat
+          });
+        }
       }, 600);
     };
 
@@ -201,7 +213,17 @@ function App() {
       longPressTimer.current = window.setTimeout(() => {
         console.log('Long press detected - showing context menu');
         e.preventDefault();
-        setContextMenu({ x: e.clientX, y: e.clientY });
+
+        // 클릭한 화면 좌표를 지도 좌표로 변환
+        const lngLat = map.current?.unproject([e.clientX, e.clientY]);
+        if (lngLat) {
+          setContextMenu({
+            x: e.clientX,
+            y: e.clientY,
+            lng: lngLat.lng,
+            lat: lngLat.lat
+          });
+        }
       }, 600);
     };
 
@@ -225,26 +247,37 @@ function App() {
       }
     };
 
-    const canvas = map.current.getCanvas();
-    console.log('Canvas found:', canvas);
+      const canvas = map.current.getCanvas();
+      console.log('Canvas found:', canvas);
 
-    canvas.addEventListener('touchstart', handleTouchStart as any);
-    canvas.addEventListener('touchend', handleTouchEnd);
-    canvas.addEventListener('touchmove', handleTouchMove);
-    canvas.addEventListener('mousedown', handleMouseDown as any);
-    canvas.addEventListener('mouseup', handleMouseUp);
-    canvas.addEventListener('mousemove', handleMouseMove);
-    canvas.addEventListener('contextmenu', handleContextMenu as any);
+      canvas.addEventListener('touchstart', handleTouchStart as any);
+      canvas.addEventListener('touchend', handleTouchEnd);
+      canvas.addEventListener('touchmove', handleTouchMove);
+      canvas.addEventListener('mousedown', handleMouseDown as any);
+      canvas.addEventListener('mouseup', handleMouseUp);
+      canvas.addEventListener('mousemove', handleMouseMove);
+      canvas.addEventListener('contextmenu', handleContextMenu as any);
 
-    return () => {
-      canvas.removeEventListener('touchstart', handleTouchStart as any);
-      canvas.removeEventListener('touchend', handleTouchEnd);
-      canvas.removeEventListener('touchmove', handleTouchMove);
-      canvas.removeEventListener('mousedown', handleMouseDown as any);
-      canvas.removeEventListener('mouseup', handleMouseUp);
-      canvas.removeEventListener('mousemove', handleMouseMove);
-      canvas.removeEventListener('contextmenu', handleContextMenu as any);
+      return () => {
+        canvas.removeEventListener('touchstart', handleTouchStart as any);
+        canvas.removeEventListener('touchend', handleTouchEnd);
+        canvas.removeEventListener('touchmove', handleTouchMove);
+        canvas.removeEventListener('mousedown', handleMouseDown as any);
+        canvas.removeEventListener('mouseup', handleMouseUp);
+        canvas.removeEventListener('mousemove', handleMouseMove);
+        canvas.removeEventListener('contextmenu', handleContextMenu as any);
+      };
     };
+
+    // 지도가 완전히 로드되면 리스너 설정
+    if (map.current.loaded()) {
+      return setupListeners();
+    } else {
+      map.current.on('load', setupListeners);
+      return () => {
+        map.current?.off('load', setupListeners);
+      };
+    }
   }, [map.current, isChatOpen, isPOIDetailOpen, isWeatherDetailOpen, isHomePanelOpen]);
 
   // 컨텍스트 메뉴 액션 핸들러
