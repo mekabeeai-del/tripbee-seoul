@@ -11,6 +11,7 @@ import POIDetailPanel from './components/poi/POIDetailPanel';
 import HomePanel from './components/home/HomePanel';
 import UserProfile from './components/home/UserProfile';
 import BeatyBubble from './components/beaty/BeatyBubble';
+import ContextMenu from './components/map/ContextMenu';
 import './App.css';
 
 function App() {
@@ -24,6 +25,8 @@ function App() {
   const [isHomePanelClosing, setIsHomePanelClosing] = useState(false);
   const [isBeatyBubbleVisible, setIsBeatyBubbleVisible] = useState(true);
   const [beatyBubbleMessage, setBeatyBubbleMessage] = useState('멋진 여행 하고 계신가요? 어떤 장소를 원하시나요?');
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+  const longPressTimer = useRef<number | null>(null);
 
   // 앱 초기 로딩
   useEffect(() => {
@@ -158,6 +161,122 @@ function App() {
     }
   };
 
+  // 지도 컨텍스트 메뉴 long-press 이벤트
+  useEffect(() => {
+    if (!map.current) return;
+
+    console.log('Setting up context menu listeners');
+
+    const handleTouchStart = (e: TouchEvent) => {
+      // 패널이 열려있으면 무시
+      if (isChatOpen || isPOIDetailOpen || isWeatherDetailOpen || isHomePanelOpen) return;
+
+      const touch = e.touches[0];
+      console.log('Touch start');
+      longPressTimer.current = window.setTimeout(() => {
+        console.log('Long press detected - showing context menu');
+        setContextMenu({ x: touch.clientX, y: touch.clientY });
+      }, 600);
+    };
+
+    const handleTouchEnd = () => {
+      if (longPressTimer.current) {
+        clearTimeout(longPressTimer.current);
+        longPressTimer.current = null;
+      }
+    };
+
+    const handleTouchMove = () => {
+      if (longPressTimer.current) {
+        clearTimeout(longPressTimer.current);
+        longPressTimer.current = null;
+      }
+    };
+
+    const handleMouseDown = (e: MouseEvent) => {
+      // 패널이 열려있으면 무시
+      if (isChatOpen || isPOIDetailOpen || isWeatherDetailOpen || isHomePanelOpen) return;
+
+      console.log('Mouse down');
+      longPressTimer.current = window.setTimeout(() => {
+        console.log('Long press detected - showing context menu');
+        e.preventDefault();
+        setContextMenu({ x: e.clientX, y: e.clientY });
+      }, 600);
+    };
+
+    const handleContextMenu = (e: MouseEvent) => {
+      // 브라우저 기본 컨텍스트 메뉴 막기
+      e.preventDefault();
+      console.log('Context menu prevented');
+    };
+
+    const handleMouseUp = () => {
+      if (longPressTimer.current) {
+        clearTimeout(longPressTimer.current);
+        longPressTimer.current = null;
+      }
+    };
+
+    const handleMouseMove = () => {
+      if (longPressTimer.current) {
+        clearTimeout(longPressTimer.current);
+        longPressTimer.current = null;
+      }
+    };
+
+    const canvas = map.current.getCanvas();
+    console.log('Canvas found:', canvas);
+
+    canvas.addEventListener('touchstart', handleTouchStart as any);
+    canvas.addEventListener('touchend', handleTouchEnd);
+    canvas.addEventListener('touchmove', handleTouchMove);
+    canvas.addEventListener('mousedown', handleMouseDown as any);
+    canvas.addEventListener('mouseup', handleMouseUp);
+    canvas.addEventListener('mousemove', handleMouseMove);
+    canvas.addEventListener('contextmenu', handleContextMenu as any);
+
+    return () => {
+      canvas.removeEventListener('touchstart', handleTouchStart as any);
+      canvas.removeEventListener('touchend', handleTouchEnd);
+      canvas.removeEventListener('touchmove', handleTouchMove);
+      canvas.removeEventListener('mousedown', handleMouseDown as any);
+      canvas.removeEventListener('mouseup', handleMouseUp);
+      canvas.removeEventListener('mousemove', handleMouseMove);
+      canvas.removeEventListener('contextmenu', handleContextMenu as any);
+    };
+  }, [map.current, isChatOpen, isPOIDetailOpen, isWeatherDetailOpen, isHomePanelOpen]);
+
+  // 컨텍스트 메뉴 액션 핸들러
+  const handleContextMenuAction = () => {
+    console.log('Context menu - Ask Beaty about location');
+
+    // 비티한테 이 장소에 대해 물어보기
+    setBeatyBubbleMessage('이 장소가 궁금하신가요? 제가 알아볼게요!');
+    setIsBeatyBubbleVisible(true);
+    // TODO: 클릭한 위치의 좌표를 이용해서 장소 정보 API 호출
+  };
+
+  // 이모션 태그 핸들러
+  const handleEmotionTag = (emotion: string) => {
+    console.log('Emotion tagged:', emotion);
+
+    const emotionMessages: { [key: string]: string } = {
+      love: '이 장소를 사랑하시는군요! ❤️ 저도 기억할게요!',
+      happy: '행복한 순간이네요! 😊 멋진 추억이 되셨으면 좋겠어요!',
+      excited: '정말 신나는 곳이죠! 🤩 더 재밌는 곳도 찾아드릴게요!',
+      delicious: '맛있는 곳이군요! 😋 다른 맛집도 추천해드릴까요?',
+      photo: '사진 찍기 좋은 곳이에요! 📸 인스타 감성 뿜뿜!',
+      peaceful: '평화로운 순간... 😌 힐링하는 시간 되세요!',
+      cool: '멋진 곳이죠! 😎 센스 있으시네요!',
+      fun: '재밌는 곳이네요! 🎉 계속 즐거운 여행 되세요!',
+    };
+
+    setBeatyBubbleMessage(emotionMessages[emotion] || '감정을 기록했어요!');
+    setIsBeatyBubbleVisible(true);
+    // TODO: 서버에 감정 태그 저장 (위치 좌표 + emotion)
+  };
+
   // 로딩 화면
   if (isAppLoading) {
     return (
@@ -260,6 +379,17 @@ function App() {
         onClose={() => setIsHomePanelOpen(false)}
         onClosing={setIsHomePanelClosing}
       />
+
+      {/* Context Menu */}
+      {contextMenu && (
+        <ContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          onClose={() => setContextMenu(null)}
+          onAction={handleContextMenuAction}
+          onEmotionTag={handleEmotionTag}
+        />
+      )}
     </div>
   );
 }
