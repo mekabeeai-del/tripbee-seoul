@@ -6,15 +6,18 @@ interface HomePanelProps {
   isOpen: boolean;
   onClose: () => void;
   onClosing?: (isClosing: boolean) => void;
+  language?: 'ko' | 'en' | 'ja';
+  onLanguageChange?: (lang: 'ko' | 'en' | 'ja') => void;
 }
 
-export default function HomePanel({ isOpen, onClose, onClosing }: HomePanelProps) {
+export default function HomePanel({ isOpen, onClose, onClosing, language = 'ko', onLanguageChange }: HomePanelProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [displayedText, setDisplayedText] = useState('');
   const [isExpModalOpen, setIsExpModalOpen] = useState(false);
   const [isLevelModalOpen, setIsLevelModalOpen] = useState(false);
   const [isHoneyModalOpen, setIsHoneyModalOpen] = useState(false);
+  const [isLanguageModalOpen, setIsLanguageModalOpen] = useState(false);
   const [showComingSoon, setShowComingSoon] = useState(false);
 
   // 더미 데이터
@@ -189,6 +192,21 @@ export default function HomePanel({ isOpen, onClose, onClosing }: HomePanelProps
             </div>
             <button className="view-detail-button" onClick={handleComingSoon}>여행 기록 자세히 보기</button>
           </div>
+
+          {/* 하단 메뉴 */}
+          <div className="home-panel-footer">
+            <button className="footer-menu-item" onClick={handleComingSoon}>
+              로그아웃
+            </button>
+            <span className="footer-divider">|</span>
+            <button className="footer-menu-item" onClick={() => setIsLanguageModalOpen(true)}>
+              언어설정
+            </button>
+            <span className="footer-divider">|</span>
+            <button className="footer-menu-item" onClick={handleComingSoon}>
+              정보수정
+            </button>
+          </div>
         </div>
       </div>
       </div>
@@ -300,6 +318,57 @@ export default function HomePanel({ isOpen, onClose, onClosing }: HomePanelProps
                 <p style={{ fontSize: '13px', color: '#666', lineHeight: '1.6', margin: 0 }}>
                   💡 허니포인트를 모아 비티와 함께 더 즐거운 여행을 만들어보세요!
                 </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 언어 설정 모달 - 홈패널 밖에 배치 */}
+      {isLanguageModalOpen && (
+        <div className="exp-modal-overlay" onClick={() => setIsLanguageModalOpen(false)}>
+          <div className="exp-modal language-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="exp-modal-header">
+              <h3>언어 선택 / Language</h3>
+              <button className="exp-modal-close" onClick={() => setIsLanguageModalOpen(false)}>
+                <MdClose size={20} />
+              </button>
+            </div>
+            <div className="exp-modal-content">
+              <div className="language-options">
+                <button
+                  className={`language-option ${language === 'ko' ? 'active' : ''}`}
+                  onClick={() => {
+                    onLanguageChange?.('ko');
+                    setIsLanguageModalOpen(false);
+                  }}
+                >
+                  <span className="language-flag">🇰🇷</span>
+                  <span className="language-name">한국어</span>
+                  {language === 'ko' && <span className="language-check">✓</span>}
+                </button>
+                <button
+                  className={`language-option ${language === 'en' ? 'active' : ''}`}
+                  onClick={() => {
+                    onLanguageChange?.('en');
+                    setIsLanguageModalOpen(false);
+                  }}
+                >
+                  <span className="language-flag">🇺🇸</span>
+                  <span className="language-name">English</span>
+                  {language === 'en' && <span className="language-check">✓</span>}
+                </button>
+                <button
+                  className={`language-option ${language === 'ja' ? 'active' : ''}`}
+                  onClick={() => {
+                    onLanguageChange?.('ja');
+                    setIsLanguageModalOpen(false);
+                  }}
+                >
+                  <span className="language-flag">🇯🇵</span>
+                  <span className="language-name">日本語</span>
+                  {language === 'ja' && <span className="language-check">✓</span>}
+                </button>
               </div>
             </div>
           </div>

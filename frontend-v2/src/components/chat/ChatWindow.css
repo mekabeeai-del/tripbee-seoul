@@ -6,7 +6,6 @@
   right: 0;
   bottom: 0;
   z-index: 300;
-  animation: slideUp 0.3s ease-out;
 }
 
 .chat-overlay.closing {
@@ -28,6 +27,24 @@
   }
   to {
     transform: translateY(100%);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
   }
 }
 

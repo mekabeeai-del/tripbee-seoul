@@ -12,6 +12,9 @@ import HomePanel from './components/home/HomePanel';
 import UserProfile from './components/home/UserProfile';
 import BeatyBubble from './components/beaty/BeatyBubble';
 import ContextMenu from './components/map/ContextMenu';
+import FaqCardModal from './components/faq/FaqCardModal';
+import { faqCards } from './data/faqCards';
+import type { FaqCard } from './data/faqCards';
 import './App.css';
 
 function App() {
@@ -25,9 +28,11 @@ function App() {
   const [isHomePanelClosing, setIsHomePanelClosing] = useState(false);
   const [isBeatyBubbleVisible, setIsBeatyBubbleVisible] = useState(true);
   const [beatyBubbleMessage, setBeatyBubbleMessage] = useState('멋진 여행 하고 계신가요? 어떤 장소를 원하시나요?');
+  const [language, setLanguage] = useState<'ko' | 'en' | 'ja'>('ko');
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; lng: number; lat: number } | null>(null);
   const longPressTimer = useRef<number | null>(null);
   const touchStartPos = useRef<{ x: number; y: number } | null>(null);
+  const [activeFaq, setActiveFaq] = useState<FaqCard | null>(null);
 
   // 앱 초기 로딩
   useEffect(() => {
@@ -63,17 +68,38 @@ function App() {
     }
   }, [isChatOpen, isPOIDetailOpen, isWeatherDetailOpen, isHomePanelOpen]);
 
+  // FAQ 키워드 감지 함수
+  const detectFaqKeyword = (message: string): FaqCard | null => {
+    const lowerMessage = message.toLowerCase();
+
+    for (const faq of Object.values(faqCards)) {
+      for (const keyword of faq.keywords) {
+        if (lowerMessage.includes(keyword.toLowerCase())) {
+          return faq;
+        }
+      }
+    }
+    return null;
+  };
+
   const handleSendMessage = (message: string) => {
     console.log('Sending message:', message);
 
-    // 채팅창 닫기
-    setIsChatOpen(false);
+    // FAQ 키워드 감지
+    const matchedFaq = detectFaqKeyword(message);
 
-    // 잠시 후 비티 버블로 답변 표시
-    setTimeout(() => {
-      setBeatyBubbleMessage(`"${message}"에 대한 답변입니다! 비티가 곧 추천해드릴게요.`);
-      setIsBeatyBubbleVisible(true);
-    }, 500);
+    if (matchedFaq) {
+      // FAQ 모달 표시
+      setActiveFaq(matchedFaq);
+      setIsChatOpen(false);
+    } else {
+      // 일반 응답
+      setIsChatOpen(false);
+      setTimeout(() => {
+        setBeatyBubbleMessage(`"${message}"에 대한 답변입니다! 비티가 곧 추천해드릴게요.`);
+        setIsBeatyBubbleVisible(true);
+      }, 500);
+    }
   };
 
   const handleChatBarFocus = () => {
@@ -449,6 +475,8 @@ function App() {
         isOpen={isHomePanelOpen}
         onClose={() => setIsHomePanelOpen(false)}
         onClosing={setIsHomePanelClosing}
+        language={language}
+        onLanguageChange={setLanguage}
       />
 
       {/* Context Menu */}
@@ -459,6 +487,15 @@ function App() {
           onClose={() => setContextMenu(null)}
           onAction={handleContextMenuAction}
           onEmotionTag={handleEmotionTag}
+        />
+      )}
+
+      {/* FAQ Card Modal */}
+      {activeFaq && (
+        <FaqCardModal
+          faq={activeFaq}
+          language="ko"
+          onClose={() => setActiveFaq(null)}
         />
       )}
     </div>

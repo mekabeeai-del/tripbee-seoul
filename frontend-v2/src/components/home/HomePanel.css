@@ -671,3 +671,87 @@
     transform: translate(-50%, -50%);
   }
 }
+
+/* 하단 메뉴 */
+.home-panel-footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  margin-top: 12px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.footer-menu-item {
+  background: none;
+  border: none;
+  color: #333;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: all 0.2s ease;
+  font-weight: 600;
+}
+
+.footer-menu-item:hover {
+  color: #000;
+}
+
+.footer-divider {
+  color: #ddd;
+  font-size: 13px;
+}
+
+/* 언어 선택 모달 */
+.language-modal {
+  max-width: 360px;
+}
+
+.language-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.language-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background: #F5F5F5;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 16px;
+}
+
+.language-option:hover {
+  background: #E8F4FD;
+  border-color: #4A90E2;
+}
+
+.language-option.active {
+  background: #E8F4FD;
+  border-color: #4A90E2;
+}
+
+.language-flag {
+  font-size: 28px;
+}
+
+.language-name {
+  flex: 1;
+  text-align: left;
+  font-weight: 600;
+  color: #333;
+}
+
+.language-check {
+  font-size: 20px;
+  color: #4A90E2;
+  font-weight: bold;
+}
