@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { FaqCard } from '../../data/faqCards';
+import StreamingText from '../common/StreamingText';
 import './FaqCardModal.css';
 
 interface FaqCardModalProps {
@@ -9,7 +10,6 @@ interface FaqCardModalProps {
 }
 
 export default function FaqCardModal({ faq, language = 'en', onClose }: FaqCardModalProps) {
-  const [displayedText, setDisplayedText] = useState('');
   const [isTypingComplete, setIsTypingComplete] = useState(false);
 
   const title = language === 'en' ? faq.title_en : faq.title_ko;
@@ -32,24 +32,6 @@ export default function FaqCardModal({ faq, language = 'en', onClose }: FaqCardM
     window.addEventListener('keydown', handleEsc);
     return () => window.removeEventListener('keydown', handleEsc);
   }, [onClose]);
-
-  // 텍스트 스트리밍 효과
-  useEffect(() => {
-    let index = 0;
-    const typingSpeed = 20; // ms per character
-
-    const interval = setInterval(() => {
-      if (index < fullText.length) {
-        setDisplayedText(fullText.substring(0, index + 1));
-        index++;
-      } else {
-        setIsTypingComplete(true);
-        clearInterval(interval);
-      }
-    }, typingSpeed);
-
-    return () => clearInterval(interval);
-  }, [fullText]);
 
   return (
     <>
@@ -75,8 +57,12 @@ export default function FaqCardModal({ faq, language = 'en', onClose }: FaqCardM
             </div>
             <div className="faq-beaty-bubble">
               <div className="faq-beaty-text">
-                {displayedText}
-                {!isTypingComplete && <span className="faq-typing-cursor">|</span>}
+                <StreamingText
+                  text={fullText}
+                  speed={20}
+                  showCursor={true}
+                  onComplete={() => setIsTypingComplete(true)}
+                />
               </div>
             </div>
           </div>

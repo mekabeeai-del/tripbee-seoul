@@ -3,18 +3,33 @@ import './UserProfile.css';
 interface UserProfileProps {
   onClick: () => void;
   isHomeActive?: boolean;
+  isLoggedIn?: boolean;
+  userName?: string;
+  userEmail?: string;
+  profileImageUrl?: string;
 }
 
-export default function UserProfile({ onClick, isHomeActive }: UserProfileProps) {
+export default function UserProfile({
+  onClick,
+  isHomeActive,
+  isLoggedIn = false,
+  userName = 'Guest',
+  userEmail,
+  profileImageUrl
+}: UserProfileProps) {
   return (
     <div
       className={`user-profile ${isHomeActive ? 'home-active' : ''}`}
       onClick={onClick}
     >
       <div className="user-avatar">
-        <img src="/img/temp/user_profile.png" alt="User" />
+        {isLoggedIn && profileImageUrl ? (
+          <img src={profileImageUrl} alt={userName} />
+        ) : (
+          <div className="user-avatar-placeholder">👤</div>
+        )}
       </div>
-      <span className="user-name">홍길동 님</span>
+      <span className="user-name">{userName}</span>
     </div>
   );
 }

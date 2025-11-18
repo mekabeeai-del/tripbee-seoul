@@ -1,0 +1,148 @@
+/* Google Login Modal Overlay */
+.google-login-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Google Login Modal */
+.google-login-modal {
+  background: white;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 420px;
+  max-height: 85vh;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Header */
+.google-login-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.google-login-modal-header h2 {
+  font-size: 20px;
+  font-weight: 700;
+  font-family: 'MabinogiClassicR', sans-serif;
+  color: #333;
+  margin: 0;
+}
+
+.google-login-modal-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #666;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.google-login-modal-close:hover {
+  background: #f5f5f5;
+  color: #333;
+}
+
+.google-login-modal-close:active {
+  transform: scale(0.95);
+}
+
+/* Body */
+.google-login-modal-body {
+  padding: 32px 24px;
+  text-align: center;
+}
+
+.google-login-modal-description {
+  font-size: 15px;
+  color: #666;
+  margin: 0 0 28px 0;
+  line-height: 1.5;
+  font-family: 'MabinogiClassicR', sans-serif;
+}
+
+.google-login-modal-button-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.google-login-modal-notice {
+  font-size: 12px;
+  color: #999;
+  line-height: 1.6;
+  margin: 0;
+  font-family: 'MabinogiClassicR', sans-serif;
+}
+
+.google-login-modal-notice a {
+  color: #4285f4;
+  text-decoration: none;
+}
+
+.google-login-modal-notice a:hover {
+  text-decoration: underline;
+}
+
+/* 모바일 최적화 */
+@media (max-width: 480px) {
+  .google-login-modal {
+    width: 95%;
+    max-width: none;
+  }
+
+  .google-login-modal-header {
+    padding: 16px 20px;
+  }
+
+  .google-login-modal-header h2 {
+    font-size: 18px;
+  }
+
+  .google-login-modal-body {
+    padding: 24px 20px;
+  }
+
+  .google-login-modal-description {
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+}

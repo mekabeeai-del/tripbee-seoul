@@ -15,6 +15,9 @@ import ContextMenu from './components/map/ContextMenu';
 import FaqCardModal from './components/faq/FaqCardModal';
 import { faqCards } from './data/faqCards';
 import type { FaqCard } from './data/faqCards';
+import type { User } from './services/privacyApi';
+import { getSessionToken, getCurrentUser, oauthLogin, saveSessionTokens, logout as apiLogout, clearSessionTokens } from './services/privacyApi';
+import { loginWithGoogle, loginWithApple } from './services/googleAuth';
 import './App.css';
 
 function App() {
@@ -30,6 +33,19 @@ function App() {
   const [beatyBubbleMessage, setBeatyBubbleMessage] = useState('멋진 여행 하고 계신가요? 어떤 장소를 원하시나요?');
   const [language, setLanguage] = useState<'ko' | 'en' | 'ja'>('ko');
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; lng: number; lat: number } | null>(null);
+
+  // 인증 상태
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+
+  // 비티 버블 메시지 표시 헬퍼 함수 (기존 버블을 리셋)
+  const showBeatyBubble = (message: string, delay: number = 0) => {
+    setIsBeatyBubbleVisible(false);
+    setTimeout(() => {
+      setBeatyBubbleMessage(message);
+      setIsBeatyBubbleVisible(true);
+    }, delay);
+  };
   const longPressTimer = useRef<number | null>(null);
   const touchStartPos = useRef<{ x: number; y: number } | null>(null);
   const [activeFaq, setActiveFaq] = useState<FaqCard | null>(null);
@@ -40,6 +56,28 @@ function App() {
       setIsAppLoading(false);
     }, 1800); // fade-out 고려해서 약간 줄임
     return () => clearTimeout(timer);
+  }, []);
+
+  // 자동 로그인 체크 (세션 토큰이 있으면)
+  useEffect(() => {
+    const checkSession = async () => {
+      const sessionToken = getSessionToken();
+      if (sessionToken) {
+        try {
+          const response = await getCurrentUser(sessionToken);
+          setCurrentUser(response.user);
+          setIsLoggedIn(true);
+          console.log('[AUTH] Auto-login successful:', response.user);
+        } catch (error) {
+          console.error('[AUTH] Auto-login failed:', error);
+          // 세션이 만료되었으면 로그아웃 처리
+          setIsLoggedIn(false);
+          setCurrentUser(null);
+        }
+      }
+    };
+
+    checkSession();
   }, []);
 
   // 브라우저 히스토리 관리 (모바일 뒤로가기 지원)
@@ -95,10 +133,7 @@ function App() {
     } else {
       // 일반 응답
       setIsChatOpen(false);
-      setTimeout(() => {
-        setBeatyBubbleMessage(`"${message}"에 대한 답변입니다! 비티가 곧 추천해드릴게요.`);
-        setIsBeatyBubbleVisible(true);
-      }, 500);
+      showBeatyBubble(`"${message}"에 대한 답변입니다! 비티가 곧 추천해드릴게요.`, 500);
     }
   };
 
@@ -125,10 +160,7 @@ function App() {
     }
 
     // 비티 버블로 랜덤 추천
-    setTimeout(() => {
-      setBeatyBubbleMessage('빙글빙글~ 근처에 숨은 맛집을 찾았어요! 한번 가보실래요?');
-      setIsBeatyBubbleVisible(true);
-    }, 1000);
+    showBeatyBubble('빙글빙글~ 근처에 숨은 맛집을 찾았어요! 한번 가보실래요?', 1000);
   };
 
   // POI 상세 화면: 길찾기
@@ -349,9 +381,93 @@ function App() {
     console.log('Context menu - Ask Beaty about location');
 
     // 비티한테 이 장소에 대해 물어보기
-    setBeatyBubbleMessage('이 장소가 궁금하신가요? 제가 알아볼게요!');
-    setIsBeatyBubbleVisible(true);
+    showBeatyBubble('이 장소가 궁금하신가요? 제가 알아볼게요!');
     // TODO: 클릭한 위치의 좌표를 이용해서 장소 정보 API 호출
+  };
+
+  // 로그인 핸들러
+  const handleLogin = async (provider: 'google' | 'apple') => {
+    try {
+      console.log(`[AUTH] Starting ${provider} login...`);
+
+      // Apple은 준비중
+      if (provider === 'apple') {
+        showBeatyBubble('Apple 로그인은 준비중입니다! 🚧');
+        return;
+      }
+
+      // 1. OAuth 로그인 (Google/Apple)
+      let authResponse;
+      if (provider === 'google') {
+        authResponse = await loginWithGoogle();
+      } else {
+        authResponse = await loginWithApple();
+      }
+
+      console.log('[AUTH] OAuth successful, logging in to backend...');
+
+      // 2. 백엔드 로그인
+      const loginResponse = await oauthLogin({
+        provider,
+        provider_user_id: authResponse.provider_user_id,
+        provider_email: authResponse.provider_email,
+        name: authResponse.name,
+        profile_image_url: authResponse.profile_image_url,
+        access_token: authResponse.access_token,
+        refresh_token: authResponse.refresh_token,
+        token_expires_at: authResponse.token_expires_at
+      });
+
+      // 3. 세션 토큰 저장
+      saveSessionTokens(loginResponse.session_token, loginResponse.refresh_token);
+
+      // 4. 상태 업데이트
+      setCurrentUser(loginResponse.user);
+      setIsLoggedIn(true);
+
+      console.log('[AUTH] Login successful!', loginResponse.user);
+
+      // 비티 버블로 환영 메시지
+      showBeatyBubble(`환영합니다, ${loginResponse.user.name}님! 🎉`, 500);
+
+      // 홈 패널 닫기
+      setIsHomePanelOpen(false);
+
+    } catch (error) {
+      console.error('[AUTH] Login failed:', error);
+      showBeatyBubble('로그인에 실패했어요. 다시 시도해주세요.');
+    }
+  };
+
+  // 로그아웃 핸들러
+  const handleLogout = async () => {
+    try {
+      console.log('[AUTH] Logging out...');
+
+      const sessionToken = getSessionToken();
+      if (sessionToken) {
+        await apiLogout(sessionToken);
+      }
+
+      // 세션 토큰 제거
+      clearSessionTokens();
+
+      // 상태 초기화
+      setCurrentUser(null);
+      setIsLoggedIn(false);
+
+      console.log('[AUTH] Logout successful');
+
+      // 비티 버블로 메시지
+      showBeatyBubble('안전하게 로그아웃되었습니다!', 300);
+
+      // 홈 패널 닫기
+      setIsHomePanelOpen(false);
+
+    } catch (error) {
+      console.error('[AUTH] Logout failed:', error);
+      showBeatyBubble('로그아웃에 실패했어요.');
+    }
   };
 
   // 이모션 태그 핸들러
@@ -369,8 +485,7 @@ function App() {
       fun: '재밌는 곳이네요! 🎉 계속 즐거운 여행 되세요!',
     };
 
-    setBeatyBubbleMessage(emotionMessages[emotion] || '감정을 기록했어요!');
-    setIsBeatyBubbleVisible(true);
+    showBeatyBubble(emotionMessages[emotion] || '감정을 기록했어요!');
     // TODO: 서버에 감정 태그 저장 (위치 좌표 + emotion)
   };
 
@@ -395,6 +510,10 @@ function App() {
       <UserProfile
         onClick={() => setIsHomePanelOpen(!isHomePanelOpen)}
         isHomeActive={isHomePanelOpen || isHomePanelClosing}
+        isLoggedIn={isLoggedIn}
+        userName={currentUser?.name || 'Guest'}
+        userEmail={currentUser?.email}
+        profileImageUrl={currentUser?.profile_image_url}
       />
 
       {/* Gyeongbokgung POI Button - Top Right */}
@@ -477,6 +596,9 @@ function App() {
         onClosing={setIsHomePanelClosing}
         language={language}
         onLanguageChange={setLanguage}
+        isLoggedIn={isLoggedIn}
+        onLogin={handleLogin}
+        onLogout={handleLogout}
       />
 
       {/* Context Menu */}

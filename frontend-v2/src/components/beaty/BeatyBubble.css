@@ -86,22 +86,6 @@
   word-break: keep-all;
 }
 
-.beaty-cursor {
-  animation: blink 1s infinite;
-  margin-left: 2px;
-  color: #0066CC;
-  font-weight: bold;
-}
-
-@keyframes blink {
-  0%, 50% {
-    opacity: 1;
-  }
-  51%, 100% {
-    opacity: 0;
-  }
-}
-
 /* Panel variant - 홈/날씨 패널용 */
 .beaty-panel-section {
   padding: 20px;
