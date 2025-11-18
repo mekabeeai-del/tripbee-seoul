@@ -1,3 +1,5 @@
+@import '../../styles/animations.css';
+
 /* 오버레이 - 원형 확장 애니메이션 */
 .weather-detail-overlay {
   position: fixed;
@@ -6,39 +8,13 @@
   right: 0;
   bottom: 0;
   z-index: 300;
-  animation: circleExpandWeather 1s cubic-bezier(0.4, 0.0, 0.2, 1);
+  --trigger-x: 44px;
+  --trigger-y: calc(100vh - 134px);
+  animation: circleExpand 0.8s cubic-bezier(0.4, 0.0, 0.2, 1);
 }
 
 .weather-detail-overlay.closing {
-  animation: circleShrinkWeather 0.8s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
-}
-
-@keyframes circleExpandWeather {
-  0% {
-    clip-path: circle(0% at 44px calc(100vh - 134px));
-    opacity: 0;
-  }
-  1% {
-    opacity: 1;
-  }
-  100% {
-    clip-path: circle(150% at 44px calc(100vh - 134px));
-    opacity: 1;
-  }
-}
-
-@keyframes circleShrinkWeather {
-  from {
-    clip-path: circle(150% at 44px calc(100vh - 134px));
-    opacity: 1;
-  }
-  99% {
-    opacity: 1;
-  }
-  to {
-    clip-path: circle(0% at 44px calc(100vh - 134px));
-    opacity: 0;
-  }
+  animation: circleShrink 0.8s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
 }
 
 /* 배경 */

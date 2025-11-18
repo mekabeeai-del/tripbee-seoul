@@ -1,3 +1,5 @@
+@import '../../styles/animations.css';
+
 /* 오버레이 - 원형 확장 애니메이션 */
 .home-panel-overlay {
   position: fixed;
@@ -6,40 +8,14 @@
   right: 0;
   bottom: 0;
   z-index: 300;
-  animation: circleExpand 1s cubic-bezier(0.4, 0.0, 0.2, 1);
+  --trigger-x: 70px;
+  --trigger-y: 35px;
+  animation: circleExpand 0.8s cubic-bezier(0.4, 0.0, 0.2, 1);
   transform-origin: top left;
 }
 
 .home-panel-overlay.closing {
   animation: circleShrink 0.8s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
-}
-
-@keyframes circleExpand {
-  0% {
-    clip-path: circle(0% at 70px 35px);
-    opacity: 0;
-  }
-  1% {
-    opacity: 1;
-  }
-  100% {
-    clip-path: circle(150% at 70px 35px);
-    opacity: 1;
-  }
-}
-
-@keyframes circleShrink {
-  from {
-    clip-path: circle(150% at 70px 35px);
-    opacity: 1;
-  }
-  99% {
-    opacity: 1;
-  }
-  to {
-    clip-path: circle(0% at 70px 35px);
-    opacity: 0;
-  }
 }
 
 /* 배경 - 그라데이션 */

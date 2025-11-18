@@ -1,0 +1,69 @@
+/* 공통 서클 확대/축소 애니메이션 */
+
+/* 서클 확대 애니메이션 (opacity 포함) */
+@keyframes circleExpand {
+  0% {
+    clip-path: circle(0% at var(--trigger-x, 50%) var(--trigger-y, 50%));
+    opacity: 0;
+  }
+  1% {
+    opacity: 1;
+  }
+  100% {
+    clip-path: circle(150% at var(--trigger-x, 50%) var(--trigger-y, 50%));
+    opacity: 1;
+  }
+}
+
+/* 서클 축소 애니메이션 (opacity 포함) */
+@keyframes circleShrink {
+  from {
+    clip-path: circle(150% at var(--trigger-x, 50%) var(--trigger-y, 50%));
+    opacity: 1;
+  }
+  99% {
+    opacity: 1;
+  }
+  to {
+    clip-path: circle(0% at var(--trigger-x, 50%) var(--trigger-y, 50%));
+    opacity: 0;
+  }
+}
+
+/* 페이드 인/아웃 애니메이션 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* 슬라이드 업/다운 애니메이션 */
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
