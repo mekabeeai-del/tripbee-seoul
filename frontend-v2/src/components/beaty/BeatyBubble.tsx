@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import StreamingText from '../common/StreamingText';
 import './BeatyBubble.css';
 
 interface BeatyBubbleProps {
@@ -18,45 +19,40 @@ export default function BeatyBubble({
   autoHide = true,
   backgroundColor
 }: BeatyBubbleProps) {
-  const [displayedText, setDisplayedText] = useState('');
   const [isClosing, setIsClosing] = useState(false);
   const autoHideTimerRef = useRef<number | null>(null);
 
+  // message가 바뀔 때마다 기존 타이머 클리어
   useEffect(() => {
-    if (isVisible && message) {
-      // 이전 타이머가 있다면 클리어
+    if (autoHideTimerRef.current) {
+      clearTimeout(autoHideTimerRef.current);
+      autoHideTimerRef.current = null;
+    }
+  }, [message]);
+
+  // 컴포넌트 언마운트 시 타이머 클리어
+  useEffect(() => {
+    return () => {
       if (autoHideTimerRef.current) {
         clearTimeout(autoHideTimerRef.current);
-        autoHideTimerRef.current = null;
       }
+    };
+  }, []);
 
-      setDisplayedText('');
-      let currentIndex = 0;
-
-      const interval = setInterval(() => {
-        if (currentIndex < message.length) {
-          setDisplayedText(message.substring(0, currentIndex + 1));
-          currentIndex++;
-        } else {
-          clearInterval(interval);
-          // floating variant이고 autoHide가 true면 10초 뒤 자동으로 사라짐
-          if (variant === 'floating' && autoHide) {
-            autoHideTimerRef.current = setTimeout(() => {
-              handleClose();
-            }, 10000);
-          }
-        }
-      }, 50); // 50ms마다 한 글자씩
-
-      return () => {
-        clearInterval(interval);
-        // 컴포넌트 언마운트 시 타이머도 클리어
-        if (autoHideTimerRef.current) {
-          clearTimeout(autoHideTimerRef.current);
-        }
-      };
+  const handleStreamingComplete = () => {
+    // 이전 타이머가 있으면 먼저 클리어
+    if (autoHideTimerRef.current) {
+      clearTimeout(autoHideTimerRef.current);
+      autoHideTimerRef.current = null;
     }
-  }, [isVisible, message, variant, autoHide]);
+
+    // floating variant이고 autoHide가 true면 10초 뒤 자동으로 사라짐
+    if (variant === 'floating' && autoHide) {
+      autoHideTimerRef.current = setTimeout(() => {
+        handleClose();
+      }, 10000);
+    }
+  };
 
   const handleClose = () => {
     if (variant === 'floating') {
@@ -78,15 +74,13 @@ export default function BeatyBubble({
           <img src="/img/beaty/beaty_float.png" alt="Beaty" />
         </div>
         <div className="beaty-panel-bubble">
-          {displayedText.split('\n').map((line, index) => (
-            <span key={index}>
-              {line}
-              {index < displayedText.split('\n').length - 1 && <br />}
-            </span>
-          ))}
-          {displayedText.length < message.length && (
-            <span className="beaty-cursor">|</span>
-          )}
+          <StreamingText
+            text={message}
+            speed={50}
+            showCursor={true}
+            enabled={isVisible}
+            onComplete={handleStreamingComplete}
+          />
         </div>
       </div>
     );
@@ -97,10 +91,13 @@ export default function BeatyBubble({
     <div className={`beaty-floating ${isClosing ? 'closing' : ''}`}>
       <div className="beaty-floating-bubble">
         <div className="beaty-floating-text">
-          {displayedText}
-          {displayedText.length < message.length && (
-            <span className="beaty-cursor">|</span>
-          )}
+          <StreamingText
+            text={message}
+            speed={50}
+            showCursor={true}
+            enabled={isVisible && !isClosing}
+            onComplete={handleStreamingComplete}
+          />
         </div>
       </div>
       <div className="beaty-floating-avatar">

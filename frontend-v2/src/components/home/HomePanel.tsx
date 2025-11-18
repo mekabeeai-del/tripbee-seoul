@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { MdClose } from 'react-icons/md';
+import { FaGoogle, FaApple } from 'react-icons/fa';
+import StreamingText from '../common/StreamingText';
 import './HomePanel.css';
 
 interface HomePanelProps {
@@ -8,9 +10,12 @@ interface HomePanelProps {
   onClosing?: (isClosing: boolean) => void;
   language?: 'ko' | 'en' | 'ja';
   onLanguageChange?: (lang: 'ko' | 'en' | 'ja') => void;
+  isLoggedIn?: boolean;
+  onLogin?: (provider: 'google' | 'apple') => Promise<void>;
+  onLogout?: () => Promise<void>;
 }
 
-export default function HomePanel({ isOpen, onClose, onClosing, language = 'ko', onLanguageChange }: HomePanelProps) {
+export default function HomePanel({ isOpen, onClose, onClosing, language = 'ko', onLanguageChange, isLoggedIn = false, onLogin, onLogout }: HomePanelProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [displayedText, setDisplayedText] = useState('');
@@ -89,20 +94,67 @@ export default function HomePanel({ isOpen, onClose, onClosing, language = 'ko',
 
         {/* 패널 */}
         <div className="home-panel">
-          {/* 상단 헤더 */}
-          <div className="home-panel-header">
-            <div className="home-honey-container">
-              <div className="home-honey-points" onClick={handleComingSoon}>
-                🍯 {honeyPoints}
+          {/* 로그인 안되어있을 때 */}
+          {!isLoggedIn ? (
+            <div className="login-required-section">
+              {/* 말풍선 */}
+              <div className="login-speech-bubble">
+                <StreamingText
+                  text="트립비에 로그인해주세요!"
+                  speed={80}
+                  showCursor={false}
+                  enabled={isVisible && !isClosing}
+                  highlights={[
+                    { text: '트립비', color: '#1e3a8a' }
+                  ]}
+                />
               </div>
-              <button className="home-honey-help-btn" onClick={() => setIsHoneyModalOpen(true)}>
-                ❔
-              </button>
-            </div>
-          </div>
 
-        {/* 스크롤 가능한 콘텐츠 */}
-        <div className="home-panel-content">
+              {/* 비티 캐릭터 */}
+              <div className="login-beaty-image">
+                <img src="/img/beaty/beaty_login.png" alt="Login Beaty" />
+              </div>
+
+              <p className="login-description">
+                로그인 하시면 비티가 맞춤형 여행을 추천해드립니다.<br />
+                함께 여행하면서 추억을 만들어봐요!
+              </p>
+              <div className="login-buttons-container">
+                {/* Google 로그인 버튼 */}
+                <button
+                  className="login-button google-login"
+                  onClick={() => onLogin?.('google')}
+                >
+                  <FaGoogle size={20} />
+                  <span>Google로 계속하기</span>
+                </button>
+
+                {/* Apple 로그인 버튼 */}
+                <button
+                  className="login-button apple-login"
+                  onClick={() => onLogin?.('apple')}
+                >
+                  <FaApple size={22} />
+                  <span>Apple로 계속하기</span>
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* 상단 헤더 */}
+              <div className="home-panel-header">
+                <div className="home-honey-container">
+                  <div className="home-honey-points" onClick={handleComingSoon}>
+                    🍯 {honeyPoints}
+                  </div>
+                  <button className="home-honey-help-btn" onClick={() => setIsHoneyModalOpen(true)}>
+                    ❔
+                  </button>
+                </div>
+              </div>
+
+              {/* 스크롤 가능한 콘텐츠 */}
+              <div className="home-panel-content">
           {/* 비티 레벨 영역 */}
           <div className="beaty-level-section">
             <div className="beaty-level-container">
@@ -195,7 +247,7 @@ export default function HomePanel({ isOpen, onClose, onClosing, language = 'ko',
 
           {/* 하단 메뉴 */}
           <div className="home-panel-footer">
-            <button className="footer-menu-item" onClick={handleComingSoon}>
+            <button className="footer-menu-item" onClick={onLogout}>
               로그아웃
             </button>
             <span className="footer-divider">|</span>
@@ -208,6 +260,8 @@ export default function HomePanel({ isOpen, onClose, onClosing, language = 'ko',
             </button>
           </div>
         </div>
+            </>
+          )}
       </div>
       </div>
 
