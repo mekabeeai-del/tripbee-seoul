@@ -38,26 +38,7 @@ function loadGoogleScript(): Promise<void> {
 }
 
 /**
- * JWT 토큰 파싱
- */
-function parseJwt(token: string): any {
-  try {
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(
-      atob(base64)
-        .split('')
-        .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-        .join('')
-    );
-    return JSON.parse(jsonPayload);
-  } catch (error) {
-    throw new Error('Invalid token');
-  }
-}
-
-/**
- * Google 로그인 (OAuth Code Flow with Popup)
+ * Google 로그인 (OAuth Token Client with Popup)
  */
 export async function loginWithGoogle(): Promise<GoogleAuthResponse> {
   return new Promise(async (resolve, reject) => {

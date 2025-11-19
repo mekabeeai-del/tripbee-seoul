@@ -1,6 +1,5 @@
-import { useEffect, useRef } from 'react';
 import { MdClose } from 'react-icons/md';
-import { renderGoogleButton, type GoogleAuthResponse } from '../../services/googleAuth';
+import type { GoogleAuthResponse } from '../../services/googleAuth';
 import './GoogleLoginModal.css';
 
 interface GoogleLoginModalProps {
@@ -9,29 +8,9 @@ interface GoogleLoginModalProps {
   onSuccess: (response: GoogleAuthResponse) => void;
 }
 
-export default function GoogleLoginModal({ isOpen, onClose, onSuccess }: GoogleLoginModalProps) {
-  const googleButtonRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (isOpen && googleButtonRef.current) {
-      // 버튼이 이미 렌더링되었는지 확인
-      if (googleButtonRef.current.children.length > 0) {
-        return;
-      }
-
-      // Google 버튼 렌더링
-      renderGoogleButton(
-        googleButtonRef.current,
-        (response: GoogleAuthResponse) => {
-          onSuccess(response);
-          onClose();
-        },
-        (error: Error) => {
-          console.error('[GoogleLoginModal] Error:', error);
-        }
-      );
-    }
-  }, [isOpen, onSuccess, onClose]);
+export default function GoogleLoginModal({ isOpen, onClose }: GoogleLoginModalProps) {
+  // Note: This component is currently not used in the app
+  // Keeping it for future reference
 
   if (!isOpen) return null;
 
@@ -53,7 +32,9 @@ export default function GoogleLoginModal({ isOpen, onClose, onSuccess }: GoogleL
           </p>
 
           {/* Google 버튼 컨테이너 */}
-          <div ref={googleButtonRef} className="google-login-modal-button-container"></div>
+          <div className="google-login-modal-button-container">
+            {/* TODO: Add Google login button */}
+          </div>
 
           <p className="google-login-modal-notice">
             로그인하면 <a href="#" onClick={(e) => e.preventDefault()}>서비스 약관</a> 및{' '}

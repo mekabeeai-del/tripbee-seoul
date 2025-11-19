@@ -14,7 +14,6 @@ export default function UserProfile({
   isHomeActive,
   isLoggedIn = false,
   userName = 'Guest',
-  userEmail,
   profileImageUrl
 }: UserProfileProps) {
   return (
