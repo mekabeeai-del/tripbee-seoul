@@ -19,6 +19,7 @@ import type { User } from './services/privacyApi';
 import { getSessionToken, getCurrentUser, oauthLogin, saveSessionTokens, logout as apiLogout, clearSessionTokens } from './services/privacyApi';
 import { loginWithGoogle, loginWithApple } from './services/googleAuth';
 import { useGeoLocation } from './hooks/useGeoLocation';
+import { getCurrentWeather, type CurrentWeather } from './services/weatherApi';
 import './App.css';
 
 function App() {
@@ -42,6 +43,10 @@ function App() {
   // GPS 위치 추적
   const { position: gpsPosition, isTracking, error: gpsError, startTracking, stopTracking } = useGeoLocation();
 
+  // 날씨 데이터
+  const [currentWeather, setCurrentWeather] = useState<CurrentWeather | null>(null);
+  const [isWeatherLoading, setIsWeatherLoading] = useState(false);
+
   // 비티 버블 메시지 표시 헬퍼 함수 (기존 버블을 리셋)
   const showBeatyBubble = (message: string, delay: number = 0) => {
     setIsBeatyBubbleVisible(false);
@@ -61,6 +66,32 @@ function App() {
     }, 1800); // fade-out 고려해서 약간 줄임
     return () => clearTimeout(timer);
   }, []);
+
+  // 날씨 데이터 로드
+  const loadWeather = async (lat: number, lon: number) => {
+    setIsWeatherLoading(true);
+    try {
+      const weather = await getCurrentWeather(lat, lon);
+      setCurrentWeather(weather);
+      console.log('[Weather] Weather loaded:', weather);
+    } catch (error) {
+      console.error('[Weather] Failed to load weather:', error);
+    } finally {
+      setIsWeatherLoading(false);
+    }
+  };
+
+  // 앱 시작 시 서울 기본 날씨 로드
+  useEffect(() => {
+    loadWeather(37.5665, 126.9780); // 서울 좌표
+  }, []);
+
+  // GPS 위치 변경 시 날씨 업데이트
+  useEffect(() => {
+    if (gpsPosition) {
+      loadWeather(gpsPosition.latitude, gpsPosition.longitude);
+    }
+  }, [gpsPosition]);
 
   // 자동 로그인 체크 (세션 토큰이 있으면)
   useEffect(() => {
@@ -238,15 +269,6 @@ function App() {
     // Mapbox geolocate control 트리거
     if (geolocateControl.current) {
       geolocateControl.current.trigger();
-    }
-
-    // 정확도 피드백
-    if (accuracy > 100) {
-      showBeatyBubble(`위치를 찾았어요! 정확도: ${Math.round(accuracy)}m (GPS 신호를 더 기다리는 중...) 🛰️`, 100);
-    } else if (accuracy > 50) {
-      showBeatyBubble(`위치를 찾았어요! 정확도: ${Math.round(accuracy)}m ✨`, 100);
-    } else {
-      showBeatyBubble(`정확한 위치를 찾았어요! 정확도: ${Math.round(accuracy)}m 🎯`, 100);
     }
   }, [gpsPosition]);
 
@@ -578,7 +600,9 @@ function App() {
 
       {/* Weather Button - Bottom Left */}
       <WeatherButton
-        temperature={19}
+        temperature={currentWeather?.temp}
+        weatherMain={currentWeather?.weather[0]?.main}
+        isLoading={isWeatherLoading}
         onClick={() => setIsWeatherDetailOpen(true)}
       />
 
@@ -625,6 +649,8 @@ function App() {
       <WeatherDetailPanel
         isOpen={isWeatherDetailOpen}
         onClose={() => setIsWeatherDetailOpen(false)}
+        latitude={gpsPosition?.latitude}
+        longitude={gpsPosition?.longitude}
       />
 
       {/* Home Panel */}
