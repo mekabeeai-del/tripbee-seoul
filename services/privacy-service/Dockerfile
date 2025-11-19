@@ -4,9 +4,12 @@ FROM python:3.13-slim
 # 작업 디렉토리 설정
 WORKDIR /app
 
-# 시스템 의존성 설치 (PostgreSQL 클라이언트)
+# 시스템 의존성 설치 (PostgreSQL 클라이언트 및 빌드 도구)
 RUN apt-get update && apt-get install -y \
     gcc \
+    g++ \
+    libpq-dev \
+    python3-dev \
     postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
