@@ -18,6 +18,7 @@ import type { FaqCard } from './data/faqCards';
 import type { User } from './services/privacyApi';
 import { getSessionToken, getCurrentUser, oauthLogin, saveSessionTokens, logout as apiLogout, clearSessionTokens } from './services/privacyApi';
 import { loginWithGoogle, loginWithApple } from './services/googleAuth';
+import { useGeoLocation } from './hooks/useGeoLocation';
 import './App.css';
 
 function App() {
@@ -37,6 +38,9 @@ function App() {
   // 인증 상태
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+
+  // GPS 위치 추적
+  const { position: gpsPosition, isTracking, error: gpsError, startTracking, stopTracking } = useGeoLocation();
 
   // 비티 버블 메시지 표시 헬퍼 함수 (기존 버블을 리셋)
   const showBeatyBubble = (message: string, delay: number = 0) => {
@@ -200,62 +204,59 @@ function App() {
     }
   };
 
+  // GPS 위치 추적 시작/중지
   const handleLocationClick = () => {
-    if (navigator.geolocation && map.current) {
-      // 로딩 메시지 표시
-      showBeatyBubble('정확한 위치를 찾고 있어요... 📍');
+    if (!map.current) return;
 
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude, accuracy } = position.coords;
-
-          console.log(`[Location] 위도: ${latitude}, 경도: ${longitude}, 정확도: ${accuracy}m`);
-
-          // 정확도가 100m 이상이면 경고
-          if (accuracy > 100) {
-            showBeatyBubble(`위치 정확도가 낮아요 (오차: ${Math.round(accuracy)}m). GPS를 켜고 야외에서 시도해보세요! 🛰️`, 100);
-          } else {
-            showBeatyBubble(`현재 위치로 이동했어요! (정확도: ${Math.round(accuracy)}m) ✨`, 100);
-          }
-
-          // Trigger geolocate control to show marker
-          if (geolocateControl.current) {
-            geolocateControl.current.trigger();
-          }
-
-          // Immediately fly to location with zoom 17
-          map.current?.flyTo({
-            center: [longitude, latitude],
-            zoom: 17,
-            duration: 1000
-          });
-        },
-        (error) => {
-          console.error('[Location] Error:', error);
-          let errorMessage = '위치를 가져올 수 없어요. ';
-
-          switch (error.code) {
-            case error.PERMISSION_DENIED:
-              errorMessage += '위치 권한을 허용해주세요! 🔒';
-              break;
-            case error.POSITION_UNAVAILABLE:
-              errorMessage += 'GPS 신호를 받을 수 없어요. 야외로 나가보세요! 🛰️';
-              break;
-            case error.TIMEOUT:
-              errorMessage += '위치 찾기 시간이 초과되었어요. 다시 시도해주세요! ⏱️';
-              break;
-          }
-
-          showBeatyBubble(errorMessage);
-        },
-        {
-          enableHighAccuracy: true,  // GPS 사용
-          timeout: 15000,            // 15초 대기 (모바일에서 더 길게)
-          maximumAge: 0              // 캐시 사용 안함
-        }
-      );
+    if (isTracking) {
+      // 이미 추적 중이면 중지
+      stopTracking();
+      showBeatyBubble('위치 추적을 중지했어요! 📍');
+    } else {
+      // 추적 시작
+      showBeatyBubble('위치를 찾고 있어요... 📍');
+      startTracking();
     }
   };
+
+  // GPS 위치 업데이트 시 지도 이동
+  useEffect(() => {
+    if (!gpsPosition || !map.current) return;
+
+    const { latitude, longitude, accuracy } = gpsPosition;
+
+    console.log(`[GPS] 위치 업데이트: ${latitude}, ${longitude} (정확도: ${accuracy}m)`);
+
+    // 지도 이동
+    map.current.flyTo({
+      center: [longitude, latitude],
+      zoom: 17,
+      duration: 1000,
+      essential: true
+    });
+
+    // Mapbox geolocate control 트리거
+    if (geolocateControl.current) {
+      geolocateControl.current.trigger();
+    }
+
+    // 정확도 피드백
+    if (accuracy > 100) {
+      showBeatyBubble(`위치를 찾았어요! 정확도: ${Math.round(accuracy)}m (GPS 신호를 더 기다리는 중...) 🛰️`, 100);
+    } else if (accuracy > 50) {
+      showBeatyBubble(`위치를 찾았어요! 정확도: ${Math.round(accuracy)}m ✨`, 100);
+    } else {
+      showBeatyBubble(`정확한 위치를 찾았어요! 정확도: ${Math.round(accuracy)}m 🎯`, 100);
+    }
+  }, [gpsPosition]);
+
+  // GPS 에러 처리
+  useEffect(() => {
+    if (gpsError) {
+      showBeatyBubble(gpsError);
+      stopTracking();
+    }
+  }, [gpsError, stopTracking]);
 
   // 지도 컨텍스트 메뉴 long-press 이벤트
   useEffect(() => {
