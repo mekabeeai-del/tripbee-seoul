@@ -21,10 +21,13 @@ from health import router as health_router
 
 app = FastAPI(title=SERVICE_NAME, version=SERVICE_VERSION)
 
-# CORS
+# CORS - Frontend 도메인만 허용
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:5173",  # 로컬 개발
+        "https://tripbee-seoul.vercel.app"  # 프로덕션
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
