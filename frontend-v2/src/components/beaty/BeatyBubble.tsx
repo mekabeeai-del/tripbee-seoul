@@ -9,6 +9,7 @@ interface BeatyBubbleProps {
   onClose?: () => void;
   autoHide?: boolean;
   backgroundColor?: string;
+  bubbleColor?: string; // 말풍선 색깔
 }
 
 export default function BeatyBubble({
@@ -17,7 +18,8 @@ export default function BeatyBubble({
   isVisible = true,
   onClose,
   autoHide = true,
-  backgroundColor
+  backgroundColor,
+  bubbleColor = '#FFF8DC' // 기본값: 연한 노란색
 }: BeatyBubbleProps) {
   const [isClosing, setIsClosing] = useState(false);
   const autoHideTimerRef = useRef<number | null>(null);
@@ -73,7 +75,11 @@ export default function BeatyBubble({
         <div className="beaty-panel-avatar">
           <img src="/img/beaty/beaty_float.png" alt="Beaty" />
         </div>
-        <div className="beaty-panel-bubble">
+        <div className="beaty-panel-bubble" style={{ backgroundColor: bubbleColor }}>
+          <div
+            className="beaty-panel-bubble-tail"
+            style={{ borderRightColor: bubbleColor }}
+          />
           <StreamingText
             text={message}
             speed={50}
@@ -89,7 +95,11 @@ export default function BeatyBubble({
   // Floating variant
   return (
     <div className={`beaty-floating ${isClosing ? 'closing' : ''}`}>
-      <div className="beaty-floating-bubble">
+      <div className="beaty-floating-bubble" style={{ backgroundColor: bubbleColor }}>
+        <div
+          className="beaty-floating-bubble-tail"
+          style={{ borderLeftColor: bubbleColor }}
+        />
         <div className="beaty-floating-text">
           <StreamingText
             text={message}

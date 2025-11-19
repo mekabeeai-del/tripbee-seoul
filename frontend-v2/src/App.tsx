@@ -202,21 +202,58 @@ function App() {
 
   const handleLocationClick = () => {
     if (navigator.geolocation && map.current) {
-      navigator.geolocation.getCurrentPosition((position) => {
-        const { latitude, longitude } = position.coords;
+      // 로딩 메시지 표시
+      showBeatyBubble('정확한 위치를 찾고 있어요... 📍');
 
-        // Trigger geolocate control to show marker
-        if (geolocateControl.current) {
-          geolocateControl.current.trigger();
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude, accuracy } = position.coords;
+
+          console.log(`[Location] 위도: ${latitude}, 경도: ${longitude}, 정확도: ${accuracy}m`);
+
+          // 정확도가 100m 이상이면 경고
+          if (accuracy > 100) {
+            showBeatyBubble(`위치 정확도가 낮아요 (오차: ${Math.round(accuracy)}m). GPS를 켜고 야외에서 시도해보세요! 🛰️`, 100);
+          } else {
+            showBeatyBubble(`현재 위치로 이동했어요! (정확도: ${Math.round(accuracy)}m) ✨`, 100);
+          }
+
+          // Trigger geolocate control to show marker
+          if (geolocateControl.current) {
+            geolocateControl.current.trigger();
+          }
+
+          // Immediately fly to location with zoom 17
+          map.current?.flyTo({
+            center: [longitude, latitude],
+            zoom: 17,
+            duration: 1000
+          });
+        },
+        (error) => {
+          console.error('[Location] Error:', error);
+          let errorMessage = '위치를 가져올 수 없어요. ';
+
+          switch (error.code) {
+            case error.PERMISSION_DENIED:
+              errorMessage += '위치 권한을 허용해주세요! 🔒';
+              break;
+            case error.POSITION_UNAVAILABLE:
+              errorMessage += 'GPS 신호를 받을 수 없어요. 야외로 나가보세요! 🛰️';
+              break;
+            case error.TIMEOUT:
+              errorMessage += '위치 찾기 시간이 초과되었어요. 다시 시도해주세요! ⏱️';
+              break;
+          }
+
+          showBeatyBubble(errorMessage);
+        },
+        {
+          enableHighAccuracy: true,  // GPS 사용
+          timeout: 15000,            // 15초 대기 (모바일에서 더 길게)
+          maximumAge: 0              // 캐시 사용 안함
         }
-
-        // Immediately fly to location with zoom 17
-        map.current?.flyTo({
-          center: [longitude, latitude],
-          zoom: 17,
-          duration: 1000
-        });
-      });
+      );
     }
   };
 
