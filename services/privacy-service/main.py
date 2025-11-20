@@ -55,9 +55,9 @@ async def root():
         "port": SERVICE_PORT,
         "endpoints": {
             "auth": {
-                "login": "POST /api/auth/oauth/login",
-                "logout": "POST /api/auth/logout",
-                "me": "GET /api/auth/me"
+                "login": "POST /auth/oauth/login",
+                "logout": "POST /auth/logout",
+                "me": "GET /auth/me"
             },
             "health": {
                 "check": "GET /health",
