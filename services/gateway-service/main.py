@@ -40,9 +40,13 @@ async def startup():
     print(f"[GATEWAY] {SERVICE_NAME} v{SERVICE_VERSION}")
     print(f"{'='*60}\n")
 
-    load_routes_to_cache()
+    try:
+        load_routes_to_cache()
+        print(f"\n[OK] Gateway Ready on port {SERVICE_PORT}")
+    except Exception as e:
+        print(f"\n[ERROR] Failed to load routes from DB: {e}")
+        print(f"[WARNING] Gateway starting without routes")
 
-    print(f"\n[OK] Gateway Ready on port {SERVICE_PORT}")
     print(f"[ADMIN] Admin UI: http://localhost:{SERVICE_PORT}/admin/ui")
     print(f"{'='*60}\n")
 
