@@ -59,7 +59,7 @@ app.include_router(admin_router)
 # ROOT & UTILS (catch_all 보다 먼저 정의)
 # =====================================================================================
 
-@app.get("/")
+@app.api_route("/", methods=["GET", "HEAD"])
 async def root():
     from proxy import ROUTE_CACHE
 
@@ -85,16 +85,20 @@ async def reload_routes_endpoint():
 # DYNAMIC PROXY (가장 마지막에 정의 - catch all)
 # =====================================================================================
 
-@app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"])
-async def catch_all(request: Request, path: str):
+@app.api_route("/{service}/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"])
+async def proxy_to_service(request: Request, service: str, path: str):
     """
-    모든 요청을 받아서 동적으로 프록시
+    서비스별 프록시 라우팅
 
+    패턴: /{service}/{path}
     예시:
-    - /api/auth/login → Privacy Service (http://localhost:8100/login)
-    - /api/beaty/chat → Beaty Service (http://localhost:8000/chat)
+    - /privacy/auth/login → Privacy Service
+    - /beaty/chat → Beaty Service
+    - /poi/search → POI Service
     """
-    return await proxy_request(request, path)
+    # /{service}/{path} 형태로 재구성
+    full_path = f"/{service}/{path}"
+    return await proxy_request(request, full_path)
 
 
 # =====================================================================================
