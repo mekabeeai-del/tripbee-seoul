@@ -324,7 +324,7 @@ function App() {
             lat: lngLat.lat
           });
         }
-      }, 600);
+      }, 800); // 600ms → 800ms 증가
     };
 
     const handleTouchEnd = () => {
@@ -365,22 +365,44 @@ function App() {
       // 패널이 열려있으면 무시
       if (isChatOpen || isPOIDetailOpen || isWeatherDetailOpen || isHomePanelOpen) return;
 
-      console.log('Mouse down');
-      longPressTimer.current = window.setTimeout(() => {
-        console.log('Long press detected - showing context menu');
-        e.preventDefault();
+      console.log('Mouse down - starting long press timer');
+      const startX = e.clientX;
+      const startY = e.clientY;
+      let isMouseUp = false;
 
-        // 클릭한 화면 좌표를 지도 좌표로 변환
-        const lngLat = map.current?.unproject([e.clientX, e.clientY]);
+      const showContextMenu = () => {
+        // mouseup이 일어났으면 무시
+        if (isMouseUp) {
+          console.log('Mouse already released, ignoring');
+          return;
+        }
+
+        console.log('Long press completed - showing context menu');
+        const lngLat = map.current?.unproject([startX, startY]);
         if (lngLat) {
           setContextMenu({
-            x: e.clientX,
-            y: e.clientY,
+            x: startX,
+            y: startY,
             lng: lngLat.lng,
             lat: lngLat.lat
           });
         }
-      }, 600);
+      };
+
+      longPressTimer.current = window.setTimeout(showContextMenu, 800);
+
+      // mouseup 리스너 등록 (한번만 실행)
+      const handleMouseUpOnce = () => {
+        console.log('Mouse up - canceling long press');
+        isMouseUp = true;
+        if (longPressTimer.current) {
+          clearTimeout(longPressTimer.current);
+          longPressTimer.current = null;
+        }
+        document.removeEventListener('mouseup', handleMouseUpOnce);
+      };
+
+      document.addEventListener('mouseup', handleMouseUpOnce, { once: true });
     };
 
     const handleContextMenu = (e: MouseEvent) => {
@@ -390,14 +412,12 @@ function App() {
     };
 
     const handleMouseUp = () => {
-      if (longPressTimer.current) {
-        clearTimeout(longPressTimer.current);
-        longPressTimer.current = null;
-      }
+      // 이미 위에서 처리됨
     };
 
     const handleMouseMove = () => {
       if (longPressTimer.current) {
+        console.log('Mouse moved - canceling long press');
         clearTimeout(longPressTimer.current);
         longPressTimer.current = null;
       }
