@@ -25,7 +25,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(180deg, #4A90E2 0%, #7CB9E8 50%, #B0D4F1 100%);
+  background: linear-gradient(180deg, #0066CC 0%, #7CB9E8 50%, #B0D4F1 100%);
 }
 
 @keyframes fadeIn {
@@ -480,7 +480,7 @@
 .view-detail-button {
   width: 100%;
   padding: 12px;
-  background: #4A90E2;
+  background: #0066CC;
   color: white;
   border: none;
   border-radius: 8px;
@@ -707,12 +707,12 @@
 
 .language-option:hover {
   background: #E8F4FD;
-  border-color: #4A90E2;
+  border-color: #0066CC;
 }
 
 .language-option.active {
   background: #E8F4FD;
-  border-color: #4A90E2;
+  border-color: #0066CC;
 }
 
 .language-flag {
@@ -728,7 +728,7 @@
 
 .language-check {
   font-size: 20px;
-  color: #4A90E2;
+  color: #0066CC;
   font-weight: bold;
 }
 

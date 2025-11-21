@@ -105,7 +105,7 @@ export default function HomePanel({ isOpen, onClose, onClosing, language = 'ko',
                   showCursor={false}
                   enabled={isVisible && !isClosing}
                   highlights={[
-                    { text: '트립비', color: '#4a90e2' }
+                    { text: '트립비', color: '#0066CC' }
                   ]}
                 />
               </div>
