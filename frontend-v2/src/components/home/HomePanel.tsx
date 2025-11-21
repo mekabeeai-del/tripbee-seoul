@@ -105,14 +105,14 @@ export default function HomePanel({ isOpen, onClose, onClosing, language = 'ko',
                   showCursor={false}
                   enabled={isVisible && !isClosing}
                   highlights={[
-                    { text: '트립비', color: '#4A4E9E' }
+                    { text: '트립비', color: '#4a90e2' }
                   ]}
                 />
               </div>
 
               {/* 비티 캐릭터 */}
               <div className="login-beaty-image">
-                <img src="/img/beaty/home_logout_beaty.png" alt="Login Beaty" />
+                <img src="/img/beaty/beaty_login.png" alt="Login Beaty" />
               </div>
 
               <p className="login-description">
@@ -177,7 +177,7 @@ export default function HomePanel({ isOpen, onClose, onClosing, language = 'ko',
 
             {/* 비티 캐릭터 */}
             <div className="beaty-character-area">
-              <img src="/img/beaty/home_login_beaty.png" alt="Beaty" className="beaty-character-image" />
+              <img src="/img/beaty/beaty_profile.png" alt="Beaty" className="beaty-character-image" />
             </div>
 
             <div className="beaty-exp-container">
