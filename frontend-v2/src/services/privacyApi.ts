@@ -1,9 +1,9 @@
 /**
  * Privacy API Client
- * Port: 8100
+ * Gateway를 통해 Privacy Service와 통신
  */
 
-const PRIVACY_API_BASE_URL = 'http://localhost:8100';
+import { API_ENDPOINTS } from '../config/api';
 
 // =====================================================================================
 // Types
@@ -58,7 +58,7 @@ export interface LogoutResponse {
  * OAuth 로그인 (Google/Apple)
  */
 export async function oauthLogin(request: OAuthLoginRequest): Promise<LoginResponse> {
-  const response = await fetch(`${PRIVACY_API_BASE_URL}/api/auth/oauth/login`, {
+  const response = await fetch(API_ENDPOINTS.AUTH_LOGIN, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -78,7 +78,7 @@ export async function oauthLogin(request: OAuthLoginRequest): Promise<LoginRespo
  * 로그아웃
  */
 export async function logout(sessionToken: string): Promise<LogoutResponse> {
-  const response = await fetch(`${PRIVACY_API_BASE_URL}/api/auth/logout`, {
+  const response = await fetch(API_ENDPOINTS.AUTH_LOGOUT, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${sessionToken}`,
@@ -97,7 +97,7 @@ export async function logout(sessionToken: string): Promise<LogoutResponse> {
  * 현재 사용자 정보 조회
  */
 export async function getCurrentUser(sessionToken: string): Promise<UserResponse> {
-  const response = await fetch(`${PRIVACY_API_BASE_URL}/api/auth/me`, {
+  const response = await fetch(API_ENDPOINTS.AUTH_ME, {
     method: 'GET',
     headers: {
       'Authorization': `Bearer ${sessionToken}`,

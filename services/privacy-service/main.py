@@ -21,10 +21,13 @@ from health import router as health_router
 
 app = FastAPI(title=SERVICE_NAME, version=SERVICE_VERSION)
 
-# CORS
+# CORS - Gateway만 허용 (Frontend는 Gateway를 통해서만 접근)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:8080",  # Gateway (로컬)
+        "https://gateway-service.onrender.com"  # Gateway (프로덕션)
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -52,9 +55,9 @@ async def root():
         "port": SERVICE_PORT,
         "endpoints": {
             "auth": {
-                "login": "POST /api/auth/oauth/login",
-                "logout": "POST /api/auth/logout",
-                "me": "GET /api/auth/me"
+                "login": "POST /auth/oauth/login",
+                "logout": "POST /auth/logout",
+                "me": "GET /auth/me"
             },
             "health": {
                 "check": "GET /health",

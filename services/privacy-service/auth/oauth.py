@@ -10,7 +10,7 @@ from models import OAuthLoginRequest, SessionResponse, UserResponse, LogoutRespo
 from database import get_db_connection, generate_session_token, hash_token
 from config import SESSION_EXPIRY_DAYS, REFRESH_TOKEN_EXPIRY_DAYS
 
-router = APIRouter(prefix="/api/auth", tags=["Authentication"])
+router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 
 @router.post("/oauth/login", response_model=SessionResponse)

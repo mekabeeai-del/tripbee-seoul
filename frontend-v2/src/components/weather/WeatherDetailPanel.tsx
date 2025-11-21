@@ -81,8 +81,8 @@ export default function WeatherDetailPanel({ isOpen, onClose, onClosing, latitud
   if (!isVisible) return null;
 
   // 날씨 아이콘 렌더링
-  const getWeatherIcon = (main: string) => {
-    const iconMap: Record<string, JSX.Element> = {
+  const getWeatherIcon = (main: string): React.ReactElement => {
+    const iconMap: Record<string, React.ReactElement> = {
       'Clear': <WiDaySunny size={32} />,
       'Clouds': <WiCloudy size={32} />,
       'Rain': <WiRain size={32} />,
