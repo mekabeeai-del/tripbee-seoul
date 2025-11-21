@@ -6,6 +6,7 @@ Beaty Service - TripBee AI 캐릭터 서비스
 
 import json
 import httpx
+import logging
 from pathlib import Path
 from typing import Dict, Any, Optional, List
 from fastapi import FastAPI, HTTPException, Body, Header
@@ -19,6 +20,14 @@ import asyncio
 import uuid
 from datetime import datetime
 import asyncpg
+
+# 로깅 설정
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+logger = logging.getLogger(__name__)
 
 # 로컬 모듈 임포트
 from orchestration.intent_classifier import IntentClassifier
@@ -82,7 +91,7 @@ class BeatyService:
                 else:
                     raise ValueError("Could not parse config from CLAUDE.md")
         except Exception as e:
-            print(f"Error loading config: {e}")
+            logger.error(f"Error loading config: {e}")
             self.openai_api_key = os.getenv("OPENAI_API_KEY")
             self.google_api_key = os.getenv("GOOGLE_API_KEY", "AIzaSyBIQVYNLnbSdjIN2agdGeo0K10cbseBXoM")
             self.weather_api_key = os.getenv("OPENWEATHERMAP_API_KEY", "")
@@ -101,9 +110,9 @@ class BeatyService:
         try:
             with open(character_prompt_path, "r", encoding="utf-8") as f:
                 self.character_prompt = f.read()
-            print(f"[BEATY_SERVICE] Character prompt loaded from {character_prompt_path}")
+            logger.info(f"[BEATY_SERVICE] Character prompt loaded from {character_prompt_path}")
         except Exception as e:
-            print(f"[BEATY_SERVICE] Warning: Could not load character prompt: {e}")
+            logger.warning(f"[BEATY_SERVICE] Warning: Could not load character prompt: {e}")
             self.character_prompt = "당신은 Beaty라는 친절한 여행 도우미입니다. 항상 존댓말을 사용하고 밝은 어조로 대화합니다."
 
         # Store config for pipelines
@@ -142,9 +151,9 @@ def create_app() -> FastAPI:
     @app.on_event("startup")
     async def startup_event():
         """서비스 시작 시 비동기 초기화"""
-        print("[BEATY_SERVICE] 초기화 시작...")
+        logger.info("[BEATY_SERVICE] 초기화 시작...")
         await service.intent_classifier.initialize()
-        print("[BEATY_SERVICE] 초기화 완료!")
+        logger.info("[BEATY_SERVICE] 초기화 완료!")
 
     @app.get("/", response_class=HTMLResponse)
     async def root():
@@ -182,10 +191,10 @@ def create_app() -> FastAPI:
             user_id = None
             session_id = None
             session_token = None
-            print(f"[API/QUERY] Authorization 헤더: {authorization}")
+            logger.info(f"[API/QUERY] Authorization 헤더: {authorization}")
             if authorization and authorization.startswith("Bearer "):
                 session_token = authorization.replace("Bearer ", "")
-                print(f"[API/QUERY] Session token: {session_token[:20]}...")
+                logger.info(f"[API/QUERY] Session token: {session_token[:20]}...")
                 try:
                     # privacy-service에 session_token으로 user 정보 조회
                     async with httpx.AsyncClient() as client:
@@ -193,27 +202,27 @@ def create_app() -> FastAPI:
                             "http://localhost:8100/api/auth/me",
                             headers={"Authorization": f"Bearer {session_token}"}
                         )
-                        print(f"[API/QUERY] Privacy service 응답 코드: {response.status_code}")
+                        logger.info(f"[API/QUERY] Privacy service 응답 코드: {response.status_code}")
                         if response.status_code == 200:
                             response_data = response.json()
-                            print(f"[API/QUERY] Privacy service 응답 데이터: {response_data}")
+                            logger.info(f"[API/QUERY] Privacy service 응답 데이터: {response_data}")
                             user_data = response_data.get("user", {})
                             user_id = user_data.get("id")
                             session_id_str = response_data.get("session_id")
                             session_id = int(session_id_str) if session_id_str else None  # 문자열 → 정수 변환
-                            print(f"[API/QUERY] 인증된 사용자: user_id={user_id}, session_id={session_id} (type={type(session_id)})")
+                            logger.info(f"[API/QUERY] 인증된 사용자: user_id={user_id}, session_id={session_id} (type={type(session_id)})")
                         else:
-                            print(f"[API/QUERY] Privacy service 응답: {response.text}")
+                            logger.warning(f"[API/QUERY] Privacy service 응답: {response.text}")
                 except Exception as e:
-                    print(f"[API/QUERY] 사용자 인증 실패 (무시): {e}")
+                    logger.warning(f"[API/QUERY] 사용자 인증 실패 (무시): {e}")
                     import traceback
                     traceback.print_exc()
             else:
-                print(f"[API/QUERY] Authorization 헤더 없음 또는 형식 오류")
+                logger.info(f"[API/QUERY] Authorization 헤더 없음 또는 형식 오류")
 
-            print(f"\n{'='*60}")
-            print(f"[API/QUERY] 요청: '{query}' (user_id={user_id})")
-            print(f"{'='*60}")
+            logger.info(f"\n{'='*60}")
+            logger.info(f"[API/QUERY] 요청: '{query}' (user_id={user_id})")
+            logger.info(f"{'='*60}")
 
             steps = []
 
@@ -233,7 +242,7 @@ def create_app() -> FastAPI:
                 "name": "의도분류",
                 "result": classification
             })
-            print(f"[API/QUERY] Step 1 완료: intent={intent}")
+            logger.info(f"[API/QUERY] Step 1 완료: intent={intent}")
 
             # Step 2~N: 의도별 파이프라인 실행
             if intent == "ROUTE":
@@ -278,7 +287,7 @@ def create_app() -> FastAPI:
                         }
                     }
                 except Exception as e:
-                    print(f"[GENERAL_CHAT] OpenAI 호출 실패: {e}")
+                    logger.error(f"[GENERAL_CHAT] OpenAI 호출 실패: {e}")
                     answer = "앗, 잠깐 문제가 생겼어요. 다시 한 번 말씀해주시겠어요?"
 
                     pipeline_result = {
@@ -290,8 +299,8 @@ def create_app() -> FastAPI:
                         }
                     }
 
-            print(f"[API/QUERY] 파이프라인 완료: {len(pipeline_result['steps'])}개 단계")
-            print(f"{'='*60}\n")
+            logger.info(f"[API/QUERY] 파이프라인 완료: {len(pipeline_result['steps'])}개 단계")
+            logger.info(f"{'='*60}\n")
 
             # Event 1: 데이터 먼저 전송 (pois, places, routes 등)
             data_event = {
@@ -320,11 +329,11 @@ def create_app() -> FastAPI:
                 data_event["steps"] = pipeline_result["steps"]
 
             yield f"data: {json.dumps(data_event, ensure_ascii=False)}\n\n"
-            print(f"[SSE] data 이벤트 전송 완료")
+            logger.info(f"[SSE] data 이벤트 전송 완료")
 
             # Event 2~N: answer_stream이 있으면 스트리밍
             if "answer_stream" in final_response:
-                print(f"[SSE] 스트리밍 시작")
+                logger.info(f"[SSE] 스트리밍 시작")
                 full_answer = ""
                 async for chunk in final_response["answer_stream"]:
                     full_answer += chunk
@@ -335,12 +344,12 @@ def create_app() -> FastAPI:
                     yield f"data: {json.dumps(chunk_event, ensure_ascii=False)}\n\n"
                     # 타이핑 효과를 위한 딜레이 (30ms)
                     await asyncio.sleep(0.03)
-                print(f"[SSE] 스트리밍 완료: {len(full_answer)} chars")
+                logger.info(f"[SSE] 스트리밍 완료: {len(full_answer)} chars")
 
                 # 세션 메모리에 대화 저장 (스트리밍 완료 후)
                 session_memory.add_message("user", query)
                 session_memory.add_message("assistant", full_answer)
-                print(f"[MEMORY] 대화 저장 완료 (session: {memory_session_id})")
+                logger.info(f"[MEMORY] 대화 저장 완료 (session: {memory_session_id})")
 
                 # 로그에 사용할 answer 업데이트
                 final_response["answer"] = full_answer
@@ -349,12 +358,12 @@ def create_app() -> FastAPI:
                 answer = final_response.get("answer", "")
                 session_memory.add_message("user", query)
                 session_memory.add_message("assistant", answer)
-                print(f"[MEMORY] 대화 저장 완료 (session: {memory_session_id})")
+                logger.info(f"[MEMORY] 대화 저장 완료 (session: {memory_session_id})")
 
             # Final Event: done
             done_event = {"type": "done"}
             yield f"data: {json.dumps(done_event, ensure_ascii=False)}\n\n"
-            print(f"[SSE] done 이벤트 전송 완료")
+            logger.info(f"[SSE] done 이벤트 전송 완료")
 
             # 백그라운드 로그 저장 (answer_stream 제외)
             response_time_ms = len(pipeline_result['steps']) * 100
@@ -377,7 +386,7 @@ def create_app() -> FastAPI:
             )
 
         except Exception as e:
-            print(f"[API/QUERY] 오류: {e}")
+            logger.error(f"[API/QUERY] 오류: {e}")
             import traceback
             traceback.print_exc()
             error_event = {
@@ -465,7 +474,7 @@ def create_app() -> FastAPI:
             if authorization and authorization.startswith("Bearer "):
                 session_token = authorization.replace("Bearer ", "")
 
-            print(f"[BEATY/RANDOM_POI] 랜덤 POI 요청 (lat={lat}, lng={lng}, has_token={session_token is not None})")
+            logger.info(f"[BEATY/RANDOM_POI] 랜덤 POI 요청 (lat={lat}, lng={lng}, has_token={session_token is not None})")
 
             # RANDOM 파이프라인 호출
             steps = []
@@ -480,7 +489,7 @@ def create_app() -> FastAPI:
 
             if pipeline_result["final_response"].get("poi"):
                 poi = pipeline_result["final_response"]["poi"]
-                print(f"[BEATY/RANDOM_POI] 완료: {poi.get('title', 'Unknown')}")
+                logger.info(f"[BEATY/RANDOM_POI] 완료: {poi.get('title', 'Unknown')}")
                 return {
                     "success": True,
                     "poi": poi
@@ -492,7 +501,7 @@ def create_app() -> FastAPI:
                 }
 
         except Exception as e:
-            print(f"[BEATY/RANDOM_POI] 오류: {e}")
+            logger.error(f"[BEATY/RANDOM_POI] 오류: {e}")
             import traceback
             traceback.print_exc()
             raise HTTPException(status_code=500, detail=str(e))
@@ -525,7 +534,7 @@ def create_app() -> FastAPI:
             }
         """
         try:
-            print(f"[BEATY/HISTORY] 대화기록 조회: user_id={user_id}, limit={limit}, offset={offset}")
+            logger.info(f"[BEATY/HISTORY] 대화기록 조회: user_id={user_id}, limit={limit}, offset={offset}")
 
             # DB 연결 (SSL 필요)
             import ssl
@@ -582,7 +591,7 @@ def create_app() -> FastAPI:
                     "created_at": row["created_at"].isoformat() if row["created_at"] else None
                 })
 
-            print(f"[BEATY/HISTORY] 완료: {len(queries)}개 조회")
+            logger.info(f"[BEATY/HISTORY] 완료: {len(queries)}개 조회")
 
             return {
                 "success": True,
@@ -590,7 +599,7 @@ def create_app() -> FastAPI:
             }
 
         except Exception as e:
-            print(f"[BEATY/HISTORY] 오류: {e}")
+            logger.error(f"[BEATY/HISTORY] 오류: {e}")
             import traceback
             traceback.print_exc()
             raise HTTPException(status_code=500, detail=str(e))
@@ -616,7 +625,7 @@ def create_app() -> FastAPI:
             else:
                 raise HTTPException(status_code=503, detail="날씨 정보를 가져올 수 없습니다")
         except Exception as e:
-            print(f"[WEATHER] 오류: {e}")
+            logger.error(f"[WEATHER] 오류: {e}")
             raise HTTPException(status_code=500, detail=str(e))
 
     @app.get("/api/weather/detailed")
@@ -650,7 +659,7 @@ def create_app() -> FastAPI:
             else:
                 raise HTTPException(status_code=503, detail="상세 날씨 정보를 가져올 수 없습니다")
         except Exception as e:
-            print(f"[WEATHER_DETAILED] 오류: {e}")
+            logger.error(f"[WEATHER_DETAILED] 오류: {e}")
             raise HTTPException(status_code=500, detail=str(e))
 
     @app.get("/health")
@@ -777,11 +786,11 @@ async def save_query_log(
         )
 
         await conn.close()
-        print(f"[QUERY_LOG] 저장 완료: query='{query_text[:30]}...', intent={intent}, result_count={result_count}")
+        logger.info(f"[QUERY_LOG] 저장 완료: query='{query_text[:30]}...', intent={intent}, result_count={result_count}")
 
     except Exception as e:
         # 로그 저장 실패해도 메인 파이프라인에 영향 없음
-        print(f"[QUERY_LOG] 저장 실패 (무시): {e}")
+        logger.warning(f"[QUERY_LOG] 저장 실패 (무시): {e}")
         import traceback
         traceback.print_exc()
 
