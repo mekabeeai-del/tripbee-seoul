@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import './MapContainer.css';
+import { useTimeOfDay, getMapStyleByTimeOfDay } from '../../hooks/useTimeOfDay';
 
 // Mapbox access token from CLAUDE.md
 mapboxgl.accessToken = 'pk.eyJ1IjoieWVhaGhhIiwiYSI6ImNtZTk4bTY2czBvcjUya29pc2NmdzM2aDQifQ.Nv8VEnrxJ5BDqBDOHH518Q';
@@ -15,14 +16,16 @@ export default function MapContainer({ onMapLoad, onGeolocateControlLoad }: MapC
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const geolocateControl = useRef<mapboxgl.GeolocateControl | null>(null);
+  const timeOfDay = useTimeOfDay();
 
+  // 지도 초기화
   useEffect(() => {
     if (!mapContainer.current) return;
 
     // Initialize map centered on Seoul
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/streets-v12',
+      style: 'mapbox://styles/mapbox/light-v11',
       center: [126.9780, 37.5665],
       zoom: 15,
       pitch: 0,
@@ -56,6 +59,13 @@ export default function MapContainer({ onMapLoad, onGeolocateControlLoad }: MapC
       map.current?.remove();
     };
   }, []);
+
+  // 시간대가 변경되면 지도 스타일 업데이트
+  useEffect(() => {
+    if (map.current && map.current.isStyleLoaded()) {
+      map.current.setStyle('mapbox://styles/mapbox/light-v11');
+    }
+  }, [timeOfDay]);
 
   return <div ref={mapContainer} className="map-container" />;
 }

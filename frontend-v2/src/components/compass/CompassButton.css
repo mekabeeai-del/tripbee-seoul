@@ -10,7 +10,7 @@
 .compass-button {
   width: 75px;
   height: 75px;
-  background: #0066CC;
+  background: #4A4E9E;
   border: none;
   border-radius: 50%;
   display: flex;
@@ -18,13 +18,13 @@
   justify-content: center;
   color: white;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
+  box-shadow: 0 4px 12px rgba(74, 78, 158, 0.3);
   transition: all 0.3s ease;
 }
 
 .compass-button:hover {
   transform: scale(1.05);
-  box-shadow: 0 6px 16px rgba(0, 102, 204, 0.4);
+  box-shadow: 0 6px 16px rgba(74, 78, 158, 0.4);
 }
 
 .compass-button:active {
@@ -44,7 +44,7 @@
   left: 50%;
   width: 100%;
   height: 100%;
-  border: 2px solid #0066CC;
+  border: 2px solid #4A4E9E;
   border-radius: 50%;
   transform: translate(-50%, -50%);
   opacity: 0;
