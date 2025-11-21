@@ -60,7 +60,7 @@
 }
 
 .chat-bar-send-btn.active {
-  background: #0066CC;
+  background: #4A4E9E;
   animation: none;
 }
 
@@ -70,11 +70,11 @@
 }
 
 .chat-bar.active .chat-bar-send-btn.active {
-  background: #0066CC;
+  background: #4A4E9E;
 }
 
 .chat-bar-send-btn.active:hover {
-  background: #0052A3;
+  background: #3D4180;
   transform: scale(1.05);
 }
 
@@ -89,7 +89,7 @@
   }
   50% {
     transform: scale(1.02);
-    box-shadow: 0 6px 20px rgba(0, 102, 204, 0.25);
+    box-shadow: 0 6px 20px rgba(74, 78, 158, 0.25);
   }
 }
 
@@ -98,7 +98,7 @@
     color: #999;
   }
   50% {
-    color: #0066CC;
+    color: #4A4E9E;
   }
 }
 
@@ -107,6 +107,6 @@
     background: #CCCCCC;
   }
   50% {
-    background: #0066CC;
+    background: #4A4E9E;
   }
 }
