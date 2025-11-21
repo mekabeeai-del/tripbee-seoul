@@ -60,7 +60,7 @@
 }
 
 .chat-bar-send-btn.active {
-  background: #4A4E9E;
+  background: #0066CC;
   animation: none;
 }
 
@@ -70,7 +70,7 @@
 }
 
 .chat-bar.active .chat-bar-send-btn.active {
-  background: #4A4E9E;
+  background: #0066CC;
 }
 
 .chat-bar-send-btn.active:hover {
@@ -98,7 +98,7 @@
     color: #999;
   }
   50% {
-    color: #4A4E9E;
+    color: #0066CC;
   }
 }
 
@@ -107,6 +107,6 @@
     background: #CCCCCC;
   }
   50% {
-    background: #4A4E9E;
+    background: #0066CC;
   }
 }
