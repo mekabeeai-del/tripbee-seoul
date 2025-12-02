@@ -6,7 +6,7 @@ interface ContextMenuProps {
   onClose: () => void;
 }
 
-export default function ContextMenu({ x, y, onClose }: ContextMenuProps) {
+export default function ContextMenu({ x, y, onClose: _onClose }: ContextMenuProps) {
   return (
     <div
       className="context-menu"

@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import './MapContainer.css';
-import { useTimeOfDay, getMapStyleByTimeOfDay } from '../../hooks/useTimeOfDay';
+import { useTimeOfDay } from '../../hooks/useTimeOfDay';
 
 // Mapbox access token from CLAUDE.md
 mapboxgl.accessToken = 'pk.eyJ1IjoieWVhaGhhIiwiYSI6ImNtZTk4bTY2czBvcjUya29pc2NmdzM2aDQifQ.Nv8VEnrxJ5BDqBDOHH518Q';

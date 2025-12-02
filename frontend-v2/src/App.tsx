@@ -43,7 +43,7 @@ function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   // GPS 위치
-  const { position: gpsPosition, isLoading: isGpsLoading, error: gpsError, getLocation } = useGeoLocation();
+  const { position: gpsPosition, error: gpsError, getLocation } = useGeoLocation();
 
   // 비티 마커 화면 밖 표시
   const [beatyOffScreen, setBeatyOffScreen] = useState<{
@@ -864,8 +864,6 @@ function App() {
           x={contextMenu.x}
           y={contextMenu.y}
           onClose={() => setContextMenu(null)}
-          onAction={handleContextMenuAction}
-          onEmotionTag={handleEmotionTag}
         />
       )}
 
