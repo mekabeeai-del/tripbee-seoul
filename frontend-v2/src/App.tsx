@@ -563,15 +563,6 @@ function App() {
     }
   }, [map.current, isChatOpen, isPOIDetailOpen, isWeatherDetailOpen, isHomePanelOpen]);
 
-  // 컨텍스트 메뉴 액션 핸들러
-  const handleContextMenuAction = () => {
-    console.log('Context menu - Ask Beaty about location');
-
-    // 비티한테 이 장소에 대해 물어보기
-    showBeatyBubble('이 장소가 궁금하신가요? 제가 알아볼게요!');
-    // TODO: 클릭한 위치의 좌표를 이용해서 장소 정보 API 호출
-  };
-
   // 로그인 핸들러
   const handleLogin = async (provider: 'google' | 'apple') => {
     try {
@@ -655,25 +646,6 @@ function App() {
       console.error('[AUTH] Logout failed:', error);
       showBeatyBubble('로그아웃에 실패했어요.');
     }
-  };
-
-  // 이모션 태그 핸들러
-  const handleEmotionTag = (emotion: string) => {
-    console.log('Emotion tagged:', emotion);
-
-    const emotionMessages: { [key: string]: string } = {
-      love: '이 장소를 사랑하시는군요! ❤️ 저도 기억할게요!',
-      happy: '행복한 순간이네요! 😊 멋진 추억이 되셨으면 좋겠어요!',
-      excited: '정말 신나는 곳이죠! 🤩 더 재밌는 곳도 찾아드릴게요!',
-      delicious: '맛있는 곳이군요! 😋 다른 맛집도 추천해드릴까요?',
-      photo: '사진 찍기 좋은 곳이에요! 📸 인스타 감성 뿜뿜!',
-      peaceful: '평화로운 순간... 😌 힐링하는 시간 되세요!',
-      cool: '멋진 곳이죠! 😎 센스 있으시네요!',
-      fun: '재밌는 곳이네요! 🎉 계속 즐거운 여행 되세요!',
-    };
-
-    showBeatyBubble(emotionMessages[emotion] || '감정을 기록했어요!');
-    // TODO: 서버에 감정 태그 저장 (위치 좌표 + emotion)
   };
 
   // 로딩 화면
