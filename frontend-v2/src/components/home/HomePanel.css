@@ -241,16 +241,12 @@
 }
 
 .beaty-character-area {
-  width: 180px;
-  height: 180px;
+  width: 300px;
+  height: 300px;
   margin: 0 auto 20px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  backdrop-filter: blur(10px);
 }
 
 .beaty-placeholder {
