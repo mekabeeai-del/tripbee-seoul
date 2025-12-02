@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
+import mapboxgl from 'mapbox-gl';
 import MapContainer from './components/map/MapContainer';
 import CompassButton from './components/compass/CompassButton';
 import WeatherButton from './components/weather/WeatherButton';
@@ -25,6 +26,7 @@ import './App.css';
 function App() {
   const map = useRef<any>(null);
   const geolocateControl = useRef<any>(null);
+  const userMarker = useRef<any>(null);
   const [isAppLoading, setIsAppLoading] = useState(true);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isPOIDetailOpen, setIsPOIDetailOpen] = useState(false);
@@ -40,8 +42,16 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
-  // GPS 위치 추적
-  const { position: gpsPosition, isTracking, error: gpsError, startTracking, stopTracking } = useGeoLocation();
+  // GPS 위치
+  const { position: gpsPosition, isLoading: isGpsLoading, error: gpsError, getLocation } = useGeoLocation();
+
+  // 비티 마커 화면 밖 표시
+  const [beatyOffScreen, setBeatyOffScreen] = useState<{
+    visible: boolean;
+    x: number;
+    y: number;
+    angle: number;
+  }>({ visible: false, x: 0, y: 0, angle: 0 });
 
   // 날씨 데이터
   const [currentWeather, setCurrentWeather] = useState<CurrentWeather | null>(null);
@@ -235,30 +245,19 @@ function App() {
     }
   };
 
-  // GPS 위치 추적 시작/중지
+  // 현재 위치로 이동
   const handleLocationClick = () => {
     if (!map.current) return;
-
-    if (isTracking) {
-      // 이미 추적 중이면 중지
-      stopTracking();
-      showBeatyBubble('위치 추적을 중지했어요! 📍');
-    } else {
-      // 추적 시작
-      showBeatyBubble('위치를 찾고 있어요... 📍');
-      startTracking();
-    }
+    getLocation();
   };
 
-  // GPS 위치 업데이트 시 지도 이동
+  // GPS 위치 업데이트 시 지도 이동 + 마커 표시
   useEffect(() => {
     if (!gpsPosition || !map.current) return;
 
-    const { latitude, longitude, accuracy } = gpsPosition;
+    const { latitude, longitude } = gpsPosition;
 
-    console.log(`[GPS] 위치 업데이트: ${latitude}, ${longitude} (정확도: ${accuracy}m)`);
-
-    // 지도 이동
+    // 지도 이동 (줌 17 고정)
     map.current.flyTo({
       center: [longitude, latitude],
       zoom: 17,
@@ -266,9 +265,51 @@ function App() {
       essential: true
     });
 
-    // Mapbox geolocate control 트리거
-    if (geolocateControl.current) {
-      geolocateControl.current.trigger();
+    // 비티 마커 생성/업데이트
+    if (userMarker.current) {
+      // 기존 마커 위치 업데이트
+      userMarker.current.setLngLat([longitude, latitude]);
+    } else {
+      // 새 마커 생성
+      const el = document.createElement('div');
+      el.style.position = 'relative';
+      el.style.width = '50px';
+      el.style.height = '50px';
+
+      // 파동 효과 (3개 원)
+      for (let i = 0; i < 3; i++) {
+        const ripple = document.createElement('div');
+        ripple.style.position = 'absolute';
+        ripple.style.top = '50%';
+        ripple.style.left = '50%';
+        ripple.style.transform = 'translate(-50%, -50%)';
+        ripple.style.width = '40px';
+        ripple.style.height = '40px';
+        ripple.style.borderRadius = '50%';
+        ripple.style.border = '2px solid #FFD700';
+        ripple.style.opacity = '0';
+        ripple.style.animation = `ripple 2s ease-out infinite`;
+        ripple.style.animationDelay = `${i * 0.6}s`;
+        el.appendChild(ripple);
+      }
+
+      // 비티 이미지
+      const beatyImg = document.createElement('div');
+      beatyImg.style.position = 'absolute';
+      beatyImg.style.top = '0';
+      beatyImg.style.left = '0';
+      beatyImg.style.width = '100%';
+      beatyImg.style.height = '100%';
+      beatyImg.style.backgroundImage = 'url(/img/beaty/beaty_float_marker.png)';
+      beatyImg.style.backgroundSize = 'contain';
+      beatyImg.style.backgroundRepeat = 'no-repeat';
+      beatyImg.style.backgroundPosition = 'center';
+      beatyImg.style.zIndex = '1';
+      el.appendChild(beatyImg);
+
+      userMarker.current = new mapboxgl.Marker({ element: el })
+        .setLngLat([longitude, latitude])
+        .addTo(map.current);
     }
   }, [gpsPosition]);
 
@@ -276,9 +317,78 @@ function App() {
   useEffect(() => {
     if (gpsError) {
       showBeatyBubble(gpsError);
-      stopTracking();
     }
-  }, [gpsError, stopTracking]);
+  }, [gpsError]);
+
+  // 비티 마커 화면 밖 체크
+  useEffect(() => {
+    if (!map.current || !gpsPosition) return;
+
+    const checkBeatyOffScreen = () => {
+      if (!map.current || !gpsPosition) return;
+
+      const { latitude, longitude } = gpsPosition;
+      const point = map.current.project([longitude, latitude]);
+      const canvas = map.current.getCanvas();
+      const width = canvas.width / window.devicePixelRatio;
+      const height = canvas.height / window.devicePixelRatio;
+
+      // UI 안전 영역 정의 (UI가 없는 영역)
+      const safeArea = {
+        top: 120,      // 상단 UI (프로필, 날씨 등)
+        bottom: 200,   // 하단 UI (채팅바, 버튼들)
+        left: 40,      // 최소 여백
+        right: 40      // 최소 여백
+      };
+
+      const isOffScreen =
+        point.x < 0 || point.x > width ||
+        point.y < 0 || point.y > height;
+
+      if (isOffScreen) {
+        // 안전 영역 중심에서 마커 방향 계산
+        const safeWidth = width - safeArea.left - safeArea.right;
+        const safeHeight = height - safeArea.top - safeArea.bottom;
+        const centerX = safeArea.left + safeWidth / 2;
+        const centerY = safeArea.top + safeHeight / 2;
+
+        const angle = Math.atan2(point.y - centerY, point.x - centerX);
+        const angleDeg = angle * (180 / Math.PI);
+
+        // 안전 영역 가장자리 위치 계산
+        const maxDistX = safeWidth / 2 - 40;
+        const maxDistY = safeHeight / 2 - 40;
+
+        let edgeX = centerX + Math.cos(angle) * maxDistX;
+        let edgeY = centerY + Math.sin(angle) * maxDistY;
+
+        // 안전 영역 범위 내로 클램핑
+        edgeX = Math.max(safeArea.left + 40, Math.min(width - safeArea.right - 40, edgeX));
+        edgeY = Math.max(safeArea.top + 40, Math.min(height - safeArea.bottom - 40, edgeY));
+
+        setBeatyOffScreen({
+          visible: true,
+          x: edgeX,
+          y: edgeY,
+          angle: angleDeg
+        });
+      } else {
+        setBeatyOffScreen(prev => prev.visible ? { ...prev, visible: false } : prev);
+      }
+    };
+
+    // 초기 체크
+    checkBeatyOffScreen();
+
+    // 지도 이동 시 체크
+    map.current.on('move', checkBeatyOffScreen);
+
+    return () => {
+      if (map.current) {
+        map.current.off('move', checkBeatyOffScreen);
+      }
+    };
+  }, [gpsPosition]);
 
   // 지도 컨텍스트 메뉴 long-press 이벤트
   useEffect(() => {
@@ -582,7 +692,11 @@ function App() {
     <div className="app-container">
       {/* Map Container */}
       <MapContainer
-        onMapLoad={(loadedMap) => (map.current = loadedMap)}
+        onMapLoad={(loadedMap) => {
+          map.current = loadedMap;
+          // 지도 로드 완료 시 내 위치로 이동
+          getLocation();
+        }}
         onGeolocateControlLoad={(control) => (geolocateControl.current = control)}
       />
 
@@ -634,6 +748,68 @@ function App() {
 
       {/* Current Location Button - Bottom Right */}
       <LocationButton onClick={handleLocationClick} />
+
+      {/* 비티 마커 화면 밖 표시 */}
+      {beatyOffScreen.visible && (
+        <div
+          onClick={handleLocationClick}
+          style={{
+            position: 'fixed',
+            left: beatyOffScreen.x,
+            top: beatyOffScreen.y,
+            transform: 'translate(-50%, -50%)',
+            zIndex: 1000,
+            cursor: 'pointer',
+            width: '60px',
+            height: '60px'
+          }}
+        >
+          {/* 화살표 (비티 주변에서 뾰족하게) */}
+          <div
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              width: '0',
+              height: '0',
+              borderLeft: '8px solid transparent',
+              borderRight: '8px solid transparent',
+              borderBottom: '20px solid #FFD700',
+              transformOrigin: 'center bottom',
+              transform: `translate(-50%, -100%) rotate(${beatyOffScreen.angle + 90}deg) translateY(-20px)`,
+              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))'
+            }}
+          />
+          {/* 비티 이미지 (동그란 배경) */}
+          <div
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: '50px',
+              height: '50px',
+              borderRadius: '50%',
+              backgroundColor: 'white',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            <div
+              style={{
+                width: '40px',
+                height: '40px',
+                backgroundImage: 'url(/img/beaty/beaty_float_marker.png)',
+                backgroundSize: 'contain',
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'center'
+              }}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Chat Bar */}
       <ChatBar

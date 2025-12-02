@@ -33,16 +33,14 @@ export default function MapContainer({ onMapLoad, onGeolocateControlLoad }: MapC
       language: 'ko'
     });
 
-    // Add Geolocate control (hidden from UI)
+    // Add Geolocate control (내 위치 마커만 표시)
     geolocateControl.current = new mapboxgl.GeolocateControl({
       positionOptions: {
-        enableHighAccuracy: true,  // GPS 사용
-        timeout: 10000,            // 10초 동안 정확한 위치 기다림
-        maximumAge: 0              // 캐시된 위치 사용 안함 (항상 새로운 위치 요청)
+        enableHighAccuracy: true
       },
-      trackUserLocation: true,
-      showUserLocation: true,
-      showAccuracyCircle: true     // 정확도 원 표시
+      trackUserLocation: false,    // 자동 추적 안 함
+      showUserLocation: true,      // 내 위치 마커 표시
+      showAccuracyCircle: false    // 정확도 원 숨김
     });
 
     map.current.addControl(geolocateControl.current);
