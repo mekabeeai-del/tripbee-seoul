@@ -24,13 +24,13 @@ export default function BeatyBubble({
   const [isClosing, setIsClosing] = useState(false);
   const autoHideTimerRef = useRef<number | null>(null);
 
-  // message가 바뀔 때마다 기존 타이머 클리어
+  // message 또는 isVisible이 바뀔 때마다 기존 타이머 클리어
   useEffect(() => {
     if (autoHideTimerRef.current) {
       clearTimeout(autoHideTimerRef.current);
       autoHideTimerRef.current = null;
     }
-  }, [message]);
+  }, [message, isVisible]);
 
   // 컴포넌트 언마운트 시 타이머 클리어
   useEffect(() => {
