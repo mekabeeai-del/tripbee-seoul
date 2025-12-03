@@ -3,7 +3,7 @@
  * Docs: https://openweathermap.org/api
  */
 
-const OPENWEATHER_API_KEY = 'f18ff6e06bc5bbf01a424a43f232e30c';
+const OPENWEATHER_API_KEY = import.meta.env.VITE_OPENWEATHER_API_KEY;
 const BASE_URL = 'https://api.openweathermap.org/data/2.5';
 
 export interface CurrentWeather {
