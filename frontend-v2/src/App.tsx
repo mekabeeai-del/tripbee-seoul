@@ -1,5 +1,4 @@
 import { useRef, useState, useEffect } from 'react';
-import mapboxgl from 'mapbox-gl';
 import MapContainer from './components/map/MapContainer';
 import CompassButton from './components/compass/CompassButton';
 import WeatherButton from './components/weather/WeatherButton';

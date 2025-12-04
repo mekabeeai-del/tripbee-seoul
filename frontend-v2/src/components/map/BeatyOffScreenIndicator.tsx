@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import mapboxgl from 'mapbox-gl';
+import type { Map } from 'mapbox-gl';
 import './BeatyOffScreenIndicator.css';
 
 interface OffScreenState {
@@ -10,7 +10,7 @@ interface OffScreenState {
 }
 
 interface BeatyOffScreenIndicatorProps {
-  map: mapboxgl.Map | null;
+  map: Map | null;
   position: { latitude: number; longitude: number } | null;
   onClick?: () => void;
 }
