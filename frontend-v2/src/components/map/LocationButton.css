@@ -15,7 +15,13 @@
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(0, 102, 204, 0.4);
   z-index: 10;
-  transition: all 0.2s ease;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease, background 0.2s ease;
+}
+
+.location-button.hidden {
+  transform: translateX(120%);
+  opacity: 0;
+  pointer-events: none;
 }
 
 .location-button:hover {

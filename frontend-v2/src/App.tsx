@@ -6,6 +6,7 @@ import WeatherDetailPanel from './components/weather/WeatherDetailPanel';
 import LocationButton from './components/map/LocationButton';
 import BeatyMarker from './components/map/BeatyMarker';
 import BeatyOffScreenIndicator from './components/map/BeatyOffScreenIndicator';
+import RadarOverlay from './components/map/RadarOverlay';
 import ChatWindow from './components/chat/ChatWindow';
 import ChatBar from './components/chat/ChatBar';
 import POIButton from './components/poi/POIButton';
@@ -20,6 +21,7 @@ import { useGeoLocation } from './hooks/useGeoLocation';
 import { useAuth } from './hooks/useAuth';
 import { useWeather } from './hooks/useWeather';
 import { useBackNavigation } from './hooks/useBackNavigation';
+import { useDiscoveryMode } from './hooks/useDiscoveryMode';
 import './App.css';
 
 function App() {
@@ -33,7 +35,6 @@ function App() {
   const [isBeatyBubbleVisible, setIsBeatyBubbleVisible] = useState(true);
   const [beatyBubbleMessage, setBeatyBubbleMessage] = useState('멋진 여행 하고 계신가요? 어떤 장소를 원하시나요?');
   const [language, setLanguage] = useState<'ko' | 'en' | 'ja'>('ko');
-  const [isDiscovering, setIsDiscovering] = useState(false);
 
   // 인증 상태
   const { isLoggedIn, currentUser, login, logout } = useAuth();
@@ -49,6 +50,13 @@ function App() {
     setBeatyBubbleMessage(message);
     setIsBeatyBubbleVisible(true);
   };
+
+  // 발견모드
+  const { isDiscovering, toggleDiscovery } = useDiscoveryMode({
+    map,
+    position: gpsPosition,
+    onMessage: showBeatyBubble
+  });
   const [activeFaq, setActiveFaq] = useState<FaqCard | null>(null);
 
   // 앱 초기 로딩
@@ -102,34 +110,6 @@ function App() {
     setIsChatOpen(true);
   };
 
-  // ===== Compass Button Actions =====
-  // 발견모드 토글
-  const handleDiscoveryToggle = () => {
-    if (isDiscovering) {
-      // 발견모드 종료
-      setIsDiscovering(false);
-      showBeatyBubble('발견모드를 종료했어요!');
-    } else {
-      // 발견모드 시작
-      setIsDiscovering(true);
-      showBeatyBubble('상황에 맞는 장소를 찾고 있어요!');
-
-      // 지도 회전 애니메이션
-      if (map.current) {
-        map.current.easeTo({
-          bearing: 360,
-          duration: 1000
-        });
-        setTimeout(() => {
-          map.current?.easeTo({
-            bearing: 0,
-            duration: 0
-          });
-        }, 1000);
-      }
-    }
-  };
-
   // 현재 위치로 이동
   const handleLocationClick = () => {
     if (!map.current) return;
@@ -176,6 +156,9 @@ function App() {
 
   return (
     <div className="app-container">
+      {/* 발견모드 화면 테두리 효과 */}
+      <div className={`discovery-border ${isDiscovering ? 'active' : ''}`} />
+
       {/* Map Container */}
       <MapContainer
         onMapLoad={(loadedMap) => {
@@ -186,49 +169,55 @@ function App() {
       />
 
       {/* User Profile - Top Left */}
-      <UserProfile
-        onClick={() => setIsHomePanelOpen(!isHomePanelOpen)}
-        isHomeActive={isHomePanelOpen || isHomePanelClosing}
-        isLoggedIn={isLoggedIn}
-        userName={currentUser?.name || 'Guest'}
-        userEmail={currentUser?.email}
-        profileImageUrl={currentUser?.profile_image_url}
-      />
+      <div className={`ui-slide ui-slide-left ${isDiscovering ? 'hidden' : ''}`}>
+        <UserProfile
+          onClick={() => setIsHomePanelOpen(!isHomePanelOpen)}
+          isHomeActive={isHomePanelOpen || isHomePanelClosing}
+          isLoggedIn={isLoggedIn}
+          userName={currentUser?.name || 'Guest'}
+          userEmail={currentUser?.email}
+          profileImageUrl={currentUser?.profile_image_url}
+        />
+      </div>
 
       {/* Gyeongbokgung POI Button - Top Right */}
-      <POIButton
-        name="경복궁"
-        imageUrl="https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=300&h=200&fit=crop"
-        lat={37.5788}
-        lng={126.9770}
-        isPaused={isPOIDetailOpen}
-        onClick={() => {
-          setIsPOIDetailOpen(true);
-        }}
-      />
+      <div className={`ui-slide ui-slide-right ${isDiscovering ? 'hidden' : ''}`}>
+        <POIButton
+          name="경복궁"
+          imageUrl="https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=300&h=200&fit=crop"
+          lat={37.5788}
+          lng={126.9770}
+          isPaused={isPOIDetailOpen}
+          onClick={() => {
+            setIsPOIDetailOpen(true);
+          }}
+        />
+      </div>
 
       {/* Weather Button - Bottom Left */}
       <WeatherButton
         temperature={currentWeather?.temp}
         weatherMain={currentWeather?.weather[0]?.main}
         isLoading={isWeatherLoading}
+        isHidden={isDiscovering}
         onClick={() => setIsWeatherDetailOpen(true)}
       />
 
       {/* Compass Button - Bottom Center (Highlighted) */}
       <CompassButton
         isDiscovering={isDiscovering}
-        onToggle={handleDiscoveryToggle}
+        onToggle={toggleDiscovery}
         color={isPOIDetailOpen ? 'green' : 'blue'}
       />
 
       {/* Current Location Button - Bottom Right */}
-      <LocationButton onClick={handleLocationClick} />
+      <LocationButton onClick={handleLocationClick} isHidden={isDiscovering} />
 
-      {/* 비티 마커 (지도 위) */}
+      {/* 비티 마커 (지도 위) + 발견모드 레이더 */}
       <BeatyMarker
         map={map.current}
         position={gpsPosition}
+        isDiscovering={isDiscovering}
       />
 
       {/* 비티 마커 화면 밖 표시 */}
@@ -243,6 +232,7 @@ function App() {
         onSendMessage={handleSendMessage}
         onFocus={handleChatBarFocus}
         isChatOpen={isChatOpen}
+        isHidden={isDiscovering}
       />
 
       {/* Chat Window */}

@@ -100,44 +100,43 @@
 
 /* 발견모드 - Blue -> Green (지도 화면) */
 .compass-button.blue.discovering {
-  animation: discoveringEnter 0.3s ease-out forwards, discoveringSpin 1s linear 0.3s infinite;
+  animation: discoveringEnter 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards, discoveringSpin 1s linear 0.5s infinite;
   background: #00A86B;
   box-shadow: 0 4px 20px rgba(0, 168, 107, 0.6);
 }
 
 .compass-button.blue.discovering::before,
 .compass-button.blue.discovering::after {
-  border: 3px solid #00A86B !important;
-  animation: discoveringRipple 1s ease-out infinite !important;
-}
-
-.compass-button.blue.discovering::after {
-  animation-delay: 0.5s !important;
+  display: none;
 }
 
 /* 발견모드 - Green -> Yellow (POI 상세) */
 .compass-button.green.discovering {
-  animation: discoveringEnter 0.3s ease-out forwards, discoveringSpin 1s linear 0.3s infinite;
+  animation: discoveringEnter 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards, discoveringSpin 1s linear 0.5s infinite;
   background: #FFB300;
   box-shadow: 0 4px 20px rgba(255, 179, 0, 0.6);
 }
 
 .compass-button.green.discovering::before,
 .compass-button.green.discovering::after {
-  border: 3px solid #FFB300 !important;
-  animation: discoveringRipple 1s ease-out infinite !important;
-}
-
-.compass-button.green.discovering::after {
-  animation-delay: 0.5s !important;
+  display: none;
 }
 
 @keyframes discoveringEnter {
   0% {
     transform: scale(1);
   }
-  60% {
+  30% {
+    transform: scale(1.8);
+  }
+  50% {
+    transform: scale(1.35);
+  }
+  70% {
     transform: scale(1.6);
+  }
+  85% {
+    transform: scale(1.45);
   }
   100% {
     transform: scale(1.5);
@@ -157,8 +156,17 @@
   0% {
     transform: scale(1.5);
   }
-  60% {
+  25% {
+    transform: scale(0.75);
+  }
+  45% {
+    transform: scale(1.15);
+  }
+  65% {
     transform: scale(0.9);
+  }
+  85% {
+    transform: scale(1.05);
   }
   100% {
     transform: scale(1);
@@ -167,14 +175,14 @@
 
 /* 종료 애니메이션 - Blue */
 .compass-button.blue.exiting {
-  animation: discoveringExit 0.3s ease-out forwards;
+  animation: discoveringExit 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
   background: #0066CC;
   box-shadow: 0 4px 12px rgba(74, 78, 158, 0.3);
 }
 
 /* 종료 애니메이션 - Green */
 .compass-button.green.exiting {
-  animation: discoveringExit 0.3s ease-out forwards;
+  animation: discoveringExit 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
   background: #00A86B;
   box-shadow: 0 4px 12px rgba(0, 168, 107, 0.3);
 }

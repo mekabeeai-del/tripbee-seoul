@@ -5,10 +5,11 @@ interface WeatherButtonProps {
   temperature?: number;
   weatherMain?: string;  // Clear, Clouds, Rain, Snow, etc.
   isLoading?: boolean;
+  isHidden?: boolean;
   onClick?: () => void;
 }
 
-export default function WeatherButton({ temperature, weatherMain, isLoading, onClick }: WeatherButtonProps) {
+export default function WeatherButton({ temperature, weatherMain, isLoading, isHidden, onClick }: WeatherButtonProps) {
   // 날씨에 따른 아이콘 선택
   const getWeatherIcon = () => {
     if (isLoading) return <WiDaySunny className="weather-icon" />;
@@ -34,7 +35,7 @@ export default function WeatherButton({ temperature, weatherMain, isLoading, onC
   const displayTemp = temperature !== undefined ? Math.round(temperature) : '--';
 
   return (
-    <button className="weather-button" onClick={onClick}>
+    <button className={`weather-button ${isHidden ? 'hidden' : ''}`} onClick={onClick}>
       {getWeatherIcon()}
       <div className="weather-temp">{displayTemp}°</div>
     </button>

@@ -6,9 +6,10 @@ interface ChatBarProps {
   onSendMessage: (message: string) => void;
   onFocus: () => void;
   isChatOpen: boolean;
+  isHidden?: boolean;
 }
 
-export default function ChatBar({ onSendMessage, onFocus, isChatOpen }: ChatBarProps) {
+export default function ChatBar({ onSendMessage, onFocus, isChatOpen, isHidden }: ChatBarProps) {
   const [message, setMessage] = useState('');
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -36,7 +37,7 @@ export default function ChatBar({ onSendMessage, onFocus, isChatOpen }: ChatBarP
 
   return (
     <div
-      className={`chat-bar ${isChatOpen ? 'active' : ''}`}
+      className={`chat-bar ${isChatOpen ? 'active' : ''} ${isHidden ? 'hidden' : ''}`}
       onClick={onFocus}
     >
       {!message && !isFocused && !isChatOpen && (

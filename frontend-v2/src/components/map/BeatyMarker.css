@@ -44,3 +44,23 @@
     opacity: 0;
   }
 }
+
+/* ===== 발견모드 레이더 ===== */
+.beaty-marker.discovering {
+  width: 60px;
+  height: 60px;
+}
+
+.beaty-marker.discovering .beaty-marker-ripple {
+  display: none;
+}
+
+.beaty-marker.discovering .beaty-marker-image {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 50px;
+  height: 50px;
+  z-index: 10;
+}

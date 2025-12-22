@@ -150,3 +150,61 @@
     transform: translate(-50%, -50%);
   }
 }
+
+/* 발견모드 UI 슬라이드 애니메이션 */
+.ui-slide {
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
+}
+
+.ui-slide.ui-slide-left.hidden {
+  transform: translateX(-120%);
+  opacity: 0;
+}
+
+.ui-slide.ui-slide-right.hidden {
+  transform: translateX(120%);
+  opacity: 0;
+}
+
+.ui-slide.ui-slide-down.hidden {
+  transform: translateY(120%);
+  opacity: 0;
+}
+
+.ui-slide.ui-slide-up.hidden {
+  transform: translateY(-120%);
+  opacity: 0;
+}
+
+/* 발견모드 화면 테두리 효과 */
+.discovery-border {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 200;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.discovery-border.active {
+  opacity: 1;
+  animation: discoveryBorderPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes discoveryBorderPulse {
+  0%, 100% {
+    box-shadow:
+      inset 0 0 15px rgba(0, 168, 107, 0.3),
+      inset 0 0 30px rgba(0, 168, 107, 0.2),
+      inset 0 0 50px rgba(0, 168, 107, 0.1);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 20px rgba(0, 168, 107, 0.5),
+      inset 0 0 40px rgba(0, 168, 107, 0.3),
+      inset 0 0 60px rgba(0, 168, 107, 0.2);
+  }
+}
