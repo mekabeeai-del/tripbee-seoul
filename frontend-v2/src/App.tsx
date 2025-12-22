@@ -33,6 +33,7 @@ function App() {
   const [isBeatyBubbleVisible, setIsBeatyBubbleVisible] = useState(true);
   const [beatyBubbleMessage, setBeatyBubbleMessage] = useState('멋진 여행 하고 계신가요? 어떤 장소를 원하시나요?');
   const [language, setLanguage] = useState<'ko' | 'en' | 'ja'>('ko');
+  const [isDiscovering, setIsDiscovering] = useState(false);
 
   // 인증 상태
   const { isLoggedIn, currentUser, login, logout } = useAuth();
@@ -102,61 +103,30 @@ function App() {
   };
 
   // ===== Compass Button Actions =====
-  // 지도 화면: 랜덤 POI 추천
-  const handleCompassInMap = () => {
-    // 지도 빙글 회전 애니메이션
-    if (map.current) {
-      map.current.easeTo({
-        bearing: 360,
-        duration: 1000
-      });
-      // 회전 후 원래대로
-      setTimeout(() => {
-        map.current?.easeTo({
-          bearing: 0,
-          duration: 0
-        });
-      }, 1000);
-    }
-
-    // 비티 버블로 랜덤 추천
-    showBeatyBubble('빙글빙글~ 근처에 숨은 맛집을 찾았어요! 한번 가보실래요?');
-  };
-
-  // POI 상세 화면: 길찾기
-  const handleCompassInPOIDetail = () => {
-    // TODO: 길찾기 API 연동
-    console.log('길찾기 기능 호출');
-  };
-
-  // 채팅 화면: 미래 확장
-  const handleCompassInChat = () => {
-    // TODO: 채팅 관련 컴퍼스 액션
-  };
-
-  // 날씨 화면: 미래 확장
-  const handleCompassInWeather = () => {
-    // TODO: 날씨 관련 컴퍼스 액션
-  };
-
-  // 홈 화면: 미래 확장
-  const handleCompassInHome = () => {
-    // TODO: 홈 관련 컴퍼스 액션
-  };
-
-  // 중앙 컴퍼스 핸들러 - 상황별 분기
-  const handleCompassClick = () => {
-    if (isPOIDetailOpen) {
-      handleCompassInPOIDetail();
-    } else if (isChatOpen) {
-      handleCompassInChat();
-    } else if (isWeatherDetailOpen) {
-      handleCompassInWeather();
-    } else if (isHomePanelOpen) {
-      handleCompassInHome();
+  // 발견모드 토글
+  const handleDiscoveryToggle = () => {
+    if (isDiscovering) {
+      // 발견모드 종료
+      setIsDiscovering(false);
+      showBeatyBubble('발견모드를 종료했어요!');
     } else {
-      // 기본: 지도 화면
-      handleCompassInMap();
+      // 발견모드 시작
+      setIsDiscovering(true);
+      showBeatyBubble('상황에 맞는 장소를 찾고 있어요!');
+
+      // 지도 회전 애니메이션
+      if (map.current) {
+        map.current.easeTo({
+          bearing: 360,
+          duration: 1000
+        });
+        setTimeout(() => {
+          map.current?.easeTo({
+            bearing: 0,
+            duration: 0
+          });
+        }, 1000);
+      }
     }
   };
 
@@ -247,7 +217,8 @@ function App() {
 
       {/* Compass Button - Bottom Center (Highlighted) */}
       <CompassButton
-        onClick={handleCompassClick}
+        isDiscovering={isDiscovering}
+        onToggle={handleDiscoveryToggle}
         color={isPOIDetailOpen ? 'green' : 'blue'}
       />
 
