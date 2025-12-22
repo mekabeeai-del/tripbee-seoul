@@ -6,7 +6,6 @@ import WeatherDetailPanel from './components/weather/WeatherDetailPanel';
 import LocationButton from './components/map/LocationButton';
 import BeatyMarker from './components/map/BeatyMarker';
 import BeatyOffScreenIndicator from './components/map/BeatyOffScreenIndicator';
-import RadarOverlay from './components/map/RadarOverlay';
 import ChatWindow from './components/chat/ChatWindow';
 import ChatBar from './components/chat/ChatBar';
 import POIButton from './components/poi/POIButton';

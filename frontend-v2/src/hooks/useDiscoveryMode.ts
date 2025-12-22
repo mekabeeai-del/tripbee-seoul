@@ -1,5 +1,4 @@
 import { useState, useCallback } from 'react';
-import mapboxgl from 'mapbox-gl';
 
 interface UseDiscoveryModeProps {
   map: React.MutableRefObject<mapboxgl.Map | null>;
