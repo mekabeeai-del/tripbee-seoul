@@ -64,6 +64,7 @@ async def root():
         "endpoints": {
             "recommend": "POST /api/recommend - 감정 기반 POI 추천",
             "google_search": "POST /api/google/search - Google Places 검색",
+            "google_place": "GET /api/google/place/{place_id} - Google Place ID로 상세정보 조회",
             "random": "GET /api/random - 무작위 POI 추천",
             "landmark": "POST /api/landmark - 필수 명소 제공",
             "kto_list": "GET /api/kto/list - KTO POI 메타데이터 목록",
@@ -122,6 +123,46 @@ async def google_search(request: GoogleRequest):
     try:
         result = await google_service.search(request)
         return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/google/place/{place_id}")
+async def google_place_detail(place_id: str, language: str = "ko"):
+    """
+    Google Place ID로 장소 상세정보 조회
+
+    Path Parameters:
+        place_id: Google Place ID (예: ChIJ...)
+
+    Query Parameters:
+        language: 언어 코드 (ko, en, ja, zh 등) - 기본값 "ko"
+
+    Response:
+        {
+            "success": true,
+            "place": {
+                "name": "경복궁",
+                "address": "서울특별시 종로구...",
+                "lat": 37.5796,
+                "lng": 126.9770,
+                "rating": 4.7,
+                "image": "https://...",
+                "photos": ["https://...", ...],
+                "reviews": [...]
+            }
+        }
+    """
+    try:
+        place = await google_service.get_place_by_id(place_id, language)
+        if not place:
+            raise HTTPException(status_code=404, detail=f"Place not found: {place_id}")
+        return {
+            "success": True,
+            "place": place
+        }
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

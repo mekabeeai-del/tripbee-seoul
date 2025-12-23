@@ -234,3 +234,30 @@ select:focus,
       inset 0 0 60px rgba(0, 168, 107, 0.2);
   }
 }
+
+/* 발견 정보 지우기 버튼 - 나침반 위 50px */
+.clear-discovery-btn {
+  position: fixed;
+  bottom: calc(80px + 50px + 50px + 70px); /* 나침반 위 120px */
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 24px;
+  border-radius: 24px;
+  background: rgba(0, 0, 0, 0.5);
+  border: none;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  z-index: 100;
+  backdrop-filter: blur(4px);
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.clear-discovery-btn:hover {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.clear-discovery-btn:active {
+  transform: translateX(-50%) scale(0.95);
+}

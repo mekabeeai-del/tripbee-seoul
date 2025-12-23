@@ -6,6 +6,7 @@ import WeatherDetailPanel from './components/weather/WeatherDetailPanel';
 import LocationButton from './components/map/LocationButton';
 import BeatyMarker from './components/map/BeatyMarker';
 import BeatyOffScreenIndicator from './components/map/BeatyOffScreenIndicator';
+import DiscoveryPOIMarker from './components/map/DiscoveryPOIMarker';
 import ChatWindow from './components/chat/ChatWindow';
 import ChatBar from './components/chat/ChatBar';
 import POIButton from './components/poi/POIButton';
@@ -21,6 +22,7 @@ import { useAuth } from './hooks/useAuth';
 import { useWeather } from './hooks/useWeather';
 import { useBackNavigation } from './hooks/useBackNavigation';
 import { useDiscoveryMode } from './hooks/useDiscoveryMode';
+import type { VisiblePOI } from './hooks/useDiscoveryMode';
 import './App.css';
 
 function App() {
@@ -51,12 +53,15 @@ function App() {
   };
 
   // 발견모드
-  const { isDiscovering, toggleDiscovery } = useDiscoveryMode({
+  const { isDiscovering, toggleDiscovery, visiblePOIs, clearPOIs } = useDiscoveryMode({
     map,
     position: gpsPosition,
+    weather: currentWeather,
     onMessage: showBeatyBubble
   });
   const [activeFaq, setActiveFaq] = useState<FaqCard | null>(null);
+  const [selectedPOI, setSelectedPOI] = useState<VisiblePOI | null>(null);
+  const [clickPosition, setClickPosition] = useState<{ x: number; y: number } | null>(null);
 
   // 앱 초기 로딩
   useEffect(() => {
@@ -212,6 +217,16 @@ function App() {
       {/* Current Location Button - Bottom Right */}
       <LocationButton onClick={handleLocationClick} isHidden={isDiscovering} />
 
+      {/* 마커 제거 버튼 - 발견모드 아닐 때 + 마커 있을 때만 */}
+      {!isDiscovering && visiblePOIs.length > 0 && (
+        <button
+          onClick={clearPOIs}
+          className="clear-discovery-btn"
+        >
+          발견 정보 지우기
+        </button>
+      )}
+
       {/* 비티 마커 (지도 위) + 발견모드 레이더 */}
       <BeatyMarker
         map={map.current}
@@ -224,6 +239,17 @@ function App() {
         map={map.current}
         position={gpsPosition}
         onClick={handleLocationClick}
+      />
+
+      {/* 발견모드 POI 마커 */}
+      <DiscoveryPOIMarker
+        map={map.current}
+        pois={visiblePOIs}
+        onMarkerClick={(poi, pos) => {
+          setSelectedPOI(poi);
+          setClickPosition(pos);
+          setIsPOIDetailOpen(true);
+        }}
       />
 
       {/* Chat Bar */}
@@ -244,9 +270,18 @@ function App() {
       {/* POI Detail Panel */}
       <POIDetailPanel
         isOpen={isPOIDetailOpen}
-        onClose={() => setIsPOIDetailOpen(false)}
-        name="경복궁"
-        imageUrl="https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=800&h=600&fit=crop"
+        onClose={() => {
+          setIsPOIDetailOpen(false);
+          // 애니메이션 완료 후 상태 초기화 (800ms)
+          setTimeout(() => {
+            setSelectedPOI(null);
+            setClickPosition(null);
+          }, 800);
+        }}
+        name={selectedPOI?.name || '장소 정보'}
+        imageUrl={selectedPOI?.image || 'https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=800&h=600&fit=crop'}
+        expandFrom={clickPosition}
+        poi={selectedPOI}
       />
 
       {/* Beaty Bubble */}

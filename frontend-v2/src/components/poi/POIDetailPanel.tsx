@@ -1,26 +1,10 @@
 import { useState, useEffect } from 'react';
-import { MdClose } from 'react-icons/md';
-import {
-  Chart as ChartJS,
-  RadialLinearScale,
-  PointElement,
-  LineElement,
-  Filler,
-  Tooltip,
-  Legend
-} from 'chart.js';
-import { Radar } from 'react-chartjs-2';
+import { MdClose, MdPhone, MdLanguage, MdAccessTime, MdStar, MdLocationOn } from 'react-icons/md';
+import type { VisiblePOI } from '../../hooks/useDiscoveryMode';
 import BeatyBubble from '../beaty/BeatyBubble';
 import './POIDetailPanel.css';
 
-ChartJS.register(
-  RadialLinearScale,
-  PointElement,
-  LineElement,
-  Filler,
-  Tooltip,
-  Legend
-);
+type TabType = 'info' | 'reviews' | 'photos';
 
 interface POIDetailPanelProps {
   isOpen: boolean;
@@ -29,26 +13,37 @@ interface POIDetailPanelProps {
   name: string;
   imageUrl: string;
   description?: string;
+  expandFrom?: { x: number; y: number } | null;
+  poi?: VisiblePOI | null;
 }
 
-export default function POIDetailPanel({ isOpen, onClose, onClosing, name, imageUrl }: POIDetailPanelProps) {
+export default function POIDetailPanel({
+  isOpen,
+  onClose,
+  onClosing,
+  name,
+  imageUrl,
+  expandFrom,
+  poi
+}: POIDetailPanelProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
-  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabType>('info');
 
   // isOpen 변경 감지
   useEffect(() => {
     if (isOpen) {
       setIsVisible(true);
       setIsClosing(false);
+      setActiveTab('info'); // 열릴 때 기본 탭으로
       onClosing?.(false);
     } else if (isVisible) {
-      // 열려있다가 닫히는 경우
       setIsClosing(true);
       onClosing?.(true);
       setTimeout(() => {
         setIsVisible(false);
         setIsClosing(false);
+        setActiveTab('info'); // 완전히 닫힌 후 탭 초기화
         onClosing?.(false);
       }, 800);
     }
@@ -60,64 +55,175 @@ export default function POIDetailPanel({ isOpen, onClose, onClosing, name, image
 
   if (!isVisible) return null;
 
-  // 레이더 차트 데이터 (6각형)
-  const radarData = {
-    labels: ['분위기', '조용함', '풍경', '문화성', '접근성', '특색'],
-    datasets: [
-      {
-        label: name,
-        data: [96, 72, 91, 94, 96, 88],
-        backgroundColor: 'rgba(255, 152, 0, 0.2)',
-        borderColor: '#FF9800',
-        borderWidth: 2,
-        pointBackgroundColor: '#FF9800',
-        pointBorderColor: '#fff',
-        pointHoverBackgroundColor: '#fff',
-        pointHoverBorderColor: '#FF9800'
-      }
-    ]
+  // expandFrom 좌표를 CSS 변수로 설정
+  const overlayStyle = expandFrom ? {
+    '--trigger-x': `${expandFrom.x}px`,
+    '--trigger-y': `${expandFrom.y}px`
+  } as React.CSSProperties : undefined;
+
+  // 편의시설 아이템 렌더링
+  const renderFacilityItem = (label: string, value: boolean | undefined, emoji: string) => {
+    if (value === undefined) return null;
+    return (
+      <div className={`facility-item ${value ? 'available' : 'unavailable'}`}>
+        <span className="facility-emoji">{emoji}</span>
+        <span className="facility-label">{label}</span>
+        <span className="facility-status">{value ? '가능' : '불가'}</span>
+      </div>
+    );
   };
 
-  const radarOptions = {
-    responsive: true,
-    maintainAspectRatio: true,
-    aspectRatio: 1,
-    scales: {
-      r: {
-        beginAtZero: true,
-        max: 100,
-        ticks: {
-          stepSize: 20,
-          display: false,
-          backdropColor: 'transparent'
-        },
-        grid: {
-          color: 'rgba(0, 0, 0, 0.1)'
-        },
-        angleLines: {
-          color: 'rgba(0, 0, 0, 0.1)'
-        },
-        pointLabels: {
-          font: {
-            size: 11,
-            weight: 'bold' as const
-          },
-          color: '#666'
-        }
-      }
-    },
-    plugins: {
-      legend: {
-        display: false
-      },
-      tooltip: {
-        enabled: true
-      }
+  // 탭 콘텐츠 렌더링
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 'info':
+        return (
+          <div className="tab-content tab-info">
+            {/* 비티 한마디 */}
+            {poi?.beaty_comment && (
+              <div className="poi-beaty-comment">
+                <BeatyBubble
+                  variant="panel"
+                  message={poi.beaty_comment}
+                  isVisible={true}
+                />
+              </div>
+            )}
+
+            {/* 대표 이미지 */}
+            <div className="poi-main-image">
+              <img src={poi?.image || imageUrl} alt={name} />
+              {poi?.rating && (
+                <div className="poi-rating-badge">
+                  <MdStar /> {poi.rating.toFixed(1)}
+                  {poi.user_rating_count && (
+                    <span className="rating-count">({poi.user_rating_count})</span>
+                  )}
+                </div>
+              )}
+              {poi?.open_now !== undefined && (
+                <div className={`poi-open-badge ${poi.open_now ? 'open' : 'closed'}`}>
+                  {poi.open_now ? '영업 중' : '영업 종료'}
+                </div>
+              )}
+            </div>
+
+            {/* 기본 정보 */}
+            <div className="info-section">
+              {poi?.address && (
+                <div className="info-row">
+                  <MdLocationOn className="info-icon" />
+                  <span>{poi.address}</span>
+                </div>
+              )}
+              {poi?.phone_number && (
+                <div className="info-row clickable" onClick={() => window.open(`tel:${poi.phone_number}`)}>
+                  <MdPhone className="info-icon" />
+                  <span>{poi.phone_number}</span>
+                </div>
+              )}
+              {poi?.website && (
+                <div className="info-row clickable" onClick={() => window.open(poi.website, '_blank')}>
+                  <MdLanguage className="info-icon" />
+                  <span>웹사이트 방문</span>
+                </div>
+              )}
+            </div>
+
+            {/* 영업시간 */}
+            {poi?.opening_hours && poi.opening_hours.length > 0 && (
+              <div className="hours-section">
+                <h4><MdAccessTime /> 영업시간</h4>
+                <div className="hours-list">
+                  {poi.opening_hours.map((hour, idx) => (
+                    <div key={idx} className="hour-item">{hour}</div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 설명 */}
+            {poi?.editorial_summary && (
+              <div className="summary-section">
+                <p>{poi.editorial_summary}</p>
+              </div>
+            )}
+
+            {/* 편의시설 (기본정보에 포함) */}
+            <div className="facilities-section">
+              <h4>🏷️ 편의시설</h4>
+              <div className="facilities-grid">
+                {renderFacilityItem('주차', poi?.parking_available, '🅿️')}
+                {renderFacilityItem('아이 동반', poi?.good_for_children, '👶')}
+                {renderFacilityItem('휠체어 접근', poi?.wheelchair_accessible, '♿')}
+                {renderFacilityItem('채식 메뉴', poi?.vegetarian_food, '🥗')}
+                {renderFacilityItem('포장', poi?.takeout, '🥡')}
+                {renderFacilityItem('배달', poi?.delivery, '🛵')}
+                {renderFacilityItem('반려견 동반', poi?.allows_dogs, '🐕')}
+                {renderFacilityItem('예약', poi?.reservable, '📅')}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'reviews':
+        return (
+          <div className="tab-content tab-reviews">
+            {poi?.reviews && poi.reviews.length > 0 ? (
+              <div className="reviews-list">
+                {poi.reviews.map((review, idx) => (
+                  <div key={idx} className="review-item">
+                    <div className="review-header">
+                      {review.author_photo && (
+                        <img src={review.author_photo} alt={review.author_name} className="review-avatar" />
+                      )}
+                      <div className="review-author">
+                        <span className="author-name">{review.author_name}</span>
+                        <span className="review-time">{review.time}</span>
+                      </div>
+                      {review.rating && (
+                        <div className="review-rating">
+                          <MdStar /> {review.rating}
+                        </div>
+                      )}
+                    </div>
+                    <p className="review-text">{review.text}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="no-data">리뷰가 없습니다</div>
+            )}
+          </div>
+        );
+
+      case 'photos':
+        return (
+          <div className="tab-content tab-photos">
+            {poi?.photos && poi.photos.length > 0 ? (
+              <div className="photos-grid">
+                {poi.photos.map((photo, idx) => (
+                  <div key={idx} className="photo-item">
+                    <img src={photo} alt={`${name} ${idx + 1}`} />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="no-data">사진이 없습니다</div>
+            )}
+          </div>
+        );
+
+      default:
+        return null;
     }
   };
 
   return (
-    <div className={`poi-detail-overlay ${isClosing ? 'closing' : ''}`}>
+    <div
+      className={`poi-detail-overlay ${isClosing ? 'closing' : ''}`}
+      style={overlayStyle}
+    >
       {/* 배경 */}
       <div className="poi-detail-background" onClick={handleClose} />
 
@@ -131,95 +237,31 @@ export default function POIDetailPanel({ isOpen, onClose, onClosing, name, image
           </button>
         </div>
 
-        {/* 스크롤 가능한 콘텐츠 */}
-        <div className="poi-detail-content">
-          {/* 비티 말풍선 */}
-          <BeatyBubble
-            variant="panel"
-            message="비 내리는 경복궁은 유난히 고즈넉합니다. 분위기 끝내주는 산책 어떠신가요?"
-            isVisible={isVisible}
-          />
-
-          {/* 상단 섹션: 이미지 + 파라미터 */}
-          <div className="poi-stats-section">
-            {/* 왼쪽: 대표 이미지 */}
-            <div className="poi-portrait">
-              <img src={imageUrl} alt={name} />
-            </div>
-
-            {/* 오른쪽: 차트만 */}
-            <div className="poi-parameters">
-              {/* 6각형 차트 */}
-              <div className="poi-radar-chart">
-                <Radar data={radarData} options={radarOptions} />
-              </div>
-            </div>
-          </div>
-
-          {/* 추천 이유 섹션 */}
-          <div className="poi-reasons-section">
-            <h3>추천 이유</h3>
-            <div className="reason-item">
-              <span className="reason-label">분위기 96</span>
-              <p>전통 한옥의 고즈넉한 분위기가 일품입니다</p>
-            </div>
-            <div className="reason-item">
-              <span className="reason-label">조용함 72</span>
-              <p>관광객이 많지만 넓은 공간으로 여유로운 관람이 가능합니다</p>
-            </div>
-            <div className="reason-item">
-              <span className="reason-label">풍경 91</span>
-              <p>사계절 아름다운 전통 건축물과 자연의 조화</p>
-            </div>
-            <div className="reason-item">
-              <span className="reason-label">문화성 94</span>
-              <p>조선시대 왕궁의 역사와 문화를 체험할 수 있습니다</p>
-            </div>
-            <div className="reason-item">
-              <span className="reason-label">접근성 96</span>
-              <p>지하철역에서 도보 5분, 대중교통 이용이 편리합니다</p>
-            </div>
-            <div className="reason-item">
-              <span className="reason-label">특색 88</span>
-              <p>야간 특별 관람 등 다양한 프로그램이 운영됩니다</p>
-            </div>
-          </div>
-
-        </div>
-
-        {/* Footer - 상세정보 토글 버튼 (고정) */}
-        <div className="poi-detail-footer">
+        {/* 탭 헤더 */}
+        <div className="poi-tabs">
           <button
-            className="poi-detail-toggle-btn"
-            onClick={() => setIsDetailOpen(!isDetailOpen)}
+            className={`poi-tab ${activeTab === 'info' ? 'active' : ''}`}
+            onClick={() => setActiveTab('info')}
           >
-            상세정보 보기 <span>{isDetailOpen ? '▼' : '▲'}</span>
+            기본정보
+          </button>
+          <button
+            className={`poi-tab ${activeTab === 'reviews' ? 'active' : ''}`}
+            onClick={() => setActiveTab('reviews')}
+          >
+            리뷰 {poi?.reviews?.length ? `(${poi.reviews.length})` : ''}
+          </button>
+          <button
+            className={`poi-tab ${activeTab === 'photos' ? 'active' : ''}`}
+            onClick={() => setActiveTab('photos')}
+          >
+            사진 {poi?.photos?.length ? `(${poi.photos.length})` : ''}
           </button>
         </div>
 
-        {/* 상세정보 패널 (아래에서 위로) */}
-        <div className={`poi-detail-drawer ${isDetailOpen ? 'open' : ''}`}>
-          {/* Drawer 콘텐츠 */}
-          <div className="poi-detail-drawer-content">
-            <h3>상세 정보</h3>
-            <div className="detail-section">
-              <p><strong>주소:</strong> 서울특별시 종로구 사직로 161</p>
-              <p><strong>운영시간:</strong> 09:00 - 18:00</p>
-              <p><strong>입장료:</strong> 성인 3,000원</p>
-              <p><strong>주차:</strong> 가능 (유료)</p>
-            </div>
-
-            {/* 이미지 갤러리 */}
-            <div className="detail-gallery">
-              <h4>추가 이미지</h4>
-              <div className="gallery-grid">
-                <img src={imageUrl} alt="gallery1" />
-                <img src={imageUrl} alt="gallery2" />
-                <img src={imageUrl} alt="gallery3" />
-                <img src={imageUrl} alt="gallery4" />
-              </div>
-            </div>
-          </div>
+        {/* 탭 콘텐츠 */}
+        <div className="poi-detail-content">
+          {renderTabContent()}
         </div>
       </div>
     </div>

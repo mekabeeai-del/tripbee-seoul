@@ -82,6 +82,12 @@ class PlaceInfo(BaseModel):
     # 메뉴 (Google Places menu 정보가 있다면)
     menu_url: Optional[str] = None
 
+    # 영업시간 상세 (요일별)
+    opening_hours: Optional[List[str]] = None
+
+    # 비티 한마디 (리뷰 기반 AI 요약)
+    beaty_comment: Optional[str] = None
+
 
 # =====================================================================================
 # GOOGLE SERVICE
@@ -93,6 +99,98 @@ class GoogleService:
     def __init__(self):
         self.google_api_key = CONFIG["google_api_key"]
         self.google_places_url = "https://places.googleapis.com/v1/places:searchText"
+        self.openai_api_key = CONFIG.get("openai_api_key")
+
+    def _get_time_context(self) -> tuple[str, str]:
+        """현재 시간대와 계절 정보 반환"""
+        from datetime import datetime
+        now = datetime.now()
+        hour = now.hour
+        month = now.month
+
+        # 시간대 판단
+        if 6 <= hour < 11:
+            time_period = "아침"
+        elif 11 <= hour < 14:
+            time_period = "점심시간"
+        elif 14 <= hour < 17:
+            time_period = "오후"
+        elif 17 <= hour < 21:
+            time_period = "저녁시간"
+        else:
+            time_period = "밤"
+
+        # 계절 판단
+        if month in [12, 1, 2]:
+            season = "겨울"
+            weather_context = "추운 날씨"
+        elif month in [3, 4, 5]:
+            season = "봄"
+            weather_context = "따스한 봄날"
+        elif month in [6, 7, 8]:
+            season = "여름"
+            weather_context = "더운 날씨"
+        else:
+            season = "가을"
+            weather_context = "선선한 가을"
+
+        return time_period, weather_context
+
+    async def _generate_beaty_comment(self, place_name: str, reviews: List[Dict], rating: Optional[float]) -> Optional[str]:
+        """리뷰 기반으로 비티 한마디 생성 (OpenAI)"""
+        if not self.openai_api_key or not reviews:
+            return None
+
+        try:
+            # 리뷰 텍스트 합치기
+            review_texts = [r.get("text", "") for r in reviews if r.get("text")]
+            if not review_texts:
+                return None
+
+            combined_reviews = "\n".join(review_texts[:5])  # 최대 5개 리뷰
+
+            # 현재 시간/날씨 컨텍스트
+            time_period, weather_context = self._get_time_context()
+
+            prompt = f"""당신은 서울을 방문한 외국인 여행자에게 한국의 맛과 멋을 소개하는 가이드 캐릭터 '비티'입니다.
+
+장소명: {place_name}
+평점: {rating or '정보없음'}
+현재 시간대: {time_period}
+현재 날씨/계절: {weather_context}
+리뷰들:
+{combined_reviews}
+
+위 리뷰들을 참고해서 이 장소를 발견한 이유와 함께 2줄 이내로 소개해주세요.
+- "~요" 체로 친근하게 (예: "좋아요", "추천해요", "있어요")
+- 이모지 1-2개 사용
+- 현재 시간대/날씨에 맞는 추천 이유를 자연스럽게 포함 (예: "추운 겨울엔 따뜻한 국물이 최고예요!", "점심시간에 딱 맞는 든든한 한끼예요!")
+- 외국인 여행자가 궁금해할 포인트 위주로 (맛, 분위기, 특별한 경험)"""
+
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    "https://api.openai.com/v1/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {self.openai_api_key}",
+                        "Content-Type": "application/json"
+                    },
+                    json={
+                        "model": "gpt-4o-mini",
+                        "messages": [{"role": "user", "content": prompt}],
+                        "max_tokens": 150,
+                        "temperature": 0.7
+                    },
+                    timeout=10.0
+                )
+                response.raise_for_status()
+                data = response.json()
+                comment = data["choices"][0]["message"]["content"].strip()
+                print(f"[BEATY] 한마디 생성: {comment}")
+                return comment
+
+        except Exception as e:
+            print(f"[BEATY] 한마디 생성 실패: {e}")
+            return None
 
     def _get_db_connection(self):
         """데이터베이스 연결"""
@@ -520,6 +618,210 @@ class GoogleService:
             raise Exception(f"Google Places API error: {str(e)}")
         except Exception as e:
             print(f"[GOOGLE] 오류: {e}")
+            import traceback
+            traceback.print_exc()
+            raise
+
+    async def get_place_by_id(self, place_id: str, language: str = "ko") -> Optional[PlaceInfo]:
+        """
+        Google Place ID로 장소 상세정보 조회
+
+        Args:
+            place_id: Google Place ID (예: ChIJ...)
+            language: 언어 코드 (ko, en, ja, zh 등)
+
+        Returns:
+            PlaceInfo 또는 None
+        """
+        try:
+            print(f"[GOOGLE] Place ID 조회: {place_id} (언어: {language})")
+
+            # Google Places API (New) - Get Place Details
+            url = f"https://places.googleapis.com/v1/places/{place_id}"
+
+            headers = {
+                "Content-Type": "application/json",
+                "X-Goog-Api-Key": self.google_api_key,
+                "X-Goog-FieldMask": ",".join([
+                    "displayName",
+                    "formattedAddress",
+                    "location",
+                    "types",
+                    "id",
+                    "rating",
+                    "userRatingCount",
+                    "priceLevel",
+                    "currentOpeningHours",
+                    "regularOpeningHours",
+                    "nationalPhoneNumber",
+                    "websiteUri",
+                    "parkingOptions",
+                    "goodForChildren",
+                    "accessibilityOptions",
+                    "servesVegetarianFood",
+                    "takeout",
+                    "delivery",
+                    "allowsDogs",
+                    "reservable",
+                    "editorialSummary",
+                    "photos",
+                    "reviews"
+                ])
+            }
+
+            params = {"languageCode": language}
+
+            async with httpx.AsyncClient() as client:
+                response = await client.get(
+                    url,
+                    headers=headers,
+                    params=params,
+                    timeout=10.0
+                )
+                response.raise_for_status()
+                place = response.json()
+
+            # 파싱
+            display_name = place.get("displayName", {})
+            name = display_name.get("text", "")
+
+            address = place.get("formattedAddress", "")
+
+            location = place.get("location", {})
+            lat = location.get("latitude")
+            lng = location.get("longitude")
+
+            if not lat or not lng:
+                print(f"[GOOGLE] 좌표 없음: {place_id}")
+                return None
+
+            types = place.get("types", [])
+            category = types[0] if types else None
+            place_type = types[0] if types else None
+
+            google_id = place.get("id", "")
+
+            # editorialSummary
+            editorial_summary = place.get("editorialSummary", {})
+            emotion_origin = editorial_summary.get("text") if editorial_summary else None
+
+            # 추가 정보
+            rating = place.get("rating")
+            user_rating_count = place.get("userRatingCount")
+            price_level = place.get("priceLevel")
+
+            opening_hours = place.get("currentOpeningHours", {})
+            open_now = opening_hours.get("openNow")
+
+            # 영업시간 상세 (요일별)
+            regular_hours = place.get("regularOpeningHours", {})
+            weekday_descriptions = regular_hours.get("weekdayDescriptions", [])
+            print(f"[GOOGLE] 영업시간: {weekday_descriptions}")
+
+            phone_number = place.get("nationalPhoneNumber")
+            website = place.get("websiteUri")
+
+            # 편의시설
+            parking_opts = place.get("parkingOptions", {})
+            parking_available = any([
+                parking_opts.get("freeParkingLot"),
+                parking_opts.get("paidParkingLot"),
+                parking_opts.get("freeStreetParking"),
+                parking_opts.get("paidStreetParking"),
+                parking_opts.get("freeGarageParking"),
+                parking_opts.get("paidGarageParking")
+            ]) if parking_opts else None
+
+            good_for_children = place.get("goodForChildren")
+
+            accessibility = place.get("accessibilityOptions", {})
+            wheelchair_accessible = any([
+                accessibility.get("wheelchairAccessibleParking"),
+                accessibility.get("wheelchairAccessibleEntrance"),
+                accessibility.get("wheelchairAccessibleRestroom"),
+                accessibility.get("wheelchairAccessibleSeating")
+            ]) if accessibility else None
+
+            vegetarian_food = place.get("servesVegetarianFood")
+            takeout = place.get("takeout")
+            delivery = place.get("delivery")
+            allows_dogs = place.get("allowsDogs")
+            reservable = place.get("reservable")
+
+            # Photos
+            photos_data = place.get("photos", [])
+            image_url = None
+            photo_urls = []
+
+            if photos_data and len(photos_data) > 0:
+                photo = photos_data[0]
+                photo_name = photo.get("name")
+                if photo_name:
+                    image_url = f"https://places.googleapis.com/v1/{photo_name}/media?key={self.google_api_key}&maxHeightPx=400&maxWidthPx=400"
+
+                for photo in photos_data:
+                    photo_name = photo.get("name")
+                    if photo_name:
+                        photo_url = f"https://places.googleapis.com/v1/{photo_name}/media?key={self.google_api_key}&maxHeightPx=400&maxWidthPx=400"
+                        photo_urls.append(photo_url)
+
+            # Reviews
+            reviews_data = place.get("reviews", [])
+            reviews = []
+            for review in reviews_data[:5]:
+                author = review.get("authorAttribution", {})
+                reviews.append({
+                    "author_name": author.get("displayName", "익명"),
+                    "author_photo": author.get("photoUri"),
+                    "rating": review.get("rating"),
+                    "text": review.get("text", {}).get("text", ""),
+                    "time": review.get("relativePublishTimeDescription", ""),
+                    "language": review.get("originalText", {}).get("languageCode", "")
+                })
+
+            # 비티 한마디 생성 (리뷰 기반)
+            beaty_comment = await self._generate_beaty_comment(name, reviews, rating)
+
+            place_info = PlaceInfo(
+                name=name,
+                address=address,
+                lat=lat,
+                lng=lng,
+                category=category,
+                place_type=place_type,
+                place_id=google_id,
+                rating=rating,
+                user_rating_count=user_rating_count,
+                price_level=price_level,
+                open_now=open_now,
+                phone_number=phone_number,
+                website=website,
+                parking_available=parking_available,
+                good_for_children=good_for_children,
+                wheelchair_accessible=wheelchair_accessible,
+                vegetarian_food=vegetarian_food,
+                takeout=takeout,
+                delivery=delivery,
+                allows_dogs=allows_dogs,
+                reservable=reservable,
+                editorial_summary=emotion_origin,
+                image=image_url,
+                reviews=reviews if reviews else None,
+                photos=photo_urls if photo_urls else None,
+                opening_hours=weekday_descriptions if weekday_descriptions else None,
+                beaty_comment=beaty_comment
+            )
+
+            print(f"[GOOGLE] 조회 완료: {name} (⭐{rating or 'N/A'})")
+            return place_info
+
+        except httpx.HTTPStatusError as e:
+            print(f"[GOOGLE] Place ID 조회 오류: {e}")
+            if e.response.status_code == 404:
+                return None
+            raise Exception(f"Google Places API error: {str(e)}")
+        except Exception as e:
+            print(f"[GOOGLE] Place ID 조회 오류: {e}")
             import traceback
             traceback.print_exc()
             raise
