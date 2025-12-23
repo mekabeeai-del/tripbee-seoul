@@ -752,7 +752,6 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   text-align: center;
   position: relative;
-  font-family: 'MabinogiClassicR', sans-serif;
 }
 
 .login-speech-bubble::after {
@@ -787,7 +786,6 @@
   color: white;
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
   margin: 0 0 30px 0;
-  font-family: 'MabinogiClassicR', sans-serif;
 }
 
 .login-buttons-container {
@@ -812,7 +810,6 @@
   padding: 16px 24px;
   font-size: 16px;
   font-weight: 700;
-  font-family: 'MabinogiClassicR', sans-serif;
   cursor: pointer;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
   transition: all 0.3s ease;
