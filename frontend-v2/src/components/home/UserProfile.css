@@ -16,7 +16,7 @@
 }
 
 .user-profile.home-active {
-  z-index: 1000;
+  z-index: 1200;
 }
 
 .user-profile:hover {

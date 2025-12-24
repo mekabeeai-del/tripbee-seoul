@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { MdClose } from 'react-icons/md';
 import { FaGoogle, FaApple } from 'react-icons/fa';
 import StreamingText from '../common/StreamingText';
+import ExpandableOverlay from '../common/ExpandableOverlay';
 import './HomePanel.css';
 
 interface HomePanelProps {
@@ -15,15 +16,17 @@ interface HomePanelProps {
   onLogout?: () => Promise<void>;
 }
 
+// 홈 패널 확장 시작 위치 (좌측 상단 - 비티 아바타 위치)
+const HOME_EXPAND_FROM = { x: 70, y: 35 };
+
 export default function HomePanel({ isOpen, onClose, onClosing, language = 'ko', onLanguageChange, isLoggedIn = false, onLogin, onLogout }: HomePanelProps) {
-  const [isVisible, setIsVisible] = useState(false);
-  const [isClosing, setIsClosing] = useState(false);
   const [displayedText, setDisplayedText] = useState('');
   const [isExpModalOpen, setIsExpModalOpen] = useState(false);
   const [isLevelModalOpen, setIsLevelModalOpen] = useState(false);
   const [isHoneyModalOpen, setIsHoneyModalOpen] = useState(false);
   const [isLanguageModalOpen, setIsLanguageModalOpen] = useState(false);
   const [showComingSoon, setShowComingSoon] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   // 더미 데이터
   const level = 5;
@@ -37,28 +40,11 @@ export default function HomePanel({ isOpen, onClose, onClosing, language = 'ko',
 
   const fullMessage = '새로운 여행을 할수록\n비티가 함께 성장해요!';
 
-  // isOpen 변경 감지
-  useEffect(() => {
-    if (isOpen) {
-      setIsVisible(true);
-      setIsClosing(false);
-      onClosing?.(false);
-      setDisplayedText(''); // 텍스트 초기화
-    } else if (isVisible) {
-      setIsClosing(true);
-      onClosing?.(true);
-      setTimeout(() => {
-        setIsVisible(false);
-        setIsClosing(false);
-        onClosing?.(false);
-      }, 800);
-    }
-  }, [isOpen, isVisible]);
-
   // 타이핑 효과
   useEffect(() => {
-    if (!isVisible || isClosing) return;
+    if (!isOpen || isAnimating) return;
 
+    setDisplayedText(''); // 텍스트 초기화
     let currentIndex = 0;
     const interval = setInterval(() => {
       if (currentIndex <= fullMessage.length) {
@@ -70,10 +56,12 @@ export default function HomePanel({ isOpen, onClose, onClosing, language = 'ko',
     }, 50); // 50ms마다 한 글자씩
 
     return () => clearInterval(interval);
-  }, [isVisible, isClosing]);
+  }, [isOpen, isAnimating]);
 
-  const handleClose = () => {
-    onClose();
+  // 닫힐 때 상태 처리
+  const handleClosing = (closing: boolean) => {
+    setIsAnimating(closing);
+    onClosing?.(closing);
   };
 
   const handleComingSoon = (e: React.MouseEvent) => {
@@ -84,13 +72,17 @@ export default function HomePanel({ isOpen, onClose, onClosing, language = 'ko',
     }, 1500);
   };
 
-  if (!isVisible) return null;
-
   return (
     <>
-      <div className={`home-panel-overlay ${isClosing ? 'closing' : ''}`}>
-        {/* 배경 */}
-        <div className="home-panel-background" onClick={handleClose} />
+      <ExpandableOverlay
+        isOpen={isOpen}
+        onClose={onClose}
+        onClosing={handleClosing}
+        expandFrom={HOME_EXPAND_FROM}
+        className="home-panel-overlay"
+      >
+        {/* 배경 (그라데이션) */}
+        <div className="home-panel-background" />
 
         {/* 패널 */}
         <div className="home-panel">
@@ -103,7 +95,7 @@ export default function HomePanel({ isOpen, onClose, onClosing, language = 'ko',
                   text="트립비에 로그인해주세요!"
                   speed={80}
                   showCursor={false}
-                  enabled={isVisible && !isClosing}
+                  enabled={isOpen && !isAnimating}
                   highlights={[
                     { text: '트립비', color: '#0066CC' }
                   ]}
@@ -263,7 +255,7 @@ export default function HomePanel({ isOpen, onClose, onClosing, language = 'ko',
             </>
           )}
       </div>
-      </div>
+      </ExpandableOverlay>
 
       {/* 경험치 설명 모달 - 홈패널 밖에 배치 */}
       {isExpModalOpen && (

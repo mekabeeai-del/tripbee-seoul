@@ -1,22 +1,4 @@
-@import '../../styles/animations.css';
-
-/* 오버레이 - 원형 확장 애니메이션 */
-.home-panel-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 300;
-  --trigger-x: 70px;
-  --trigger-y: 35px;
-  animation: circleExpand 0.8s cubic-bezier(0.4, 0.0, 0.2, 1);
-  transform-origin: top left;
-}
-
-.home-panel-overlay.closing {
-  animation: circleShrink 0.8s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
-}
+/* HomePanel - ExpandableOverlay 기반 */
 
 /* 배경 - 그라데이션 */
 .home-panel-background {
@@ -26,15 +8,6 @@
   right: 0;
   bottom: 0;
   background: linear-gradient(180deg, #0066CC 0%, #7CB9E8 50%, #B0D4F1 100%);
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
 }
 
 /* 로딩 화면 */

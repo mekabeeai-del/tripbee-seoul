@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { MdClose, MdPhone, MdLanguage, MdAccessTime, MdStar, MdLocationOn } from 'react-icons/md';
 import type { VisiblePOI } from '../../hooks/useDiscoveryMode';
+import ExpandableOverlay from '../common/ExpandableOverlay';
 import BeatyBubble from '../beaty/BeatyBubble';
 import './POIDetailPanel.css';
 
@@ -26,40 +27,7 @@ export default function POIDetailPanel({
   expandFrom,
   poi
 }: POIDetailPanelProps) {
-  const [isVisible, setIsVisible] = useState(false);
-  const [isClosing, setIsClosing] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>('info');
-
-  // isOpen 변경 감지
-  useEffect(() => {
-    if (isOpen) {
-      setIsVisible(true);
-      setIsClosing(false);
-      setActiveTab('info'); // 열릴 때 기본 탭으로
-      onClosing?.(false);
-    } else if (isVisible) {
-      setIsClosing(true);
-      onClosing?.(true);
-      setTimeout(() => {
-        setIsVisible(false);
-        setIsClosing(false);
-        setActiveTab('info'); // 완전히 닫힌 후 탭 초기화
-        onClosing?.(false);
-      }, 800);
-    }
-  }, [isOpen, isVisible]);
-
-  const handleClose = () => {
-    onClose();
-  };
-
-  if (!isVisible) return null;
-
-  // expandFrom 좌표를 CSS 변수로 설정
-  const overlayStyle = expandFrom ? {
-    '--trigger-x': `${expandFrom.x}px`,
-    '--trigger-y': `${expandFrom.y}px`
-  } as React.CSSProperties : undefined;
 
   // 편의시설 아이템 렌더링
   const renderFacilityItem = (label: string, value: boolean | undefined, emoji: string) => {
@@ -219,51 +187,56 @@ export default function POIDetailPanel({
     }
   };
 
+  // 닫힐 때 탭 초기화
+  const handleClosing = (isClosing: boolean) => {
+    onClosing?.(isClosing);
+    if (!isClosing) {
+      setActiveTab('info');
+    }
+  };
+
   return (
-    <div
-      className={`poi-detail-overlay ${isClosing ? 'closing' : ''}`}
-      style={overlayStyle}
+    <ExpandableOverlay
+      isOpen={isOpen}
+      onClose={onClose}
+      onClosing={handleClosing}
+      expandFrom={expandFrom}
+      className="poi-detail-overlay"
     >
-      {/* 배경 */}
-      <div className="poi-detail-background" onClick={handleClose} />
-
-      {/* 패널 */}
-      <div className="poi-detail-panel">
-        {/* 헤더 */}
-        <div className="poi-detail-header">
-          <h2>{name}</h2>
-          <button className="poi-detail-close" onClick={handleClose}>
-            <MdClose size={24} />
-          </button>
-        </div>
-
-        {/* 탭 헤더 */}
-        <div className="poi-tabs">
-          <button
-            className={`poi-tab ${activeTab === 'info' ? 'active' : ''}`}
-            onClick={() => setActiveTab('info')}
-          >
-            기본정보
-          </button>
-          <button
-            className={`poi-tab ${activeTab === 'reviews' ? 'active' : ''}`}
-            onClick={() => setActiveTab('reviews')}
-          >
-            리뷰 {poi?.reviews?.length ? `(${poi.reviews.length})` : ''}
-          </button>
-          <button
-            className={`poi-tab ${activeTab === 'photos' ? 'active' : ''}`}
-            onClick={() => setActiveTab('photos')}
-          >
-            사진 {poi?.photos?.length ? `(${poi.photos.length})` : ''}
-          </button>
-        </div>
-
-        {/* 탭 콘텐츠 */}
-        <div className="poi-detail-content">
-          {renderTabContent()}
-        </div>
+      {/* 헤더 */}
+      <div className="poi-detail-header">
+        <h2>{name}</h2>
+        <button className="poi-detail-close" onClick={onClose}>
+          <MdClose size={24} />
+        </button>
       </div>
-    </div>
+
+      {/* 탭 헤더 */}
+      <div className="poi-tabs">
+        <button
+          className={`poi-tab ${activeTab === 'info' ? 'active' : ''}`}
+          onClick={() => setActiveTab('info')}
+        >
+          기본정보
+        </button>
+        <button
+          className={`poi-tab ${activeTab === 'reviews' ? 'active' : ''}`}
+          onClick={() => setActiveTab('reviews')}
+        >
+          리뷰 {poi?.reviews?.length ? `(${poi.reviews.length})` : ''}
+        </button>
+        <button
+          className={`poi-tab ${activeTab === 'photos' ? 'active' : ''}`}
+          onClick={() => setActiveTab('photos')}
+        >
+          사진 {poi?.photos?.length ? `(${poi.photos.length})` : ''}
+        </button>
+      </div>
+
+      {/* 탭 콘텐츠 */}
+      <div className="poi-detail-content">
+        {renderTabContent()}
+      </div>
+    </ExpandableOverlay>
   );
 }

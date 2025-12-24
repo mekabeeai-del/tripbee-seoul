@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { MdClose } from 'react-icons/md';
 import { WiDaySunny, WiCloudy, WiDaySunnyOvercast, WiRain, WiSnow, WiFog } from 'react-icons/wi';
 import BeatyBubble from '../beaty/BeatyBubble';
+import ExpandableOverlay from '../common/ExpandableOverlay';
 import { getCurrentWeather, getWeatherForecast, getWeatherKorean, getWindDirection, type CurrentWeather, type WeatherForecast } from '../../services/weatherApi';
 import './WeatherDetailPanel.css';
 
@@ -13,18 +14,25 @@ interface WeatherDetailPanelProps {
   longitude?: number;
 }
 
+// 날씨 패널 확장 시작 위치 (좌측 하단 - 날씨 버튼 위치)
+const getWeatherExpandFrom = () => ({
+  x: 44,
+  y: window.innerHeight - 134
+});
+
 export default function WeatherDetailPanel({ isOpen, onClose, onClosing, latitude, longitude }: WeatherDetailPanelProps) {
-  const [isVisible, setIsVisible] = useState(false);
-  const [isClosing, setIsClosing] = useState(false);
   const [currentWeather, setCurrentWeather] = useState<CurrentWeather | null>(null);
   const [forecast, setForecast] = useState<WeatherForecast | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [expandFrom, setExpandFrom] = useState(getWeatherExpandFrom());
 
   // 날씨 데이터 로드
   useEffect(() => {
     if (isOpen) {
       loadWeatherData();
+      // 창 크기에 따라 확장 위치 업데이트
+      setExpandFrom(getWeatherExpandFrom());
     }
   }, [isOpen, latitude, longitude]);
 
@@ -55,30 +63,6 @@ export default function WeatherDetailPanel({ isOpen, onClose, onClosing, latitud
       setIsLoading(false);
     }
   };
-
-  // isOpen 변경 감지
-  useEffect(() => {
-    if (isOpen) {
-      setIsVisible(true);
-      setIsClosing(false);
-      onClosing?.(false);
-    } else if (isVisible) {
-      // 열려있다가 닫히는 경우
-      setIsClosing(true);
-      onClosing?.(true);
-      setTimeout(() => {
-        setIsVisible(false);
-        setIsClosing(false);
-        onClosing?.(false);
-      }, 800);
-    }
-  }, [isOpen, isVisible]);
-
-  const handleClose = () => {
-    onClose();
-  };
-
-  if (!isVisible) return null;
 
   // 날씨 아이콘 렌더링
   const getWeatherIcon = (main: string): React.ReactElement => {
@@ -116,10 +100,13 @@ export default function WeatherDetailPanel({ isOpen, onClose, onClosing, latitud
   }) || [];
 
   return (
-    <div className={`weather-detail-overlay ${isClosing ? 'closing' : ''}`}>
-      {/* 배경 */}
-      <div className="weather-detail-background" onClick={handleClose} />
-
+    <ExpandableOverlay
+      isOpen={isOpen}
+      onClose={onClose}
+      onClosing={onClosing}
+      expandFrom={expandFrom}
+      className="weather-detail-overlay"
+    >
       {/* 패널 */}
       <div className="weather-detail-panel">
         {/* 헤더 */}
@@ -127,7 +114,7 @@ export default function WeatherDetailPanel({ isOpen, onClose, onClosing, latitud
           <div className="weather-detail-location">
             <h2>{currentWeather?.name || '서울'} 날씨</h2>
           </div>
-          <button className="weather-detail-close" onClick={handleClose}>
+          <button className="weather-detail-close" onClick={onClose}>
             <MdClose size={24} />
           </button>
         </div>
@@ -216,6 +203,6 @@ export default function WeatherDetailPanel({ isOpen, onClose, onClosing, latitud
           )}
         </div>
       </div>
-    </div>
+    </ExpandableOverlay>
   );
 }
