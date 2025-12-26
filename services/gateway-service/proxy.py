@@ -73,6 +73,8 @@ async def proxy_request(request: Request, path: str = ""):
             # 요청 헤더 복사 (Host 제외)
             headers = dict(request.headers)
             headers.pop('host', None)
+            # 압축 응답 방지 (인코딩 문제 해결)
+            headers['accept-encoding'] = 'identity'
 
             # 백엔드로 요청 전달
             response = await client.request(
@@ -90,6 +92,13 @@ async def proxy_request(request: Request, path: str = ""):
                 for key, value in response.headers.items()
                 if key.lower() not in excluded_headers
             }
+
+            # CORS 헤더 추가
+            origin = request.headers.get('origin', '*')
+            response_headers['Access-Control-Allow-Origin'] = origin
+            response_headers['Access-Control-Allow-Credentials'] = 'true'
+            response_headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, PATCH, OPTIONS'
+            response_headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With'
 
             return Response(
                 content=response.content,

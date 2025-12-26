@@ -320,9 +320,11 @@ async def health():
 
 if __name__ == "__main__":
     import uvicorn
+    import os
+    port = int(os.getenv("PORT", 8001))
     print("=" * 60)
     print("POI Service 시작")
-    print("Port: 8001")
+    print(f"Port: {port}")
     print("=" * 60)
     print("통합 서비스:")
     print("  - Recommend (감정 기반 POI 추천)")
@@ -331,4 +333,4 @@ if __name__ == "__main__":
     print("  - Landmark (필수 명소)")
     print("  - KTO (KTO POI 메타데이터 & 상세정보)")
     print("=" * 60)
-    uvicorn.run(app, host="0.0.0.0", port=8001)
+    uvicorn.run(app, host="0.0.0.0", port=port)

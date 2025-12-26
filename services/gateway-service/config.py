@@ -40,11 +40,11 @@ SERVICE_URLS = {
         "beatmap": "http://localhost:8200"
     },
     "prod": {
-        "privacy": "https://privacy-service.onrender.com",
-        "beaty": "https://beaty-service.onrender.com",
-        "poi": "https://poi-service.onrender.com",
-        "route": "https://route-service.onrender.com",
-        "beatmap": "https://beatmap-service.onrender.com"
+        "privacy": "https://tripbee-privacy-service.onrender.com",
+        "beaty": "https://tripbee-beaty-service.onrender.com",
+        "poi": "https://tripbee-poi-service.onrender.com",
+        "route": "https://tripbee-route-service.onrender.com",
+        "beatmap": "https://tripbee-beatmap-service.onrender.com"
     }
 }
 
