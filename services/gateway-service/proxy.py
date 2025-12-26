@@ -91,6 +91,13 @@ async def proxy_request(request: Request, path: str = ""):
                 if key.lower() not in excluded_headers
             }
 
+            # CORS 헤더 추가
+            origin = request.headers.get('origin', '*')
+            response_headers['Access-Control-Allow-Origin'] = origin
+            response_headers['Access-Control-Allow-Credentials'] = 'true'
+            response_headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, PATCH, OPTIONS'
+            response_headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With'
+
             return Response(
                 content=response.content,
                 status_code=response.status_code,
