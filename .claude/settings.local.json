@@ -56,7 +56,10 @@
       "Bash(git rm:*)",
       "Bash(git checkout:*)",
       "Bash(git branch:*)",
-      "Bash(git reset:*)"
+      "Bash(git reset:*)",
+      "Bash(find:*)",
+      "Bash(del \"C:\\lyk\\dev\\project\\tripbee-seoul\\frontend-v2\\src\\services\\beatyApi.ts\")",
+      "Bash(xargs git rm --cached)"
     ],
     "deny": [],
     "ask": []

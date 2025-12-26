@@ -1,0 +1,66 @@
+/* 비티 마커 컨테이너 */
+.beaty-marker {
+  position: relative;
+  width: 50px;
+  height: 50px;
+}
+
+/* 파동 효과 */
+.beaty-marker-ripple {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid #FFD700;
+  opacity: 0;
+  animation: ripple 2s ease-out infinite;
+}
+
+/* 비티 이미지 */
+.beaty-marker-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('/img/beaty/beaty_float_marker.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  z-index: 1;
+}
+
+/* 파동 애니메이션 */
+@keyframes ripple {
+  0% {
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2);
+    opacity: 0;
+  }
+}
+
+/* ===== 발견모드 레이더 ===== */
+.beaty-marker.discovering {
+  width: 60px;
+  height: 60px;
+}
+
+.beaty-marker.discovering .beaty-marker-ripple {
+  display: none;
+}
+
+.beaty-marker.discovering .beaty-marker-image {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 50px;
+  height: 50px;
+  z-index: 10;
+}

@@ -25,7 +25,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(180deg, #4A90E2 0%, #7CB9E8 50%, #B0D4F1 100%);
+  background: linear-gradient(180deg, #0066CC 0%, #7CB9E8 50%, #B0D4F1 100%);
 }
 
 @keyframes fadeIn {
@@ -241,16 +241,12 @@
 }
 
 .beaty-character-area {
-  width: 180px;
-  height: 180px;
+  width: 300px;
+  height: 300px;
   margin: 0 auto 20px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  backdrop-filter: blur(10px);
 }
 
 .beaty-placeholder {
@@ -480,7 +476,7 @@
 .view-detail-button {
   width: 100%;
   padding: 12px;
-  background: #4A90E2;
+  background: #0066CC;
   color: white;
   border: none;
   border-radius: 8px;
@@ -707,12 +703,12 @@
 
 .language-option:hover {
   background: #E8F4FD;
-  border-color: #4A90E2;
+  border-color: #0066CC;
 }
 
 .language-option.active {
   background: #E8F4FD;
-  border-color: #4A90E2;
+  border-color: #0066CC;
 }
 
 .language-flag {
@@ -728,7 +724,7 @@
 
 .language-check {
   font-size: 20px;
-  color: #4A90E2;
+  color: #0066CC;
   font-weight: bold;
 }
 

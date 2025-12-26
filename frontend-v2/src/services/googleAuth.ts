@@ -14,7 +14,7 @@ export interface GoogleAuthResponse {
 }
 
 // Google OAuth Client ID
-const GOOGLE_CLIENT_ID = '705475916887-lakb540kvt3u10im58f1a5113kvu29de.apps.googleusercontent.com';
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
 /**
  * Google Identity Services 스크립트 로드
