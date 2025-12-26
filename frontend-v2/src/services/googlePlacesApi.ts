@@ -120,3 +120,65 @@ export async function searchNearbyPlaces(
 export function getPlacePhotoUrl(photoReference: string, maxWidth: number = 400): string {
   return `https://maps.googleapis.com/maps/api/place/photo?maxwidth=${maxWidth}&photo_reference=${photoReference}&key=${GOOGLE_API_KEY}`;
 }
+
+/**
+ * Place Details 응답 인터페이스
+ */
+export interface PlaceDetailsResult {
+  place_id: string;
+  name: string;
+  formatted_address: string;
+  geometry: {
+    location: {
+      lat: number;
+      lng: number;
+    };
+  };
+  rating?: number;
+  user_ratings_total?: number;
+  photos?: {
+    photo_reference: string;
+    width: number;
+    height: number;
+  }[];
+  opening_hours?: {
+    open_now: boolean;
+    weekday_text?: string[];
+  };
+  formatted_phone_number?: string;
+  website?: string;
+  types: string[];
+}
+
+/**
+ * Place Details API로 장소 상세 정보 가져오기
+ */
+export async function getPlaceDetails(placeId: string): Promise<PlaceDetailsResult | null> {
+  try {
+    const fields = 'place_id,name,formatted_address,geometry,rating,user_ratings_total,photos,opening_hours,formatted_phone_number,website,types';
+    const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=${fields}&key=${GOOGLE_API_KEY}&language=ko`;
+
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data.status === 'OK') {
+      return data.result;
+    } else {
+      console.error('Place Details API error:', data.status);
+      return null;
+    }
+  } catch (error) {
+    console.error('Failed to fetch place details:', error);
+    return null;
+  }
+}
+
+/**
+ * 여러 place_id로 상세 정보 병렬 조회
+ */
+export async function getMultiplePlaceDetails(placeIds: string[]): Promise<PlaceDetailsResult[]> {
+  const results = await Promise.all(
+    placeIds.map(id => getPlaceDetails(id))
+  );
+  return results.filter((r): r is PlaceDetailsResult => r !== null);
+}

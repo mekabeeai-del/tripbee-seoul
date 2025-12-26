@@ -17,6 +17,8 @@ import BeatyBubble from './components/beaty/BeatyBubble';
 import FaqCardModal from './components/faq/FaqCardModal';
 import { faqCards } from './data/faqCards';
 import type { FaqCard } from './data/faqCards';
+import { DEMO_CAFE_PLACE_IDS, CAFE_KEYWORDS, CAFE_BEATY_MESSAGES } from './data/demoCafes';
+import { getPlacesByIds } from './services/poiApi';
 import { useGeoLocation } from './hooks/useGeoLocation';
 import { useAuth } from './hooks/useAuth';
 import { useWeather } from './hooks/useWeather';
@@ -62,6 +64,8 @@ function App() {
   const [activeFaq, setActiveFaq] = useState<FaqCard | null>(null);
   const [selectedPOI, setSelectedPOI] = useState<VisiblePOI | null>(null);
   const [clickPosition, setClickPosition] = useState<{ x: number; y: number } | null>(null);
+  const [cafePOIs, setCafePOIs] = useState<VisiblePOI[]>([]);
+  const [isCafeLoading, setIsCafeLoading] = useState(false);
 
   // 앱 초기 로딩
   useEffect(() => {
@@ -93,8 +97,74 @@ function App() {
     return null;
   };
 
+  // 카페 키워드 감지 함수
+  const detectCafeKeyword = (message: string): boolean => {
+    const lowerMessage = message.toLowerCase();
+    return CAFE_KEYWORDS.some(keyword => lowerMessage.includes(keyword.toLowerCase()));
+  };
+
+  // 카페 검색 및 마커 표시
+  const searchCafes = async () => {
+    if (isCafeLoading) return;
+
+    setIsCafeLoading(true);
+    showBeatyBubble(CAFE_BEATY_MESSAGES.searching);
+
+    try {
+      const places = await getPlacesByIds(DEMO_CAFE_PLACE_IDS);
+
+      if (places.length > 0) {
+        const newCafePOIs: VisiblePOI[] = places.map(place => ({
+          id: place.place_id || place.name,
+          name: place.name,
+          description: place.address,
+          emoji: '☕',
+          lat: place.lat,
+          lng: place.lng,
+          image: place.image,
+          rating: place.rating,
+          address: place.address,
+          phone_number: place.phone_number,
+          website: place.website,
+          open_now: place.open_now,
+          opening_hours: place.opening_hours,
+          user_rating_count: place.user_rating_count,
+          photos: place.photos,
+          reviews: place.reviews,
+          beaty_comment: place.beaty_comment || '커피 한 잔의 여유를 즐겨보세요!'
+        }));
+
+        setCafePOIs(newCafePOIs);
+        showBeatyBubble(CAFE_BEATY_MESSAGES.found(newCafePOIs.length));
+
+        // 첫 번째 카페 위치로 지도 이동
+        if (map.current && newCafePOIs.length > 0) {
+          map.current.flyTo({
+            center: [newCafePOIs[0].lng, newCafePOIs[0].lat],
+            zoom: 15,
+            duration: 1500
+          });
+        }
+      } else {
+        showBeatyBubble(CAFE_BEATY_MESSAGES.error);
+      }
+    } catch (error) {
+      console.error('Failed to search cafes:', error);
+      showBeatyBubble(CAFE_BEATY_MESSAGES.error);
+    } finally {
+      setIsCafeLoading(false);
+    }
+  };
+
   const handleSendMessage = (message: string) => {
     console.log('Sending message:', message);
+
+    // 카페 키워드 감지 (우선 처리)
+    if (detectCafeKeyword(message)) {
+      setIsChatOpen(false);
+      searchCafes();
+      return;
+    }
 
     // FAQ 키워드 감지
     const matchedFaq = detectFaqKeyword(message);
@@ -218,9 +288,12 @@ function App() {
       <LocationButton onClick={handleLocationClick} isHidden={isDiscovering} />
 
       {/* 마커 제거 버튼 - 발견모드 아닐 때 + 마커 있을 때만 */}
-      {!isDiscovering && visiblePOIs.length > 0 && (
+      {!isDiscovering && (visiblePOIs.length > 0 || cafePOIs.length > 0) && (
         <button
-          onClick={clearPOIs}
+          onClick={() => {
+            clearPOIs();
+            setCafePOIs([]);
+          }}
           className="clear-discovery-btn"
         >
           발견 정보 지우기
@@ -241,10 +314,10 @@ function App() {
         onClick={handleLocationClick}
       />
 
-      {/* 발견모드 POI 마커 */}
+      {/* 발견모드 POI 마커 + 카페 마커 */}
       <DiscoveryPOIMarker
         map={map.current}
-        pois={visiblePOIs}
+        pois={[...visiblePOIs, ...cafePOIs]}
         onMarkerClick={(poi, pos) => {
           setSelectedPOI(poi);
           setClickPosition(pos);

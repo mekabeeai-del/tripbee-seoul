@@ -1,0 +1,21 @@
+{
+  "name": "TripBee Seoul",
+  "short_name": "TripBee",
+  "description": "AI 비티와 함께하는 서울 여행 가이드",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3B82F6",
+  "icons": [
+    {
+      "src": "/img/beaty/icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/img/beaty/icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
