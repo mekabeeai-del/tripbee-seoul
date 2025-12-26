@@ -17,8 +17,14 @@
   gap: 1px;
   padding: 4px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
   overflow: hidden;
+}
+
+.weather-button.hidden {
+  transform: translateX(-120%);
+  opacity: 0;
+  pointer-events: none;
 }
 
 .weather-button:hover {

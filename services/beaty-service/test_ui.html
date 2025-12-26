@@ -3,20 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Beaty Service - RECOMMEND Pipeline Test</title>
+    <title>Beaty Agent - Debug Console</title>
     <script src='https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js'></script>
     <link href='https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css' rel='stylesheet' />
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             height: 100vh;
             overflow: hidden;
+            background: #0f0f1a;
+            color: #eee;
         }
 
         .container {
@@ -24,249 +22,422 @@
             height: 100vh;
         }
 
-        /* 왼쪽: 검색 영역 */
-        .left-panel {
-            width: 30%;
-            background: #f5f5f5;
-            padding: 20px;
-            overflow-y: auto;
-            border-right: 1px solid #ddd;
-        }
-
-        /* 중간: JSON 결과 영역 */
-        .center-panel {
-            width: 35%;
-            background: #1e1e1e;
-            color: #d4d4d4;
-            padding: 20px;
-            overflow-y: auto;
-            border-right: 1px solid #ddd;
-        }
-
-        /* 오른쪽: 지도 영역 */
-        .right-panel {
-            width: 35%;
-            position: relative;
-        }
-
-        h1 {
-            font-size: 24px;
-            margin-bottom: 20px;
-            color: #333;
-        }
-
-        .input-group {
-            margin-bottom: 15px;
-        }
-
-        .input-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 600;
-            color: #555;
-            font-size: 14px;
-        }
-
-        .input-group input,
-        .input-group textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 14px;
-            font-family: inherit;
-        }
-
-        .input-group textarea {
-            min-height: 80px;
-            resize: vertical;
-        }
-
-        .input-row {
+        /* 좌측: 채팅 패널 */
+        .chat-panel {
+            width: 380px;
             display: flex;
-            gap: 10px;
+            flex-direction: column;
+            background: #1a1a2e;
+            border-right: 1px solid #333;
         }
 
-        .input-row .input-group {
-            flex: 1;
+        .chat-header {
+            padding: 16px 20px;
+            background: #16213e;
+            border-bottom: 1px solid #333;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
-        .btn {
-            width: 100%;
-            padding: 12px;
-            background: #007bff;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 14px;
+        .chat-header h1 {
+            font-size: 1.2rem;
             font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
         }
 
-        .btn:hover {
-            background: #0056b3;
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #27ae60;
+            border-radius: 50%;
         }
 
-        .btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
         }
 
-        .steps-container {
-            margin-top: 30px;
-            display: none; /* 초기에는 숨김 */
+        .message {
+            margin-bottom: 12px;
+            animation: fadeIn 0.3s ease;
         }
 
-        .steps-container.visible {
-            display: block;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .step-card {
-            background: white;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
+        .message-user {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .message-user .bubble {
+            background: #4a69bd;
+            color: white;
+            padding: 10px 14px;
+            border-radius: 16px 16px 4px 16px;
+            max-width: 85%;
+            font-size: 0.95rem;
+        }
+
+        .message-assistant {
+            display: flex;
+            gap: 8px;
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #f6b93b, #e55039);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .message-assistant .bubble {
+            background: #2d3748;
+            padding: 10px 14px;
+            border-radius: 4px 16px 16px 16px;
+            max-width: 85%;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .chat-input {
+            padding: 16px;
+            background: #16213e;
+            border-top: 1px solid #333;
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 8px;
+        }
+
+        .chat-input input {
+            flex: 1;
             padding: 12px 16px;
-            margin-bottom: 10px;
+            border: none;
+            border-radius: 20px;
+            background: #2d3748;
+            color: #eee;
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        .chat-input input:focus {
+            box-shadow: 0 0 0 2px #4a69bd;
+        }
+
+        .chat-input button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 20px;
+            background: #4a69bd;
+            color: white;
+            font-size: 0.95rem;
             cursor: pointer;
             transition: all 0.2s;
         }
 
-        .step-card:hover {
-            border-color: #007bff;
-            box-shadow: 0 2px 8px rgba(0,123,255,0.1);
+        .chat-input button:hover { background: #3c5aa6; }
+        .chat-input button:disabled { background: #555; cursor: not-allowed; }
+
+        /* 중앙: 지도 */
+        .map-panel {
+            flex: 1;
+            position: relative;
         }
 
-        .step-card.active {
-            border-color: #007bff;
-            background: #f0f8ff;
+        #map { width: 100%; height: 100%; }
+
+        .map-overlay {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            background: rgba(26, 26, 46, 0.9);
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            z-index: 10;
+            backdrop-filter: blur(8px);
         }
 
-        .step-card.loading {
-            border-color: #ffc107;
-            background: #fff9e6;
+        .map-overlay .coords {
+            color: #888;
+            font-family: monospace;
         }
 
-        .step-card.success {
-            border-color: #28a745;
-        }
-
-        .step-card.error {
-            border-color: #dc3545;
-            background: #ffe6e6;
-        }
-
-        .step-header {
+        /* 우측: 디버그 패널 */
+        .debug-panel {
+            width: 400px;
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
+            background: #0d0d14;
+            border-left: 1px solid #333;
+        }
+
+        .debug-header {
+            padding: 16px 20px;
+            background: #16213e;
+            border-bottom: 1px solid #333;
+        }
+
+        .debug-header h2 {
+            font-size: 1rem;
+            color: #aaa;
+            font-weight: 500;
+        }
+
+        .debug-tabs {
+            display: flex;
+            border-bottom: 1px solid #333;
+            background: #1a1a2e;
+        }
+
+        .debug-tab {
+            flex: 1;
+            padding: 10px;
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            border-bottom: 2px solid transparent;
+        }
+
+        .debug-tab.active {
+            color: #4a69bd;
+            border-bottom-color: #4a69bd;
+        }
+
+        .debug-tab:hover { color: #eee; }
+
+        .debug-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+        }
+
+        .debug-section { display: none; }
+        .debug-section.active { display: block; }
+
+        /* 도구 카드 */
+        .tool-card {
+            background: #1e1e2e;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            overflow: hidden;
+            border: 1px solid #333;
+        }
+
+        .tool-header {
+            padding: 10px 14px;
+            background: #252538;
+            display: flex;
             align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
         }
 
-        .step-title {
-            font-weight: 600;
-            font-size: 14px;
-            color: #333;
+        .tool-name { color: #f6b93b; font-weight: 500; }
+
+        .tool-status {
+            margin-left: auto;
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 10px;
         }
 
-        .step-status {
-            font-size: 12px;
-            padding: 3px 8px;
+        .tool-status.success { background: #27ae60; }
+        .tool-status.pending { background: #f39c12; }
+        .tool-status.error { background: #e74c3c; }
+
+        .tool-body { padding: 10px 14px; }
+
+        .tool-label {
+            font-size: 0.7rem;
+            color: #666;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .tool-json {
+            background: #0a0a12;
+            padding: 8px;
             border-radius: 4px;
-            background: #e0e0e0;
-            color: #666;
-        }
-
-        .step-status.loading {
-            background: #ffc107;
-            color: white;
-        }
-
-        .step-status.success {
-            background: #28a745;
-            color: white;
-        }
-
-        .step-status.error {
-            background: #dc3545;
-            color: white;
-        }
-
-        #jsonResult {
-            font-family: 'Consolas', 'Monaco', monospace;
-            font-size: 13px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.75rem;
+            overflow-x: auto;
             white-space: pre-wrap;
-            word-wrap: break-word;
-            line-height: 1.6;
+            word-break: break-all;
+            color: #7ec8e3;
+            max-height: 150px;
+            overflow-y: auto;
+            margin-bottom: 8px;
         }
 
-        .json-placeholder {
-            color: #666;
+        /* 데이터 카드 */
+        .data-card {
+            background: #1e1e2e;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 1px solid #333;
+        }
+
+        .data-title {
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .data-count {
+            font-size: 0.75rem;
+            background: #4a69bd;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        .poi-item {
+            background: #252538;
+            padding: 8px 10px;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .poi-item:hover {
+            background: #303050;
+        }
+
+        .poi-item:last-child { margin-bottom: 0; }
+        .poi-name { font-size: 0.9rem; font-weight: 500; margin-bottom: 2px; }
+        .poi-addr { font-size: 0.8rem; color: #888; }
+
+        .raw-json {
+            background: #0a0a12;
+            padding: 12px;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.75rem;
+            white-space: pre-wrap;
+            word-break: break-all;
+            color: #7ec8e3;
+            max-height: calc(100vh - 150px);
+            overflow-y: auto;
+        }
+
+        .empty-state {
             text-align: center;
-            padding: 40px;
-            font-size: 14px;
+            color: #555;
+            padding: 30px;
         }
 
-        #map {
-            width: 100%;
-            height: 100%;
+        .empty-state .icon { font-size: 2rem; margin-bottom: 10px; }
+
+        /* 로딩 */
+        .loading {
+            display: flex;
+            gap: 4px;
+            padding: 10px 14px;
         }
 
-        .loading-spinner {
-            display: inline-block;
-            width: 14px;
-            height: 14px;
-            border: 2px solid #f3f3f3;
-            border-top: 2px solid #007bff;
+        .loading-dot {
+            width: 6px;
+            height: 6px;
+            background: #4a69bd;
             border-radius: 50%;
-            animation: spin 1s linear infinite;
+            animation: bounce 1.4s infinite ease-in-out both;
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .loading-dot:nth-child(1) { animation-delay: -0.32s; }
+        .loading-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
         }
+
+        /* 스크롤바 */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- 왼쪽: 검색 영역 -->
-        <div class="left-panel">
-            <h1>🤖 Beaty Test</h1>
-
-            <div class="input-group">
-                <label>질문</label>
-                <textarea id="queryInput" placeholder="예: 홍대 맛집 추천해줘"></textarea>
+        <!-- 채팅 패널 -->
+        <div class="chat-panel">
+            <div class="chat-header">
+                <div class="status-dot"></div>
+                <h1>🐝 Beaty Agent</h1>
             </div>
-
-            <div class="input-row">
-                <div class="input-group">
-                    <label>위도 (Latitude)</label>
-                    <input type="number" id="userLat" value="37.5665" step="0.0001">
-                </div>
-                <div class="input-group">
-                    <label>경도 (Longitude)</label>
-                    <input type="number" id="userLng" value="126.9780" step="0.0001">
+            <div class="chat-messages" id="chatMessages">
+                <div class="message message-assistant">
+                    <div class="avatar">🐝</div>
+                    <div class="bubble">
+                        안녕! 나는 Beaty야.<br>서울 여행에 대해 물어봐! 🗺️
+                    </div>
                 </div>
             </div>
-
-            <button class="btn" id="runBtn" onclick="runPipeline()">파이프라인 실행</button>
-
-            <div class="steps-container" id="stepsContainer">
-                <!-- Step 카드들이 여기에 동적으로 추가됨 -->
+            <div class="chat-input">
+                <div class="input-wrapper">
+                    <input type="text" id="queryInput" placeholder="메시지 입력..." />
+                    <button id="sendBtn" onclick="sendMessage()">전송</button>
+                </div>
             </div>
         </div>
 
-        <!-- 중간: JSON 결과 -->
-        <div class="center-panel">
-            <div id="jsonResult" class="json-placeholder">
-                파이프라인을 실행하거나 Step 카드를 클릭하면<br>
-                JSON 결과가 여기에 표시됩니다.
-            </div>
-        </div>
-
-        <!-- 오른쪽: 지도 -->
-        <div class="right-panel">
+        <!-- 지도 패널 -->
+        <div class="map-panel">
             <div id="map"></div>
+            <div class="map-overlay">
+                <div>📍 지도 클릭으로 위치 설정</div>
+                <div class="coords" id="coordsDisplay">37.5665, 126.9780</div>
+            </div>
+        </div>
+
+        <!-- 디버그 패널 -->
+        <div class="debug-panel">
+            <div class="debug-header">
+                <h2>🔍 Response Inspector</h2>
+            </div>
+            <div class="debug-tabs">
+                <button class="debug-tab active" onclick="switchTab('tools')">🔧 Tools</button>
+                <button class="debug-tab" onclick="switchTab('data')">📦 Data</button>
+                <button class="debug-tab" onclick="switchTab('raw')">{ } Raw</button>
+            </div>
+            <div class="debug-content">
+                <div class="debug-section active" id="toolsSection">
+                    <div class="empty-state" id="toolsEmpty">
+                        <div class="icon">🔧</div>
+                        <p>도구 호출 정보가 표시됩니다</p>
+                    </div>
+                    <div id="toolsList"></div>
+                </div>
+                <div class="debug-section" id="dataSection">
+                    <div class="empty-state" id="dataEmpty">
+                        <div class="icon">📦</div>
+                        <p>POI, 경로 데이터가 표시됩니다</p>
+                    </div>
+                    <div id="dataList"></div>
+                </div>
+                <div class="debug-section" id="rawSection">
+                    <div class="raw-json" id="rawJson">// 응답 데이터</div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -275,674 +446,336 @@
         mapboxgl.accessToken = 'pk.eyJ1IjoieWVhaGhhIiwiYSI6ImNtZTk4bTY2czBvcjUya29pc2NmdzM2aDQifQ.Nv8VEnrxJ5BDqBDOHH518Q';
         const map = new mapboxgl.Map({
             container: 'map',
-            style: 'mapbox://styles/mapbox/streets-v12',
+            style: 'mapbox://styles/mapbox/dark-v11',
             center: [126.9780, 37.5665],
             zoom: 12
         });
 
-        // 현재 위치 마커
+        // 상태
+        let userLocation = { lat: 37.5665, lng: 126.9780 };
         let userLocationMarker = null;
+        let allEvents = [];
+        let poiMarkers = [];
 
-        // 지도 클릭으로 현재 위치 설정
+        // DOM 요소
+        const chatMessages = document.getElementById('chatMessages');
+        const queryInput = document.getElementById('queryInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const toolsList = document.getElementById('toolsList');
+        const toolsEmpty = document.getElementById('toolsEmpty');
+        const dataList = document.getElementById('dataList');
+        const dataEmpty = document.getElementById('dataEmpty');
+        const rawJson = document.getElementById('rawJson');
+        const coordsDisplay = document.getElementById('coordsDisplay');
+
+        // 지도 클릭 이벤트
         map.on('click', (e) => {
             const { lng, lat } = e.lngLat;
+            userLocation = { lat, lng };
+            coordsDisplay.textContent = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
 
-            // 입력 필드 업데이트
-            document.getElementById('userLat').value = lat.toFixed(4);
-            document.getElementById('userLng').value = lng.toFixed(4);
+            if (userLocationMarker) userLocationMarker.remove();
 
-            // 기존 마커 제거
-            if (userLocationMarker) {
-                userLocationMarker.remove();
-            }
-
-            // 새 마커 생성
             const el = document.createElement('div');
-            el.style.width = '30px';
-            el.style.height = '30px';
-            el.style.backgroundColor = '#007bff';
-            el.style.borderRadius = '50%';
-            el.style.border = '3px solid white';
-            el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
-            el.style.cursor = 'pointer';
+            el.style.cssText = 'width:24px;height:24px;background:#4a69bd;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.4);';
 
             userLocationMarker = new mapboxgl.Marker(el)
                 .setLngLat([lng, lat])
-                .setPopup(
-                    new mapboxgl.Popup({ offset: 25 })
-                    .setHTML(`
-                        <div style="font-size: 13px;">
-                            <strong>현재 위치</strong><br>
-                            위도: ${lat.toFixed(4)}<br>
-                            경도: ${lng.toFixed(4)}
-                        </div>
-                    `)
-                )
                 .addTo(map);
         });
 
-        // 상태 관리
-        const state = {
-            steps: [],
-            currentStepIndex: null,
-            currentIntent: null
-        };
+        // 키보드 이벤트
+        queryInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !sendBtn.disabled) sendMessage();
+        });
 
-        const stepDefinitions = {
-            'RECOMMEND': [
-                { step: 1, name: '의도분류', key: 'classification' },
-                { step: 2, name: '위치 해결', key: 'position' },
-                { step: 3, name: '쿼리 리라이트', key: 'rewrite' },
-                { step: 4, name: '추천검색', key: 'recommend' },
-                { step: 5, name: '최종응답', key: 'final_response' }
-            ],
-            'FIND_PLACE': [
-                { step: 1, name: '의도분류', key: 'classification' },
-                { step: 2, name: '쿼리 리라이트 (FIND_PLACE)', key: 'rewrite' },
-                { step: 3, name: '장소검색 (Google Places)', key: 'search' },
-                { step: 4, name: '최종응답', key: 'final_response' }
-            ],
-            'LANDMARK': [
-                { step: 1, name: '의도분류', key: 'classification' },
-                { step: 2, name: '위치 키워드 추출', key: 'location' },
-                { step: 3, name: '랜드마크 조회', key: 'landmark' },
-                { step: 4, name: '최종응답', key: 'final_response' }
-            ],
-            'ROUTE': [
-                { step: 1, name: '의도분류', key: 'classification' },
-                { step: 2, name: '출발지/도착지 추출', key: 'extract_locations' },
-                { step: 3, name: '좌표변환 (Geocoding)', key: 'geocoding' },
-                { step: 4, name: '경로검색', key: 'route_search' },
-                { step: 5, name: '최종응답', key: 'final_response' }
-            ]
-        };
-
-        // Step 카드 생성 (의도 전환 포함)
-        function createStepCards(intent) {
-            const container = document.getElementById('stepsContainer');
-            container.innerHTML = '';
-            container.classList.add('visible');
-
-            state.currentIntent = intent;
-
-            // 의도 전환이 있는지 확인
-            const intentChangeStep = state.steps.find(s =>
-                s.name && s.name.includes('의도 전환')
-            );
-
-            // Google Places 폴백이 있는지 확인
-            const googleFallbackStep = state.steps.find(s =>
-                s.name && s.name.includes('Google Places 폴백')
-            );
-
-            // 동적 모드: 의도 전환 또는 Google 폴백이 있으면 모든 step을 순차적으로 표시
-            if (intentChangeStep || googleFallbackStep) {
-                // 의도 전환이 있으면 모든 step을 순차적으로 표시
-                state.steps.forEach((step, index) => {
-                    // error step은 제외
-                    if (step.step === 'error') return;
-
-                    const card = document.createElement('div');
-                    card.className = 'step-card';
-                    card.id = `step-card-${index}`;
-
-                    // Step 번호와 이름 표시
-                    const stepLabel = typeof step.step === 'number' ? `Step ${step.step}` : step.step;
-
-                    card.innerHTML = `
-                        <div class="step-header">
-                            <div class="step-title">${stepLabel}: ${step.name}</div>
-                            <div class="step-status" id="step-status-${index}">완료</div>
-                        </div>
-                    `;
-
-                    card.onclick = () => showStepResult(index);
-                    container.appendChild(card);
-                });
-            } else {
-                // 일반적인 경우: stepDefinitions 사용
-                const stepDefs = stepDefinitions[intent] || stepDefinitions['RECOMMEND'];
-
-                stepDefs.forEach((stepDef, defIndex) => {
-                    const card = document.createElement('div');
-                    card.className = 'step-card';
-                    card.id = `step-card-${stepDef.step}`;
-                    card.innerHTML = `
-                        <div class="step-header">
-                            <div class="step-title">Step ${stepDef.step}: ${stepDef.name}</div>
-                            <div class="step-status" id="step-status-${stepDef.step}">대기</div>
-                        </div>
-                    `;
-
-                    card.onclick = () => {
-                        const actualIndex = state.steps.findIndex(s =>
-                            s.step === stepDef.step && s.name === stepDef.name
-                        );
-                        if (actualIndex >= 0) {
-                            showStepResult(actualIndex);
-                        }
-                    };
-
-                    container.appendChild(card);
-                });
-            }
+        // 탭 전환
+        function switchTab(tab) {
+            document.querySelectorAll('.debug-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.debug-section').forEach(s => s.classList.remove('active'));
+            document.querySelector(`.debug-tab[onclick*="${tab}"]`).classList.add('active');
+            document.getElementById(`${tab}Section`).classList.add('active');
         }
 
-        // Step 카드 상태 업데이트
-        function updateStepStatus(stepNum, status) {
-            // 의도 전환이 있으면 index 기반으로 업데이트
-            const intentChangeStep = state.steps.find(s =>
-                s.name && s.name.includes('의도 전환')
-            );
-
-            let card, statusEl;
-
-            if (intentChangeStep) {
-                // 의도 전환 모드: state.steps에서 해당 step 찾기
-                const stepIndex = state.steps.findIndex(s => s.step === stepNum);
-                if (stepIndex >= 0) {
-                    card = document.getElementById(`step-card-${stepIndex}`);
-                    statusEl = document.getElementById(`step-status-${stepIndex}`);
-                }
-            } else {
-                // 일반 모드
-                card = document.getElementById(`step-card-${stepNum}`);
-                statusEl = document.getElementById(`step-status-${stepNum}`);
-            }
-
-            // 카드나 상태 요소가 없으면 무시
-            if (!card || !statusEl) {
-                return;
-            }
-
-            card.className = 'step-card ' + status;
-            statusEl.className = 'step-status ' + status;
-
-            if (status === 'loading') {
-                statusEl.innerHTML = '<span class="loading-spinner"></span>';
-            } else if (status === 'success') {
-                statusEl.textContent = '완료';
-            } else if (status === 'error') {
-                statusEl.textContent = '오류';
-            }
-        }
-
-        // Step 결과 표시
-        function showStepResult(index) {
-            if (!state.steps[index]) {
-                console.warn(`Cannot show step result for index ${index}`);
-                return;
-            }
-
-            // 모든 카드의 active 클래스 제거
-            document.querySelectorAll('.step-card').forEach(card => {
-                card.classList.remove('active');
-            });
-
-            // 선택된 카드에 active 추가
-            const card = document.getElementById(`step-card-${index}`);
-            if (card) {
-                card.classList.add('active');
-            }
-
-            const stepData = state.steps[index];
-
-            // 최종 응답인 경우 특별 포맷팅
-            if (stepData.name === '최종응답' && stepData.result && stepData.result.answer) {
-                showFinalAnswer(stepData.result);
-            } else {
-                // 일반 JSON 결과 표시
-                showJSON(stepData.result);
-            }
-
-            state.currentStepIndex = index;
-        }
-
-        // 최종 응답 표시 (특별 포맷팅)
-        function showFinalAnswer(data) {
-            // 그냥 일반 JSON으로 표시
-            showJSON(data);
-        }
-
-        // JSON 표시
-        function showJSON(data) {
-            const jsonResult = document.getElementById('jsonResult');
-            jsonResult.className = '';
-            jsonResult.textContent = JSON.stringify(data, null, 2);
-        }
-
-        // 파이프라인 실행
-        async function runPipeline() {
-            const query = document.getElementById('queryInput').value.trim();
-            if (!query) {
-                alert('질문을 입력해주세요.');
-                return;
-            }
-
-            const lat = parseFloat(document.getElementById('userLat').value);
-            const lng = parseFloat(document.getElementById('userLng').value);
+        // 메시지 전송
+        async function sendMessage() {
+            const query = queryInput.value.trim();
+            if (!query) return;
 
             // 초기화
-            state.steps = [];
-            state.currentStepIndex = null;
-            document.getElementById('jsonResult').innerHTML = '<div class="json-placeholder">파이프라인 실행 중...</div>';
+            allEvents = [];
+            toolsList.innerHTML = '';
+            dataList.innerHTML = '';
+            toolsEmpty.style.display = 'block';
+            dataEmpty.style.display = 'block';
+            rawJson.textContent = '// 로딩 중...';
+            clearMapMarkers();
 
-            // 버튼 비활성화
-            const btn = document.getElementById('runBtn');
-            btn.disabled = true;
-            btn.textContent = '실행 중...';
+            // 사용자 메시지
+            chatMessages.innerHTML += `
+                <div class="message message-user">
+                    <div class="bubble">${escapeHtml(query)}</div>
+                </div>
+            `;
+
+            // 로딩
+            const loadingId = 'loading-' + Date.now();
+            chatMessages.innerHTML += `
+                <div class="message message-assistant" id="${loadingId}">
+                    <div class="avatar">🐝</div>
+                    <div class="loading">
+                        <div class="loading-dot"></div>
+                        <div class="loading-dot"></div>
+                        <div class="loading-dot"></div>
+                    </div>
+                </div>
+            `;
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            queryInput.value = '';
+            sendBtn.disabled = true;
 
             try {
-                // /api/query 호출 (mode=test)
-                const response = await fetch('http://localhost:8000/api/query', {
+                const response = await fetch('/api/query', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         query: query,
-                        user_location: { lat, lng },
+                        user_location: userLocation,
                         mode: 'test'
                     })
                 });
 
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let assistantText = '';
+                let firstChunk = true;
 
-                const result = await response.json();
-                console.log('Pipeline result:', result);
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
 
-                // 실제 intent 확인
-                const actualIntent = result.intent;
+                    const text = decoder.decode(value);
+                    const lines = text.split('\n');
 
-                // steps 저장 (먼저!)
-                state.steps = result.steps || [];
-                console.log('Steps:', state.steps);
+                    for (const line of lines) {
+                        if (!line.startsWith('data: ')) continue;
 
-                // Step 카드 생성 (state.steps가 설정된 후)
-                createStepCards(actualIntent);
+                        try {
+                            const data = JSON.parse(line.slice(6));
+                            allEvents.push(data);
 
-                // Step 카드 업데이트
-                state.steps.forEach((step, index) => {
-                    // step과 step.step이 유효한 경우만 업데이트
-                    if (step && typeof step.step === 'number') {
-                        updateStepStatus(step.step, 'success');
-                    }
-                });
+                            if (data.type === 'tool_call') {
+                                addToolCall(data);
+                            } else if (data.type === 'tool_result') {
+                                updateToolResult(data);
+                            } else if (data.type === 'data') {
+                                addDataCard(data);
+                                displayOnMap(data);
+                            } else if (data.type === 'chunk') {
+                                if (firstChunk) {
+                                    document.querySelector(`#${loadingId} .loading`).outerHTML = `<div class="bubble"></div>`;
+                                    firstChunk = false;
+                                }
+                                assistantText += data.text;
+                                document.querySelector(`#${loadingId} .bubble`).innerHTML = formatText(assistantText);
+                                chatMessages.scrollTop = chatMessages.scrollHeight;
+                            }
 
-                // 첫 번째 step 자동 선택
-                if (state.steps.length > 0) {
-                    showStepResult(0);
-                }
-
-                // 지도에 POI/Places/Routes/Landmarks 표시
-                if (result.final_response) {
-                    if (result.final_response.pois) {
-                        displayPOIsOnMap(result.final_response.pois);
-                    } else if (result.final_response.places) {
-                        displayPlacesOnMap(result.final_response.places);
-                    } else if (result.final_response.landmarks) {
-                        displayLandmarksOnMap(result.final_response.landmarks);
-                    } else if (result.final_response.routes) {
-                        // ROUTE 의도: final_response에서 직접 geojson 가져오기
-                        if (result.final_response.geojson) {
-                            displayRouteOnMap(result.final_response.geojson);
+                            rawJson.textContent = JSON.stringify(allEvents, null, 2);
+                        } catch (e) {
+                            console.error('Parse error:', e);
                         }
                     }
                 }
 
+                if (firstChunk) {
+                    document.querySelector(`#${loadingId} .loading`).outerHTML = `<div class="bubble">결과를 확인해봐! 👉</div>`;
+                }
+
             } catch (error) {
-                console.error('Pipeline error:', error);
-                alert('파이프라인 실행 중 오류가 발생했습니다:\n' + error.message);
-                document.getElementById('jsonResult').innerHTML = `<div class="json-placeholder" style="color: #dc3545;">오류: ${error.message}</div>`;
-            } finally {
-                btn.disabled = false;
-                btn.textContent = '파이프라인 실행';
+                console.error('Error:', error);
+                document.querySelector(`#${loadingId} .loading`).outerHTML = `<div class="bubble" style="color:#e74c3c">오류: ${error.message}</div>`;
             }
+
+            sendBtn.disabled = false;
+            chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
-        // 지도에 POI 표시
-        function displayPOIsOnMap(pois) {
-            // 기존 마커 제거
-            const existingMarkers = document.querySelectorAll('.mapboxgl-marker');
-            existingMarkers.forEach(marker => marker.remove());
-
-            if (!pois || pois.length === 0) return;
-
-            const bounds = new mapboxgl.LngLatBounds();
-
-            pois.forEach((poi, index) => {
-                if (!poi.mapx || !poi.mapy) return;
-
-                // keyword_match_count > 0 이면 빨간색, 아니면 파란색
-                const hasKeywordMatch = poi.keyword_match_count && poi.keyword_match_count > 0;
-                const markerColor = hasKeywordMatch ? '#dc3545' : '#007bff';
-
-                // 마커 생성
-                const el = document.createElement('div');
-                el.style.width = '30px';
-                el.style.height = '30px';
-                el.style.backgroundColor = markerColor;
-                el.style.borderRadius = '50%';
-                el.style.border = '3px solid white';
-                el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
-                el.style.display = 'flex';
-                el.style.alignItems = 'center';
-                el.style.justifyContent = 'center';
-                el.style.color = 'white';
-                el.style.fontWeight = 'bold';
-                el.style.fontSize = '12px';
-                el.textContent = index + 1;
-
-                // 팝업 생성
-                const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
-                    <div style="font-size: 13px;">
-                        <strong>${poi.title || poi.name || 'N/A'}</strong><br>
-                        ${poi.addr1 || poi.address || 'N/A'}<br>
-                        ${poi.keyword_match_count > 0 ? `<span style="color: #dc3545; font-weight: bold;">🎯 키워드 매칭: ${poi.keyword_match_count}개</span><br>` : ''}
-                        ${poi.emotion_score ? `감정점수: ${poi.emotion_score.toFixed(2)}<br>` : ''}
-                        ${poi.distance_km ? `거리: ${poi.distance_km.toFixed(2)}km` : ''}
+        // 도구 호출 추가
+        function addToolCall(data) {
+            toolsEmpty.style.display = 'none';
+            const id = 'tool-' + Date.now();
+            toolsList.innerHTML += `
+                <div class="tool-card" id="${id}">
+                    <div class="tool-header">
+                        <span>🔧</span>
+                        <span class="tool-name">${data.name}</span>
+                        <span class="tool-status pending">호출 중</span>
                     </div>
-                `);
-
-                new mapboxgl.Marker(el)
-                    .setLngLat([poi.mapx, poi.mapy])
-                    .setPopup(popup)
-                    .addTo(map);
-
-                bounds.extend([poi.mapx, poi.mapy]);
-            });
-
-            // 지도 범위 조정
-            if (pois.length > 0) {
-                map.fitBounds(bounds, { padding: 50 });
-            }
-        }
-
-        // 지도에 Places 표시 (FIND_PLACE용)
-        function displayPlacesOnMap(places) {
-            // 기존 마커 제거
-            const existingMarkers = document.querySelectorAll('.mapboxgl-marker');
-            existingMarkers.forEach(marker => marker.remove());
-
-            if (!places || places.length === 0) return;
-
-            const bounds = new mapboxgl.LngLatBounds();
-
-            places.forEach((place, index) => {
-                if (!place.lng || !place.lat) return;
-
-                // FIND_PLACE는 keyword_match_count 없음 - 항상 파란색
-                const markerColor = '#007bff';
-
-                // 마커 생성
-                const el = document.createElement('div');
-                el.style.width = '30px';
-                el.style.height = '30px';
-                el.style.backgroundColor = markerColor;
-                el.style.borderRadius = '50%';
-                el.style.border = '3px solid white';
-                el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
-                el.style.display = 'flex';
-                el.style.alignItems = 'center';
-                el.style.justifyContent = 'center';
-                el.style.color = 'white';
-                el.style.fontWeight = 'bold';
-                el.style.fontSize = '12px';
-                el.textContent = index + 1;
-
-                // 팝업 생성
-                const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
-                    <div style="font-size: 13px;">
-                        <strong>${place.name || 'N/A'}</strong><br>
-                        ${place.address || 'N/A'}<br>
-                        ${place.rating ? `평점: ⭐ ${place.rating}` : ''}
-                    </div>
-                `);
-
-                new mapboxgl.Marker(el)
-                    .setLngLat([place.lng, place.lat])
-                    .setPopup(popup)
-                    .addTo(map);
-
-                bounds.extend([place.lng, place.lat]);
-            });
-
-            // 지도 범위 조정
-            if (places.length > 0) {
-                map.fitBounds(bounds, { padding: 50 });
-            }
-        }
-
-        // 지도에 Landmarks 표시 (LANDMARK용)
-        function displayLandmarksOnMap(landmarks) {
-            // 기존 마커 제거
-            const existingMarkers = document.querySelectorAll('.mapboxgl-marker');
-            existingMarkers.forEach(marker => marker.remove());
-
-            if (!landmarks || landmarks.length === 0) return;
-
-            const bounds = new mapboxgl.LngLatBounds();
-
-            landmarks.forEach((landmark) => {
-                if (!landmark.mapx || !landmark.mapy) return;
-
-                // 랜드마크는 보라색으로 표시
-                const markerColor = '#6f42c1';
-
-                // 마커 생성 (rank 숫자 표시)
-                const el = document.createElement('div');
-                el.style.width = '35px';
-                el.style.height = '35px';
-                el.style.backgroundColor = markerColor;
-                el.style.borderRadius = '50%';
-                el.style.border = '3px solid white';
-                el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
-                el.style.display = 'flex';
-                el.style.alignItems = 'center';
-                el.style.justifyContent = 'center';
-                el.style.color = 'white';
-                el.style.fontWeight = 'bold';
-                el.style.fontSize = '13px';
-                el.textContent = landmark.rank || '?';
-
-                // 팝업 생성
-                let popupHtml = `
-                    <div style="font-size: 13px; max-width: 250px;">
-                        <strong>${landmark.title || 'N/A'}</strong><br>
-                        ${landmark.addr1 ? `📍 ${landmark.addr1}<br>` : ''}
-                `;
-
-                // 이미지가 있으면 표시
-                if (landmark.first_image) {
-                    popupHtml += `
-                        <div style="margin-top: 8px;">
-                            <img src="${landmark.first_image}"
-                                 style="width: 100%; max-width: 250px; border-radius: 6px; object-fit: cover;"
-                                 onerror="this.style.display='none'">
+                    <div class="tool-body">
+                        <div class="tool-label">Arguments</div>
+                        <div class="tool-json">${JSON.stringify(data.arguments, null, 2)}</div>
+                        <div class="tool-result-section" style="display:none">
+                            <div class="tool-label">Result</div>
+                            <div class="tool-json tool-result-json"></div>
                         </div>
-                    `;
-                }
+                    </div>
+                </div>
+            `;
+        }
 
-                if (landmark.description) {
-                    popupHtml += `<div style="margin-top: 5px; color: #666;">💬 ${landmark.description}</div>`;
-                }
+        // 도구 결과 업데이트
+        function updateToolResult(data) {
+            const cards = toolsList.querySelectorAll('.tool-card');
+            const lastCard = cards[cards.length - 1];
+            if (lastCard) {
+                const status = lastCard.querySelector('.tool-status');
+                status.textContent = data.result.success ? '성공' : '실패';
+                status.className = 'tool-status ' + (data.result.success ? 'success' : 'error');
 
-                popupHtml += `</div>`;
-
-                const popup = new mapboxgl.Popup({ offset: 30 }).setHTML(popupHtml);
-
-                new mapboxgl.Marker(el)
-                    .setLngLat([landmark.mapx, landmark.mapy])
-                    .setPopup(popup)
-                    .addTo(map);
-
-                bounds.extend([landmark.mapx, landmark.mapy]);
-            });
-
-            // 지도 범위 조정
-            if (landmarks.length > 0) {
-                map.fitBounds(bounds, { padding: 50 });
+                const resultSection = lastCard.querySelector('.tool-result-section');
+                resultSection.style.display = 'block';
+                resultSection.querySelector('.tool-result-json').textContent = JSON.stringify(data.result, null, 2);
             }
         }
 
-        // 지도에 경로 표시 (ROUTE용)
-        function displayRouteOnMap(geojson) {
-            // 기존 마커/레이어 제거
-            const existingMarkers = document.querySelectorAll('.mapboxgl-marker');
-            existingMarkers.forEach(marker => marker.remove());
+        // 데이터 카드 추가
+        function addDataCard(data) {
+            dataEmpty.style.display = 'none';
 
-            // 기존 경로 레이어들 제거
-            const layers = map.getStyle().layers;
-            layers.forEach(layer => {
-                if (layer.id.startsWith('route-line-')) {
-                    map.removeLayer(layer.id);
-                }
-            });
+            if (data.pois?.length > 0) {
+                dataList.innerHTML += createDataList('📍 POI 추천', data.pois, 'title', 'addr1');
+            }
+            if (data.places?.length > 0) {
+                dataList.innerHTML += createDataList('🔍 검색 결과', data.places, 'name', 'formatted_address');
+            }
+            if (data.routes?.length > 0) {
+                dataList.innerHTML += `
+                    <div class="data-card">
+                        <div class="data-title">🚇 경로 정보 <span class="data-count">${data.routes.length}개</span></div>
+                        ${data.routes.map((r, i) => `
+                            <div class="poi-item">
+                                <div class="poi-name">경로 ${i + 1}</div>
+                                <div class="poi-addr">${r.info?.totalTime || '?'}분 · ${r.info?.payment?.toLocaleString() || '?'}원</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+            if (data.poi) {
+                dataList.innerHTML += `
+                    <div class="data-card">
+                        <div class="data-title">🎲 랜덤 추천</div>
+                        <div class="poi-item" onclick="flyTo(${data.poi.mapx}, ${data.poi.mapy})">
+                            <div class="poi-name">${data.poi.title || 'Unknown'}</div>
+                            <div class="poi-addr">${data.poi.addr1 || ''}</div>
+                        </div>
+                    </div>
+                `;
+            }
+            if (data.landmarks?.length > 0) {
+                dataList.innerHTML += createDataList('🏛️ 필수 명소', data.landmarks, 'title', 'addr1');
+            }
+        }
 
-            const sources = Object.keys(map.getStyle().sources);
-            sources.forEach(source => {
-                if (source.startsWith('route-')) {
-                    map.removeSource(source);
-                }
-            });
+        function createDataList(title, items, nameKey, addrKey) {
+            return `
+                <div class="data-card">
+                    <div class="data-title">${title} <span class="data-count">${items.length}개</span></div>
+                    ${items.map(item => `
+                        <div class="poi-item" onclick="flyTo(${item.mapx || item.lng}, ${item.mapy || item.lat})">
+                            <div class="poi-name">${item[nameKey] || item.name || 'Unknown'}</div>
+                            <div class="poi-addr">${item[addrKey] || item.address || ''}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
 
-            if (!geojson || !geojson.features) return;
-
+        // 지도에 표시
+        function displayOnMap(data) {
             const bounds = new mapboxgl.LngLatBounds();
+            let hasItems = false;
 
-            // 색상 팔레트 (11개 이상)
-            const routeColors = [
-                '#007bff',  // 파란색 (첫 번째 경로 - 추천)
-                '#dc3545',  // 빨간색
-                '#28a745',  // 녹색
-                '#ffc107',  // 노란색
-                '#17a2b8',  // 청록색
-                '#6f42c1',  // 보라색
-                '#fd7e14',  // 주황색
-                '#e83e8c',  // 분홍색
-                '#20c997',  // 민트색
-                '#6c757d',  // 회색
-                '#343a40',  // 어두운 회색
-                '#f8f9fa',  // 밝은 회색
-            ];
+            const displayItems = (items, color, nameKey, addrKey) => {
+                items.forEach((item, i) => {
+                    const lng = item.mapx || item.lng;
+                    const lat = item.mapy || item.lat;
+                    if (!lng || !lat) return;
 
-            geojson.features.forEach(feature => {
-                const props = feature.properties;
-
-                if (feature.geometry.type === 'Point') {
-                    // 출발지/도착지 마커
-                    const isOrigin = props.type === 'origin';
-                    const markerColor = isOrigin ? '#28a745' : '#dc3545';
-                    const label = isOrigin ? '출발' : '도착';
-
+                    hasItems = true;
                     const el = document.createElement('div');
-                    el.style.width = '40px';
-                    el.style.height = '40px';
-                    el.style.backgroundColor = markerColor;
-                    el.style.borderRadius = '50%';
-                    el.style.border = '3px solid white';
-                    el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
-                    el.style.display = 'flex';
-                    el.style.alignItems = 'center';
-                    el.style.justifyContent = 'center';
-                    el.style.color = 'white';
-                    el.style.fontWeight = 'bold';
-                    el.style.fontSize = '11px';
-                    el.textContent = label;
+                    el.style.cssText = `width:28px;height:28px;background:${color};border-radius:50%;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:11px;cursor:pointer;`;
+                    el.textContent = i + 1;
 
                     const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
-                        <div style="font-size: 13px;">
-                            <strong>${props.name}</strong>
+                        <div style="font-size:13px;color:#333;">
+                            <strong>${item[nameKey] || item.name || 'N/A'}</strong><br>
+                            ${item[addrKey] || item.address || ''}
                         </div>
                     `);
 
-                    new mapboxgl.Marker(el)
-                        .setLngLat(feature.geometry.coordinates)
+                    const marker = new mapboxgl.Marker(el)
+                        .setLngLat([lng, lat])
                         .setPopup(popup)
                         .addTo(map);
 
-                    bounds.extend(feature.geometry.coordinates);
-                }
-            });
-
-            // 경로 라인들 그리기 (각각 다른 색상)
-            const routeLines = geojson.features.filter(f => f.geometry.type === 'LineString');
-
-            routeLines.forEach((routeLine, index) => {
-                const routeIndex = routeLine.properties.routeIndex || index;
-                const color = routeColors[routeIndex % routeColors.length];
-                const isFirstRoute = routeIndex === 0;
-
-                // 각 경로별로 source와 layer 생성
-                const sourceId = `route-${routeIndex}`;
-                const layerId = `route-line-${routeIndex}`;
-
-                map.addSource(sourceId, {
-                    type: 'geojson',
-                    data: {
-                        type: 'Feature',
-                        geometry: routeLine.geometry
-                    }
+                    poiMarkers.push(marker);
+                    bounds.extend([lng, lat]);
                 });
+            };
 
-                map.addLayer({
-                    id: layerId,
-                    type: 'line',
-                    source: sourceId,
-                    layout: {
-                        'line-join': 'round',
-                        'line-cap': 'round'
-                    },
-                    paint: {
-                        'line-color': color,
-                        'line-width': isFirstRoute ? 5 : 3,  // 첫 번째 경로는 더 굵게
-                        'line-opacity': isFirstRoute ? 0.9 : 0.6
-                    }
-                });
+            if (data.pois?.length > 0) displayItems(data.pois, '#4a69bd', 'title', 'addr1');
+            if (data.places?.length > 0) displayItems(data.places, '#27ae60', 'name', 'formatted_address');
+            if (data.landmarks?.length > 0) displayItems(data.landmarks, '#9b59b6', 'title', 'addr1');
+            if (data.poi) {
+                const poi = data.poi;
+                if (poi.mapx && poi.mapy) {
+                    hasItems = true;
+                    const el = document.createElement('div');
+                    el.style.cssText = 'width:32px;height:32px;background:#e74c3c;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;font-size:14px;';
+                    el.textContent = '🎲';
 
-                // 경로 클릭 시 정보 표시
-                map.on('click', layerId, (e) => {
-                    const props = routeLine.properties;
-                    new mapboxgl.Popup()
-                        .setLngLat(e.lngLat)
-                        .setHTML(`
-                            <div style="font-size: 13px;">
-                                <strong>경로 ${routeIndex + 1}</strong><br>
-                                소요시간: ${props.totalTime}분<br>
-                                요금: ${props.payment.toLocaleString()}원<br>
-                                거리: ${(props.totalDistance / 1000).toFixed(1)}km
+                    const marker = new mapboxgl.Marker(el)
+                        .setLngLat([poi.mapx, poi.mapy])
+                        .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(`
+                            <div style="font-size:13px;color:#333;">
+                                <strong>${poi.title}</strong><br>${poi.addr1 || ''}
                             </div>
-                        `)
+                        `))
                         .addTo(map);
-                });
 
-                // 마우스 커서 변경
-                map.on('mouseenter', layerId, () => {
-                    map.getCanvas().style.cursor = 'pointer';
-                });
-                map.on('mouseleave', layerId, () => {
-                    map.getCanvas().style.cursor = '';
-                });
+                    poiMarkers.push(marker);
+                    bounds.extend([poi.mapx, poi.mapy]);
+                }
+            }
 
-                // bounds 확장
-                routeLine.geometry.coordinates.forEach(coord => {
-                    bounds.extend(coord);
-                });
-            });
-
-            // 지도 범위 조정
-            if (!bounds.isEmpty()) {
-                map.fitBounds(bounds, { padding: 80 });
+            if (hasItems && !bounds.isEmpty()) {
+                map.fitBounds(bounds, { padding: 60 });
             }
         }
 
-        // Enter 키로 실행
-        document.getElementById('queryInput').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                runPipeline();
+        function clearMapMarkers() {
+            poiMarkers.forEach(m => m.remove());
+            poiMarkers = [];
+        }
+
+        function flyTo(lng, lat) {
+            if (lng && lat) {
+                map.flyTo({ center: [lng, lat], zoom: 15 });
             }
-        });
+        }
+
+        function formatText(text) {
+            return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
     </script>
 </body>
 </html>

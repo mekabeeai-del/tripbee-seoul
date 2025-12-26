@@ -3,8 +3,11 @@ GPT Streaming Utility
 OpenAI GPT 응답을 스트리밍으로 처리하는 공통 유틸리티
 """
 
+import logging
 from typing import AsyncGenerator
 from openai import OpenAI
+
+logger = logging.getLogger(__name__)
 
 
 async def stream_gpt_response(
@@ -28,6 +31,7 @@ async def stream_gpt_response(
         str: GPT 응답 chunk
     """
     try:
+        logger.info(f"[GPT_STREAMING] 모델: {model}, temperature: {temperature}")
         # OpenAI 스트리밍 요청
         stream = client.chat.completions.create(
             model=model,
@@ -44,7 +48,7 @@ async def stream_gpt_response(
                 yield content
 
     except Exception as e:
-        print(f"[GPT_STREAMING] 오류: {e}")
+        logger.error(f"[GPT_STREAMING] 오류: {e}")
         yield f"[오류 발생: {str(e)}]"
 
 
@@ -70,6 +74,7 @@ def get_full_response_from_stream(
         str: 전체 GPT 응답
     """
     try:
+        logger.info(f"[GPT_STREAMING] 모델: {model}, temperature: {temperature} (non-streaming)")
         stream = client.chat.completions.create(
             model=model,
             messages=messages,
@@ -86,5 +91,5 @@ def get_full_response_from_stream(
         return full_response
 
     except Exception as e:
-        print(f"[GPT_STREAMING] 오류: {e}")
+        logger.error(f"[GPT_STREAMING] 오류: {e}")
         return f"[오류 발생: {str(e)}]"

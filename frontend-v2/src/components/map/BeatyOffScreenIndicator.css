@@ -1,0 +1,49 @@
+/* 비티 화면 밖 인디케이터 컨테이너 */
+.beaty-offscreen-indicator {
+  position: fixed;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  cursor: pointer;
+  width: 60px;
+  height: 60px;
+}
+
+/* 방향 화살표 */
+.beaty-offscreen-arrow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 20px solid #FFD700;
+  transform-origin: center bottom;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+/* 비티 원형 배경 */
+.beaty-offscreen-circle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 비티 이미지 */
+.beaty-offscreen-image {
+  width: 40px;
+  height: 40px;
+  background-image: url('/img/beaty/beaty_float_marker.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}

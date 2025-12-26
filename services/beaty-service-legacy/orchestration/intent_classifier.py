@@ -4,10 +4,13 @@ SystemPrompt 로직을 Beaty 서비스 내부로 통합
 """
 
 import json
+import logging
 from typing import Dict, Any
 from openai import OpenAI
 from pathlib import Path
 import asyncpg
+
+logger = logging.getLogger(__name__)
 
 
 class IntentClassifier:
@@ -26,7 +29,7 @@ class IntentClassifier:
         self.categories = await self._load_categories()
         # 카테고리 로드 (QueryRewriter에서 사용)
         if self.categories:
-            print(f"[INTENT_CLASSIFIER] 카테고리 로드 완료: {len(self.categories.split(','))}개")
+            logger.info(f"[INTENT_CLASSIFIER] 카테고리 로드 완료: {len(self.categories.split(','))}개")
 
     async def _load_categories(self) -> str:
         """DB에서 카테고리 목록 로드 (서비스 시작 시 1회)"""
@@ -64,7 +67,7 @@ class IntentClassifier:
             else:
                 return ""
         except Exception as e:
-            print(f"[INTENT_CLASSIFIER] 카테고리 로드 실패: {e}")
+            logger.error(f"[INTENT_CLASSIFIER] 카테고리 로드 실패: {e}")
             import traceback
             traceback.print_exc()
             return ""
@@ -75,7 +78,7 @@ class IntentClassifier:
             if self.prompt_file.exists():
                 with open(self.prompt_file, "r", encoding="utf-8") as f:
                     self.system_prompt = f.read()
-                print(f"[INTENT_CLASSIFIER] System prompt loaded from {self.prompt_file}")
+                logger.info(f"[INTENT_CLASSIFIER] System prompt loaded from {self.prompt_file}")
             else:
                 # 기본 프롬프트
                 self.system_prompt = """당신은 서울 관광 전문 의도 분류, 슬롯 추출, 쿼리 리라이트 시스템입니다.
@@ -118,7 +121,7 @@ class IntentClassifier:
                 # 기본 프롬프트를 파일로 저장
                 self.save_system_prompt(self.system_prompt)
         except Exception as e:
-            print(f"[INTENT_CLASSIFIER] Error loading system prompt: {e}")
+            logger.error(f"[INTENT_CLASSIFIER] Error loading system prompt: {e}")
             self.system_prompt = "당신은 서울 관광 전문 AI 어시스턴트입니다."
 
     def save_system_prompt(self, new_prompt: str) -> bool:
@@ -127,10 +130,10 @@ class IntentClassifier:
             with open(self.prompt_file, "w", encoding="utf-8") as f:
                 f.write(new_prompt)
             self.system_prompt = new_prompt
-            print(f"[INTENT_CLASSIFIER] System prompt saved to {self.prompt_file}")
+            logger.info(f"[INTENT_CLASSIFIER] System prompt saved to {self.prompt_file}")
             return True
         except Exception as e:
-            print(f"[INTENT_CLASSIFIER] Error saving system prompt: {e}")
+            logger.error(f"[INTENT_CLASSIFIER] Error saving system prompt: {e}")
             return False
 
     def setup_function_definition(self):
@@ -207,7 +210,7 @@ class IntentClassifier:
             context_messages: 대화 맥락 [{"role": "user", "content": "..."}, ...]
         """
         try:
-            print(f"[INTENT_CLASSIFIER] Processing: {user_input}")
+            logger.info(f"[INTENT_CLASSIFIER] Processing: {user_input}")
 
             # 메시지 구성: 시스템 프롬프트 + 대화 히스토리 + 현재 질의
             messages = [{"role": "system", "content": self.system_prompt}]
@@ -215,12 +218,15 @@ class IntentClassifier:
             # 대화 맥락 추가 (최근 3개만)
             if context_messages:
                 messages.extend(context_messages[-3:])
-                print(f"[INTENT_CLASSIFIER] 대화 맥락: {len(context_messages[-3:])}개 메시지")
+                logger.info(f"[INTENT_CLASSIFIER] 대화 맥락: {len(context_messages[-3:])}개 메시지")
 
             messages.append({"role": "user", "content": user_input})
 
+            model = "gpt-4o-mini"
+            logger.info(f"[INTENT_CLASSIFIER] 모델: {model}, temperature: 0.0")
+
             response = self.client.chat.completions.create(
-                model="gpt-4o-mini",
+                model=model,
                 messages=messages,
                 functions=self.functions,
                 function_call={"name": "extract_slots"},
@@ -234,27 +240,27 @@ class IntentClassifier:
 
             slots = json.loads(function_call.arguments)
 
-            print(f"[INTENT_CLASSIFIER] Results:")
-            print(f"  Intent: {slots.get('intent', 'UNKNOWN')}")
+            logger.info(f"[INTENT_CLASSIFIER] Results:")
+            logger.info(f"  Intent: {slots.get('intent', 'UNKNOWN')}")
 
             # ROUTE 전용 슬롯
             if slots.get('intent') == 'ROUTE':
-                print(f"  Origin: {slots.get('origin_keyword', 'None (user location)')}")
-                print(f"  Destination: {slots.get('destination_keyword', 'None')}")
-                print(f"  Transport: {slots.get('transportation_mode', 'None (all)')}")
-                print(f"  Preference: {slots.get('route_preference', 'fastest')}")
+                logger.info(f"  Origin: {slots.get('origin_keyword', 'None (user location)')}")
+                logger.info(f"  Destination: {slots.get('destination_keyword', 'None')}")
+                logger.info(f"  Transport: {slots.get('transportation_mode', 'None (all)')}")
+                logger.info(f"  Preference: {slots.get('route_preference', 'fastest')}")
             # RECOMMEND/FIND_PLACE 전용 슬롯
             else:
-                print(f"  Location: {slots.get('location_keyword', 'None')}")
-                print(f"  Emotion: {slots.get('emotion', 'None')}")
-                print(f"  Constraints: {slots.get('hard_constraints', [])}")
+                logger.info(f"  Location: {slots.get('location_keyword', 'None')}")
+                logger.info(f"  Emotion: {slots.get('emotion', 'None')}")
+                logger.info(f"  Constraints: {slots.get('hard_constraints', [])}")
 
-            print(f"  Confidence: {slots.get('confidence', 0.0)}")
+            logger.info(f"  Confidence: {slots.get('confidence', 0.0)}")
 
             return slots
 
         except Exception as e:
-            print(f"[INTENT_CLASSIFIER] Error: {e}")
+            logger.error(f"[INTENT_CLASSIFIER] Error: {e}")
             return self._fallback_classification()
 
     def _fallback_classification(self) -> Dict[str, Any]:

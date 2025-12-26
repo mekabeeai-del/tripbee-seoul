@@ -13,7 +13,7 @@ export default defineConfig({
         name: 'TripBee Seoul',
         short_name: 'TripBee',
         description: '서울 여행 가이드 앱',
-        theme_color: '#4A90E2',
+        theme_color: '#0066CC',
         background_color: '#ffffff',
         display: 'standalone',
         orientation: 'portrait',
@@ -68,4 +68,7 @@ export default defineConfig({
       }
     })
   ],
+  server: {
+    port: 5173
+  }
 })
