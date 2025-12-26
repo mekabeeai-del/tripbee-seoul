@@ -48,7 +48,7 @@ export default function DiscoveryPOIMarker({ map, pois, onMarkerClick }: Discove
       el.appendChild(inner);
 
       // 클릭 이벤트
-      el.addEventListener('click', (e) => {
+      el.addEventListener('click', () => {
         const rect = el.getBoundingClientRect();
         const clickPos = {
           x: rect.left + rect.width / 2,

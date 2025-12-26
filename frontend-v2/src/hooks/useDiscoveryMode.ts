@@ -78,7 +78,7 @@ export function useDiscoveryMode({
 }: UseDiscoveryModeProps): UseDiscoveryModeReturn {
   const [isDiscovering, setIsDiscovering] = useState(false);
   const [visiblePOIs, setVisiblePOIs] = useState<VisiblePOI[]>([]);
-  const timersRef = useRef<NodeJS.Timeout[]>([]);
+  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   const clearAllTimers = () => {
     timersRef.current.forEach(timer => clearTimeout(timer));

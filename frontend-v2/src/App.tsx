@@ -338,7 +338,6 @@ function App() {
         isOpen={isChatOpen}
         onClose={() => setIsChatOpen(false)}
         onSendMessage={handleSendMessage}
-        userLocation={gpsPosition}
       />
 
       {/* POI Detail Panel */}
