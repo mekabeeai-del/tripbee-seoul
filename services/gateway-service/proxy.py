@@ -73,6 +73,8 @@ async def proxy_request(request: Request, path: str = ""):
             # 요청 헤더 복사 (Host 제외)
             headers = dict(request.headers)
             headers.pop('host', None)
+            # 압축 응답 방지 (인코딩 문제 해결)
+            headers['accept-encoding'] = 'identity'
 
             # 백엔드로 요청 전달
             response = await client.request(
