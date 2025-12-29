@@ -13,6 +13,7 @@ interface BeatyOffScreenIndicatorProps {
   map: Map | null;
   position: { latitude: number; longitude: number } | null;
   onClick?: () => void;
+  isDiscovering?: boolean;
 }
 
 // 컴포넌트 외부에 상수로 정의 (매 렌더링마다 새 객체 생성 방지)
@@ -31,7 +32,8 @@ const SAFE_AREA = {
 function BeatyOffScreenIndicator({
   map,
   position,
-  onClick
+  onClick,
+  isDiscovering = false
 }: BeatyOffScreenIndicatorProps) {
   const [offScreen, setOffScreen] = useState<OffScreenState>({
     visible: false,
@@ -119,7 +121,7 @@ function BeatyOffScreenIndicator({
       />
       {/* 비티 이미지 (동그란 배경) */}
       <div className="beaty-offscreen-circle">
-        <div className="beaty-offscreen-image" />
+        <div className={`beaty-offscreen-image ${isDiscovering ? 'discovering' : ''}`} />
       </div>
     </div>
   );

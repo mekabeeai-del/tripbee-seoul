@@ -312,6 +312,7 @@ function App() {
         map={map.current}
         position={gpsPosition}
         onClick={handleLocationClick}
+        isDiscovering={isDiscovering}
       />
 
       {/* 발견모드 POI 마커 + 카페 마커 */}
