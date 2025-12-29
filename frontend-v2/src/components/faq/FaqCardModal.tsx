@@ -5,16 +5,17 @@ import './FaqCardModal.css';
 
 interface FaqCardModalProps {
   faq: FaqCard;
-  language?: 'en' | 'ko';
+  language?: 'en' | 'ko' | 'ja';
   onClose: () => void;
 }
 
 export default function FaqCardModal({ faq, language = 'en', onClose }: FaqCardModalProps) {
   const [isTypingComplete, setIsTypingComplete] = useState(false);
 
-  const title = language === 'en' ? faq.title_en : faq.title_ko;
-  const content = language === 'en' ? faq.content_en : faq.content_ko;
-  const closing = language === 'en' ? faq.closing_en : faq.closing_ko;
+  const title = language === 'ja' ? faq.title_ja : language === 'ko' ? faq.title_ko : faq.title_en;
+  const content = language === 'ja' ? faq.content_ja : language === 'ko' ? faq.content_ko : faq.content_en;
+  const closing = language === 'ja' ? faq.closing_ja : language === 'ko' ? faq.closing_ko : faq.closing_en;
+  const tips = language === 'ja' ? faq.tips_ja : language === 'ko' ? faq.tips_ko : faq.tips_en;
 
   // Combine content with closing message - filter out empty strings and use single line break
   const filteredContent = content.filter(line => line !== '');
@@ -68,10 +69,10 @@ export default function FaqCardModal({ faq, language = 'en', onClose }: FaqCardM
           </div>
 
           {/* Tips Section (타이핑 완료 후 표시) */}
-          {isTypingComplete && faq.tips && faq.tips.length > 0 && (
+          {isTypingComplete && tips && tips.length > 0 && (
             <div className="faq-modal-tips">
               <div className="faq-modal-tips-title">💡 Pro Tips</div>
-              {faq.tips.map((tip, index) => (
+              {tips.map((tip, index) => (
                 <div key={index} className="faq-modal-tip">
                   • {tip}
                 </div>
@@ -87,7 +88,7 @@ export default function FaqCardModal({ faq, language = 'en', onClose }: FaqCardM
             onClick={onClose}
             disabled={!isTypingComplete}
           >
-            {language === 'en' ? 'Got it! 👍' : '알겠어요! 👍'}
+            {language === 'ja' ? 'わかりました！👍' : language === 'ko' ? '알겠어요! 👍' : 'Got it! 👍'}
           </button>
         </div>
       </div>

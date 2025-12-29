@@ -413,7 +413,7 @@ function App() {
       {activeFaq && (
         <FaqCardModal
           faq={activeFaq}
-          language="ko"
+          language={language}
           onClose={() => setActiveFaq(null)}
         />
       )}

@@ -2,13 +2,18 @@ export interface FaqCard {
   id: string;
   title_en: string;
   title_ko: string;
+  title_ja: string;
   emoji: string;
   keywords: string[];
   content_en: string[];
   content_ko: string[];
-  tips?: string[];
+  content_ja: string[];
+  tips_en?: string[];
+  tips_ko?: string[];
+  tips_ja?: string[];
   closing_en?: string;
   closing_ko?: string;
+  closing_ja?: string;
 }
 
 export const faqCards: Record<string, FaqCard> = {
@@ -16,6 +21,7 @@ export const faqCards: Record<string, FaqCard> = {
     id: 'tmoney',
     title_en: 'T-money Card & Charging',
     title_ko: '티머니 카드 충전',
+    title_ja: 'T-moneyカードとチャージ',
     emoji: '🚇',
     keywords: ['티머니', 'tmoney', 't-money', '교통카드', '충전', 'charge', 'card', 'transport card'],
     content_en: [
@@ -52,19 +58,48 @@ export const faqCards: Record<string, FaqCard> = {
       '',
       '📱 대안: 모바일 티머니 앱 또는 삼성/애플페이 사용'
     ],
-    tips: [
+    content_ja: [
+      '💳 T-moneyとは？',
+      '地下鉄、バス、タクシー、コンビニで使えるプリペイド交通カードです。',
+      '',
+      '🏪 どこで購入？',
+      '- コンビニ (GS25, CU, セブンイレブン)',
+      '- 地下鉄駅の自動販売機',
+      '- 価格: 2,500-4,000ウォン',
+      '',
+      '💰 チャージ方法',
+      '1. コンビニへ行く',
+      '2. カードを店員に渡す',
+      '3. 金額を伝える (例: "10,000ウォンお願いします")',
+      '4. 現金またはカードで支払い',
+      '',
+      '📱 代替方法: モバイルT-moneyアプリまたはSamsung/Apple Pay'
+    ],
+    tips_en: [
       'Minimum charge: 1,000 KRW',
       'Recommended amount for tourists: 20,000-30,000 KRW',
       'Can get refund at convenience stores (balance less than 20,000 KRW)'
     ],
+    tips_ko: [
+      '최소 충전액: 1,000원',
+      '관광객 추천 금액: 20,000-30,000원',
+      '편의점에서 환불 가능 (잔액 20,000원 미만)'
+    ],
+    tips_ja: [
+      '最低チャージ額: 1,000ウォン',
+      '観光客におすすめ: 20,000-30,000ウォン',
+      'コンビニで払い戻し可能 (残高20,000ウォン未満)'
+    ],
     closing_en: "That's all about T-money! 🐝 If you have any questions, just ask me anytime!",
-    closing_ko: "티머니 카드 사용법 설명 끝! 🐝 궁금한 거 있으면 언제든 물어봐 주세요!"
+    closing_ko: "티머니 카드 사용법 설명 끝! 🐝 궁금한 거 있으면 언제든 물어봐 주세요!",
+    closing_ja: "T-moneyの説明は以上です！🐝 質問があればいつでも聞いてくださいね！"
   },
 
   subway: {
     id: 'subway',
     title_en: 'Subway & Bus Guide',
     title_ko: '지하철/버스 이용 방법',
+    title_ja: '地下鉄・バスガイド',
     emoji: '🚌',
     keywords: ['지하철', 'subway', '버스', 'bus', '대중교통', 'metro', 'train', 'public transport'],
     content_en: [
@@ -109,19 +144,52 @@ export const faqCards: Record<string, FaqCard> = {
       '- 네이버 지도 (경로 안내)',
       '- 구글 맵 (기본 내비게이션)'
     ],
-    tips: [
+    content_ja: [
+      '🚇 地下鉄の利用',
+      '1. 路線の色と番号を確認 (例: 2号線 - 緑)',
+      '2. 方向を確認 (終着駅を見る)',
+      '3. 改札でT-moneyをタッチ (入場)',
+      '4. ホームへの案内に従う',
+      '5. 出るときもT-moneyをタッチ (退場) - 重要！',
+      '',
+      '🚌 バスの利用',
+      '- 青: 長距離幹線バス',
+      '- 緑: 短距離支線バス',
+      '- 赤: 広域急行バス',
+      '- 黄: 循環バス',
+      '',
+      '乗車時と下車時の両方でカードをタッチ',
+      '',
+      '📱 便利なアプリ',
+      '- Kakao Metro (地下鉄路線図)',
+      '- Naver Map (経路案内)',
+      '- Google Maps (基本ナビ)'
+    ],
+    tips_en: [
       'Subway runs 5:30 AM - midnight',
       'Transfer within 30 min is free',
       'Always tap out to avoid overcharge'
     ],
+    tips_ko: [
+      '지하철 운행시간: 오전 5:30 - 자정',
+      '30분 이내 환승 무료',
+      '항상 나갈 때 찍어야 추가 요금 방지'
+    ],
+    tips_ja: [
+      '地下鉄運行時間: 午前5:30 - 深夜',
+      '30分以内の乗り換えは無料',
+      '必ず出口でタッチして追加料金を防ぐ'
+    ],
     closing_en: "Seoul's public transport is super convenient! 🐝 Enjoy your ride!",
-    closing_ko: "서울 대중교통 정말 편리하죠? 🐝 즐거운 여행 되세요!"
+    closing_ko: "서울 대중교통 정말 편리하죠? 🐝 즐거운 여행 되세요!",
+    closing_ja: "ソウルの公共交通機関はとても便利です！🐝 楽しい旅を！"
   },
 
   tip_culture: {
     id: 'tip_culture',
     title_en: 'Tipping Culture',
     title_ko: '팁 문화',
+    title_ja: 'チップ文化',
     emoji: '💰',
     keywords: ['팁', 'tip', 'tipping', 'service charge', '봉사료'],
     content_en: [
@@ -172,19 +240,55 @@ export const faqCards: Record<string, FaqCard> = {
       '⚠️ 예외',
       '고급 호텔이나 외국인 대상 서비스는 팁을 받을 수 있으나, 기대되지 않음.'
     ],
-    tips: [
+    content_ja: [
+      '✨ 朗報：チップ不要！',
+      '',
+      '韓国にはチップ文化がありません。',
+      '',
+      '🍽️ レストラン',
+      '- チップ不要',
+      '- サービス料は会計に含まれる',
+      '- 表示金額だけ支払う',
+      '',
+      '🚕 タクシー',
+      '- チップ不要',
+      '- 切り上げは任意',
+      '',
+      '🏨 ホテル',
+      '- ハウスキーピングにチップ不要',
+      '- ベルボーイにチップ不要',
+      '',
+      '💇 美容室 & スパ',
+      '- チップ不要',
+      '',
+      '⚠️ 例外',
+      '高級ホテルや外国人向けサービスはチップを受け取ることもありますが、期待はされていません。'
+    ],
+    tips_en: [
       'Service is included in the price',
       'Tipping might even be refused',
       'Just enjoy without worrying about tips!'
     ],
+    tips_ko: [
+      '서비스 요금이 가격에 포함됨',
+      '팁을 거절하는 경우도 있음',
+      '팁 걱정 없이 즐기세요!'
+    ],
+    tips_ja: [
+      'サービス料は価格に含まれる',
+      'チップを断られることもある',
+      'チップを気にせず楽しんでください！'
+    ],
     closing_en: "No tipping stress - that's the Korean way! 🐝 Just enjoy your meal!",
-    closing_ko: "팁 걱정 없이 편하게 즐기세요! 🐝 이게 한국 스타일이에요!"
+    closing_ko: "팁 걱정 없이 편하게 즐기세요! 🐝 이게 한국 스타일이에요!",
+    closing_ja: "チップのストレスなし - これが韓国スタイル！🐝 食事を楽しんでください！"
   },
 
   dining_etiquette: {
     id: 'dining_etiquette',
     title_en: 'Dining Etiquette',
     title_ko: '식사 예절',
+    title_ja: '食事マナー',
     emoji: '🍽️',
     keywords: ['식사', 'dining', 'eating', 'restaurant', '음식', 'food', '예절', 'etiquette', 'manners'],
     content_en: [
@@ -239,19 +343,57 @@ export const faqCards: Record<string, FaqCard> = {
       '- 대부분 음식점 금연',
       '- 외부 흡연 구역 지정'
     ],
-    tips: [
+    content_ja: [
+      '🥄 基本マナー',
+      '- 年長者が食べ始めるまで待つ',
+      '- 飲み物を注ぐ/受けるときは両手を使う',
+      '- 箸をご飯に立てない',
+      '',
+      '🆓 無料バンチャン（おかず）',
+      '- おかわり無料！店員に頼めばOK',
+      '- 「パンチャン チュセヨ」(반찬 주세요)と言う',
+      '',
+      '💧 セルフサービスの水',
+      '- 水は大体セルフサービス',
+      '- ウォーターサーバーやピッチャーを探す',
+      '',
+      '🔔 店員を呼ぶ',
+      '- テーブルの呼び出しボタンを押す',
+      '- または「ヨギヨ！」(여기요!)と言う',
+      '',
+      '💳 お会計',
+      '- テーブルではなくカウンターで支払い',
+      '- レシートを持ってレジへ',
+      '',
+      '🚭 禁煙',
+      '- ほとんどの飲食店は禁煙',
+      '- 外に喫煙所あり'
+    ],
+    tips_en: [
       'Sharing food is common and encouraged',
       'Slurping noodles is acceptable',
       'Leaving some food on plate is okay'
     ],
+    tips_ko: [
+      '음식 나눠 먹는 것이 일반적',
+      '면 후루룩 소리 내며 먹어도 됨',
+      '음식 약간 남겨도 괜찮음'
+    ],
+    tips_ja: [
+      '料理をシェアするのが一般的',
+      '麺をすする音は問題なし',
+      '少し残しても大丈夫'
+    ],
     closing_en: "Now you're ready for a Korean feast! 🐝 맛있게 드세요! (Enjoy your meal!)",
-    closing_ko: "이제 한국 음식 제대로 즐길 준비 완료! 🐝 맛있게 드세요!"
+    closing_ko: "이제 한국 음식 제대로 즐길 준비 완료! 🐝 맛있게 드세요!",
+    closing_ja: "これで韓国料理を楽しむ準備完了！🐝 맛있게 드세요! (召し上がれ！)"
   },
 
   convenience_store: {
     id: 'convenience_store',
     title_en: 'Convenience Store Guide',
     title_ko: '편의점 활용법',
+    title_ja: 'コンビニ活用ガイド',
     emoji: '🏪',
     keywords: ['편의점', 'convenience store', 'cu', 'gs25', '세븐일레븐', '7-eleven', 'emart24'],
     content_en: [
@@ -312,19 +454,60 @@ export const faqCards: Record<string, FaqCard> = {
       '💳 결제',
       '현금, 카드, 삼성/애플페이 모두 사용 가능'
     ],
-    tips: [
+    content_ja: [
+      '🏪 主要チェーン',
+      '- CU (オレンジ)',
+      '- GS25 (青)',
+      '- セブンイレブン (緑/赤)',
+      '- Emart24 (黄)',
+      '',
+      '⏰ 24時間営業',
+      'ほとんどのコンビニは24時間営業！',
+      '',
+      '🍱 コンビニでできること',
+      '✅ お弁当購入 (도시락)',
+      '✅ 温め (店員に頼む)',
+      '✅ T-moneyチャージ',
+      '✅ 公共料金支払い',
+      '✅ ATM利用',
+      '✅ 書類印刷',
+      '✅ コンサート/映画チケット購入',
+      '✅ イートインスペース利用',
+      '',
+      '🎁 人気商品',
+      '- 三角キンパ (삼각김밥)',
+      '- カップ麺 (컵라면)',
+      '- バナナ牛乳 (바나나우유)',
+      '- 韓国スナック',
+      '',
+      '💳 支払い',
+      '現金、カード、Samsung/Apple Pay全て対応'
+    ],
+    tips_en: [
       'Free Wi-Fi usually available',
       'Restrooms available in most stores',
       'Perfect for late-night meals'
     ],
+    tips_ko: [
+      '무료 Wi-Fi 대부분 가능',
+      '대부분 매장에 화장실 있음',
+      '야식으로 딱 좋음'
+    ],
+    tips_ja: [
+      '無料Wi-Fi大体あり',
+      'ほとんどの店舗にトイレあり',
+      '夜食にぴったり'
+    ],
     closing_en: "Korean convenience stores are a traveler's best friend! 🐝 Try everything!",
-    closing_ko: "한국 편의점은 여행자의 천국이에요! 🐝 다양하게 즐겨보세요!"
+    closing_ko: "한국 편의점은 여행자의 천국이에요! 🐝 다양하게 즐겨보세요!",
+    closing_ja: "韓国のコンビニは旅行者の味方！🐝 色々試してみてください！"
   },
 
   useful_apps: {
     id: 'useful_apps',
     title_en: 'Useful Travel Apps',
     title_ko: '유용한 앱',
+    title_ja: '便利な旅行アプリ',
     emoji: '📱',
     keywords: ['앱', 'app', 'application', '어플', 'mobile', 'phone'],
     content_en: [
@@ -389,19 +572,62 @@ export const faqCards: Record<string, FaqCard> = {
       '- 네이버페이',
       '- 토스'
     ],
-    tips: [
+    content_ja: [
+      '📱 韓国旅行必須アプリ',
+      '',
+      '🗺️ ナビゲーション',
+      '- Naver Map (네이버 지도) ⭐ 韓国で最高',
+      '- Kakao Map (카카오맵)',
+      '- Google Maps (基本)',
+      '',
+      '🚇 交通',
+      '- Kakao Metro (地下鉄路線図)',
+      '- Kakao T (タクシーアプリ)',
+      '- KakaoTalk (メッセージ + タクシー)',
+      '',
+      '🌐 翻訳',
+      '- Papago (파파고) ⭐ 韓国語に最適',
+      '- Google翻訳',
+      '- Naver辞書',
+      '',
+      '🍽️ デリバリー',
+      '- Yogiyo (요기요)',
+      '- Baedal Minjok (배달의민족)',
+      '- Coupang Eats',
+      '',
+      '💬 メッセージ',
+      '- KakaoTalk (카카오톡) ⭐ みんな使ってる！',
+      '',
+      '💳 決済',
+      '- Kakao Pay',
+      '- Naver Pay',
+      '- Toss'
+    ],
+    tips_en: [
       'Naver Map is more accurate than Google Maps in Korea',
       'Papago works better for Korean-English translation',
       'KakaoTalk is like WhatsApp in Korea - everyone has it'
     ],
+    tips_ko: [
+      '네이버 지도가 한국에서는 구글 맵보다 정확함',
+      '파파고가 한국어-영어 번역에 더 좋음',
+      '카카오톡은 한국의 WhatsApp - 모두가 사용'
+    ],
+    tips_ja: [
+      'Naver Mapは韓国ではGoogle Mapsより正確',
+      'Papagoは韓国語翻訳に最適',
+      'KakaoTalkは韓国のWhatsApp - みんな使ってる'
+    ],
     closing_en: "With these apps, you're all set for Korea! 🐝 Download before you arrive!",
-    closing_ko: "이 앱들만 있으면 한국 여행 완벽! 🐝 미리 다운받아두세요!"
+    closing_ko: "이 앱들만 있으면 한국 여행 완벽! 🐝 미리 다운받아두세요!",
+    closing_ja: "これらのアプリがあれば韓国旅行は完璧！🐝 到着前にダウンロードしておいてね！"
   },
 
   emergency: {
     id: 'emergency',
     title_en: 'Emergency Contacts',
     title_ko: '긴급 연락처',
+    title_ja: '緊急連絡先',
     emoji: '🆘',
     keywords: ['긴급', 'emergency', '119', '112', 'police', '경찰', 'fire', '소방', 'ambulance', '구급차', 'help'],
     content_en: [
@@ -466,19 +692,62 @@ export const faqCards: Record<string, FaqCard> = {
       '"여기" = Here',
       '"Emergency" 대부분 통함'
     ],
-    tips: [
+    content_ja: [
+      '🚨 緊急電話番号',
+      '',
+      '🚓 警察: 112',
+      '- 犯罪、盗難、紛失物',
+      '- 英語対応可',
+      '',
+      '🚑 消防/救急: 119',
+      '- 医療緊急事態',
+      '- 火災',
+      '- 英語対応可',
+      '',
+      '☎️ その他重要な番号',
+      '- 観光案内: 1330 (英語サポート)',
+      '- カード紛失: 銀行に連絡',
+      '- 大使館: 自国の大使館番号を確認',
+      '',
+      '🏥 病院',
+      '- セブランス病院 (세브란스병원)',
+      '- サムスンソウル病院 (삼성서울병원)',
+      '- ソウルアサン病院 (서울아산병원)',
+      '',
+      '💊 薬局',
+      '「약국」(ヤックク)の看板を探す',
+      '多くは夜9-10時まで営業',
+      '',
+      '🗣️ 何と言う？',
+      '「トワジュセヨ」(도와주세요) = 助けて',
+      '「ヨギ」(여기) = ここ',
+      '「Emergency」ほとんどの場合通じる'
+    ],
+    tips_en: [
       'Save 1330 (Tourist Hotline) in your phone',
       'Korea is very safe, but always be prepared',
       'Most hospitals have English-speaking staff'
     ],
+    tips_ko: [
+      '1330 (관광안내) 저장해두세요',
+      '한국은 매우 안전하지만 항상 대비하세요',
+      '대부분 병원에 영어 가능 직원 있음'
+    ],
+    tips_ja: [
+      '1330 (観光案内)を保存しておく',
+      '韓国はとても安全だが常に備えを',
+      'ほとんどの病院に英語対応スタッフがいる'
+    ],
     closing_en: "Stay safe and enjoy your trip! 🐝 Korea is one of the safest countries!",
-    closing_ko: "안전한 여행 되세요! 🐝 한국은 세계에서 가장 안전한 나라 중 하나예요!"
+    closing_ko: "안전한 여행 되세요! 🐝 한국은 세계에서 가장 안전한 나라 중 하나예요!",
+    closing_ja: "安全に旅行を楽しんでください！🐝 韓国は世界で最も安全な国の一つです！"
   },
 
   taxi: {
     id: 'taxi',
     title_en: 'Taking a Taxi',
     title_ko: '택시 이용 팁',
+    title_ja: 'タクシーの乗り方',
     emoji: '🚕',
     keywords: ['택시', 'taxi', 'cab', 'kakao t', 'uber'],
     content_en: [
@@ -549,19 +818,65 @@ export const faqCards: Record<string, FaqCard> = {
       '- 교통 정체: 시간 요금 부과',
       '- 항상 영수증 받기'
     ],
-    tips: [
+    content_ja: [
+      '🚖 タクシーの種類',
+      '',
+      '🧡 オレンジ/シルバー (一般)',
+      '- 標準料金',
+      '- 最も一般的',
+      '',
+      '⚫ 黒 (モボム/高級)',
+      '- 料金は高いがサービスが良い',
+      '- 大きな車',
+      '- 英語対応ドライバー',
+      '',
+      '📱 Kakao T アプリ',
+      'タクシーを呼ぶ最良の方法！',
+      '1. Kakao T アプリをダウンロード',
+      '2. 地図で乗車/目的地を設定',
+      '3. 乗車を確認',
+      '4. アプリまたは現金で支払い',
+      '',
+      '🙋 路上で拾う',
+      '- 赤いランプ = 空車',
+      '- 目的地を韓国語で見せる (スマホ画面)',
+      '',
+      '💳 支払い',
+      '- 現金',
+      '- クレジットカード (ほとんどのタクシー)',
+      '- Kakao Pay / T-money',
+      '',
+      '⚠️ ヒント',
+      '- 韓国にUberはない',
+      '- 深夜 (0時-4時): 20%割増',
+      '- 渋滞時: 時間料金がかかる',
+      '- 必ず領収書をもらう'
+    ],
+    tips_en: [
       'Kakao T is easier than hailing on street',
       'Save common destinations in Korean on phone',
       'Taxis are generally safe and affordable'
     ],
+    tips_ko: [
+      '카카오 T가 길거리에서 잡는 것보다 쉬움',
+      '자주 가는 목적지를 한글로 저장',
+      '택시는 대체로 안전하고 저렴함'
+    ],
+    tips_ja: [
+      'Kakao Tは路上で拾うより簡単',
+      'よく行く目的地を韓国語で保存',
+      'タクシーは概して安全で手頃'
+    ],
     closing_en: "Getting around Seoul is easy! 🐝 Kakao T is your best friend!",
-    closing_ko: "서울 택시 이용 정말 쉽죠? 🐝 카카오 T 앱 꼭 써보세요!"
+    closing_ko: "서울 택시 이용 정말 쉽죠? 🐝 카카오 T 앱 꼭 써보세요!",
+    closing_ja: "ソウルでの移動は簡単！🐝 Kakao Tが一番の味方！"
   },
 
   voltage: {
     id: 'voltage',
     title_en: 'Electricity & Plugs',
     title_ko: '전압/플러그',
+    title_ja: '電圧・コンセント',
     emoji: '🔌',
     keywords: ['전압', 'voltage', 'plug', '플러그', 'adapter', '어댑터', 'charger', '충전'],
     content_en: [
@@ -626,19 +941,62 @@ export const faqCards: Record<string, FaqCard> = {
       '📱 USB 충전',
       '대부분 카페와 편의점에 USB 포트나 콘센트 있음!'
     ],
-    tips: [
+    content_ja: [
+      '⚡ 電圧',
+      '韓国は220V / 60Hzを使用',
+      '',
+      '🔌 プラグタイプ',
+      '- Cタイプ (丸ピン2本) ⭐ 最も一般的',
+      '- Fタイプ (アース付き丸ピン2本)',
+      '',
+      '🌍 変換アダプターは必要？',
+      '',
+      '✅ アダプター不要:',
+      '- ヨーロッパ (ほとんどの国)',
+      '- ロシア',
+      '- 中東',
+      '',
+      '⚠️ アダプター必要:',
+      '- アメリカ (Aタイプ)',
+      '- イギリス (Gタイプ)',
+      '- 日本 (Aタイプ)',
+      '- オーストラリア (Iタイプ)',
+      '- 中国 (混合)',
+      '',
+      '🏪 購入場所',
+      '- 空港のコンビニ',
+      '- ダイソー (1,000-5,000ウォン)',
+      '- 電気店',
+      '- ホテルフロント (時々)',
+      '',
+      '📱 USB充電',
+      'ほとんどのカフェやコンビニにUSBポートやコンセントあり！'
+    ],
+    tips_en: [
       'Check your device - many support 110-240V',
       'Buy adapter at airport for convenience',
       'Hotels often provide adapters for free'
     ],
+    tips_ko: [
+      '기기 확인 - 대부분 110-240V 지원',
+      '편의를 위해 공항에서 어댑터 구매',
+      '호텔에서 무료로 어댑터 제공하는 경우 많음'
+    ],
+    tips_ja: [
+      'デバイスを確認 - 多くは110-240V対応',
+      '便利のため空港でアダプターを購入',
+      'ホテルで無料でアダプターを貸してくれることも'
+    ],
     closing_en: "Don't let dead batteries stop your adventure! 🐝 Grab an adapter and you're good to go!",
-    closing_ko: "충전 걱정은 이제 끝! 🐝 어댑터만 있으면 문제없어요!"
+    closing_ko: "충전 걱정은 이제 끝! 🐝 어댑터만 있으면 문제없어요!",
+    closing_ja: "バッテリー切れで冒険を止めないで！🐝 アダプターがあれば準備OK！"
   },
 
   basic_korean: {
     id: 'basic_korean',
     title_en: 'Basic Korean Phrases',
     title_ko: '기본 한국어 표현',
+    title_ja: '基本韓国語フレーズ',
     emoji: '🗣️',
     keywords: ['한국어', 'korean', 'language', '말', 'speak', 'phrase', '표현', 'hello', 'thank you'],
     content_en: [
@@ -701,12 +1059,53 @@ export const faqCards: Record<string, FaqCard> = {
       '7: 칠, 8: 팔, 9: 구',
       '10: 십, 100: 백, 1000: 천'
     ],
-    tips: [
+    content_ja: [
+      '👋 必須フレーズ',
+      '',
+      '**挨拶**',
+      '- こんにちは: 안녕하세요 (アンニョンハセヨ)',
+      '- ありがとう: 감사합니다 (カムサハムニダ)',
+      '- すみません: 저기요 (チョギヨ)',
+      '- ごめんなさい: 죄송합니다 (チェソンハムニダ)',
+      '- さようなら: 안녕히 가세요 (アンニョンヒ カセヨ)',
+      '',
+      '**レストランで**',
+      '- ください: ~주세요 (~ジュセヨ)',
+      '- お水ください: 물 주세요 (ムル ジュセヨ)',
+      '- いくら?: 얼마예요? (オルマエヨ)',
+      '- おいしい: 맛있어요 (マシッソヨ)',
+      '- お会計: 계산해 주세요 (ケサネ ジュセヨ)',
+      '',
+      '**便利な表現**',
+      '- はい: 네 (ネ)',
+      '- いいえ: 아니요 (アニヨ)',
+      '- わかりません: 모르겠어요 (モルゲッソヨ)',
+      '- 助けて: 도와주세요 (トワジュセヨ)',
+      '- どこ?: 어디예요? (オディエヨ)',
+      '',
+      '**数字**',
+      '1: 일 (イル), 2: 이 (イ), 3: 삼 (サム)',
+      '4: 사 (サ), 5: 오 (オ), 6: 육 (ユク)',
+      '7: 칠 (チル), 8: 팔 (パル), 9: 구 (ク)',
+      '10: 십 (シプ), 100: 백 (ペク), 1000: 천 (チョン)'
+    ],
+    tips_en: [
       'Koreans appreciate any attempt to speak Korean!',
       'Pointing and showing pictures works well',
       'Download Papago for quick translations'
     ],
+    tips_ko: [
+      '한국어 시도하면 한국인들이 좋아함!',
+      '손가락으로 가리키거나 사진 보여주기도 효과적',
+      '빠른 번역을 위해 파파고 다운로드'
+    ],
+    tips_ja: [
+      '韓国語を話そうとすると韓国人は喜ぶ！',
+      '指差しや写真を見せるのも効果的',
+      '素早い翻訳にはPapagoをダウンロード'
+    ],
     closing_en: "You're ready to break the language barrier! 🐝 안녕하세요!",
-    closing_ko: "이제 한국어로 소통할 준비 완료! 🐝 자신감 있게 말해보세요!"
+    closing_ko: "이제 한국어로 소통할 준비 완료! 🐝 자신감 있게 말해보세요!",
+    closing_ja: "言葉の壁を越える準備完了！🐝 안녕하세요!"
   }
 };
