@@ -363,6 +363,7 @@ function App() {
         message={beatyBubbleMessage}
         isVisible={isBeatyBubbleVisible}
         onClose={() => setIsBeatyBubbleVisible(false)}
+        isDiscovering={isDiscovering}
       />
 
       {/* Weather Detail Panel */}

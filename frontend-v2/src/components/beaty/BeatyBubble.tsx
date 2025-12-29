@@ -10,6 +10,7 @@ interface BeatyBubbleProps {
   autoHide?: boolean;
   backgroundColor?: string;
   bubbleColor?: string; // 말풍선 색깔
+  isDiscovering?: boolean; // 발견모드 여부
 }
 
 export default function BeatyBubble({
@@ -19,8 +20,13 @@ export default function BeatyBubble({
   onClose,
   autoHide = true,
   backgroundColor,
-  bubbleColor = '#FFF8DC' // 기본값: 연한 노란색
+  bubbleColor = '#FFF8DC', // 기본값: 연한 노란색
+  isDiscovering = false
 }: BeatyBubbleProps) {
+  // 발견모드에 따른 비티 이미지
+  const beatyImage = isDiscovering
+    ? '/img/beaty/beaty_float_discovery.png'
+    : '/img/beaty/beaty_float.png';
   const [isClosing, setIsClosing] = useState(false);
   const autoHideTimerRef = useRef<number | null>(null);
 
@@ -73,7 +79,7 @@ export default function BeatyBubble({
     return (
       <div className="beaty-panel-section" style={{ backgroundColor }}>
         <div className="beaty-panel-avatar">
-          <img src="/img/beaty/beaty_float.png" alt="Beaty" />
+          <img src={beatyImage} alt="Beaty" />
         </div>
         <div className="beaty-panel-bubble" style={{ backgroundColor: bubbleColor }}>
           <div
@@ -111,7 +117,7 @@ export default function BeatyBubble({
         </div>
       </div>
       <div className="beaty-floating-avatar">
-        <img src="/img/beaty/beaty_float.png" alt="Beaty" />
+        <img src={beatyImage} alt="Beaty" />
       </div>
     </div>
   );
