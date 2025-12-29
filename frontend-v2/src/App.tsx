@@ -331,6 +331,8 @@ function App() {
         onFocus={handleChatBarFocus}
         isChatOpen={isChatOpen}
         isHidden={isDiscovering}
+        language={language}
+        onSpeechError={showBeatyBubble}
       />
 
       {/* Chat Window */}

@@ -1,0 +1,118 @@
+/* 배경 딤 */
+.voice-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 9998;
+}
+
+/* 바텀시트 */
+.voice-sheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100vw;
+  background: white;
+  border-radius: 20px 20px 0 0;
+  padding: 20px 20px 40px 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+  animation: voiceSlideUp 0.3s ease-out;
+}
+
+/* 닫기 버튼 */
+.voice-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+/* 안내 텍스트 */
+.voice-title {
+  font-size: 16px;
+  color: #333;
+  font-weight: 500;
+  margin-top: 10px;
+  text-align: center;
+}
+
+/* 예시 문구 */
+.voice-example {
+  margin-top: 16px;
+  padding: 12px 24px;
+  background: #F5F5F5;
+  border-radius: 20px;
+  font-size: 15px;
+  color: #666;
+  text-align: center;
+}
+
+/* 마이크 영역 */
+.voice-mic-area {
+  position: relative;
+  margin-top: 30px;
+  width: 100px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 음성 파동 원 */
+.voice-wave {
+  position: absolute;
+  border-radius: 50%;
+  transition: transform 0.1s ease-out;
+}
+
+.voice-wave.wave-1 {
+  width: 80px;
+  height: 80px;
+  background: rgba(0, 102, 204, 0.15);
+}
+
+.voice-wave.wave-2 {
+  width: 100px;
+  height: 100px;
+  background: rgba(0, 102, 204, 0.08);
+}
+
+/* 마이크 버튼 */
+.voice-mic-btn {
+  width: 60px;
+  height: 60px;
+  background: #0066CC;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  z-index: 1;
+  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
+}
+
+/* 애니메이션 */
+@keyframes voiceSlideUp {
+  0% {
+    transform: translateY(100%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}

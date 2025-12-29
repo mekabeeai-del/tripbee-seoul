@@ -88,6 +88,58 @@
   transform: scale(0.95);
 }
 
+/* 마이크 버튼 */
+.chat-bar-mic-btn {
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  animation: micColorPulse 2s ease-in-out infinite;
+}
+
+/* 채팅창 열렸을 때 펄스 멈춤 */
+.chat-bar.active .chat-bar-mic-btn {
+  animation: none;
+  color: #666;
+}
+
+.chat-bar-mic-btn:hover {
+  color: #0066CC;
+  background: rgba(0, 102, 204, 0.1);
+}
+
+.chat-bar-mic-btn.listening {
+  color: #FF4444;
+  background: rgba(255, 68, 68, 0.1);
+  animation: micPulse 1s ease-in-out infinite;
+}
+
+@keyframes micPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+@keyframes micColorPulse {
+  0%, 100% {
+    color: #666;
+  }
+  50% {
+    color: #0066CC;
+  }
+}
+
 @keyframes chatBarPulse {
   0%, 100% {
     transform: scale(1);
