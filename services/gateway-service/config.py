@@ -26,8 +26,11 @@ SERVICE_VERSION = "1.0"
 
 # CORS
 ALLOWED_ORIGINS = [
-    "http://localhost:5173",  # 로컬 개발
-    "https://tripbee-seoul.vercel.app"  # 프로덕션
+    "http://localhost:5173",          # 로컬 개발
+    "http://localhost",               # Capacitor Android
+    "capacitor://localhost",          # Capacitor iOS
+    "https://localhost",              # Capacitor HTTPS
+    "https://tripbee-seoul.vercel.app"  # 프로덕션 (Vercel)
 ]
 
 # Backend Service URLs (환경별)
