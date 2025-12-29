@@ -21,12 +21,16 @@ from health import router as health_router
 
 app = FastAPI(title=SERVICE_NAME, version=SERVICE_VERSION)
 
-# CORS - Gateway만 허용 (Frontend는 Gateway를 통해서만 접근)
+# CORS - Gateway + Capacitor 앱 허용
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:8080",  # Gateway (로컬)
-        "https://gateway-service.onrender.com"  # Gateway (프로덕션)
+        "http://localhost",       # Capacitor Android
+        "capacitor://localhost",  # Capacitor iOS
+        "https://localhost",      # Capacitor HTTPS
+        "https://gateway-service.onrender.com",  # Gateway (프로덕션)
+        "https://tripbee-seoul.vercel.app",      # Vercel (프로덕션)
     ],
     allow_credentials=True,
     allow_methods=["*"],
