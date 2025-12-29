@@ -1,7 +1,8 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { getTranslation, type Language } from '../locales';
 
 interface UseSpeechRecognitionProps {
-  language?: 'ko' | 'en' | 'ja';
+  language?: Language;
   onResult?: (text: string) => void;
   onError?: (error: string) => void;
 }
@@ -38,11 +39,13 @@ export function useSpeechRecognition({
   // 콜백을 ref로 저장 (재생성 방지)
   const onResultRef = useRef(onResult);
   const onErrorRef = useRef(onError);
+  const languageRef = useRef(language);
 
   useEffect(() => {
     onResultRef.current = onResult;
     onErrorRef.current = onError;
-  }, [onResult, onError]);
+    languageRef.current = language;
+  }, [onResult, onError, language]);
 
   // 브라우저 지원 확인
   const isSupported = typeof window !== 'undefined' &&
@@ -76,14 +79,15 @@ export function useSpeechRecognition({
 
     recognition.onerror = (event) => {
       console.error('[STT] Error:', event.error);
+      const t = getTranslation(languageRef.current || 'ko');
       const errorMessages: Record<string, string> = {
-        'not-allowed': '마이크 권한이 필요해요',
-        'no-speech': '음성이 감지되지 않았어요',
-        'audio-capture': '마이크를 찾을 수 없어요',
-        'network': '네트워크 오류가 발생했어요',
-        'aborted': '음성인식이 취소되었어요'
+        'not-allowed': t.voice.errors.notAllowed,
+        'no-speech': t.voice.errors.noSpeech,
+        'audio-capture': t.voice.errors.audioCapture,
+        'network': t.voice.errors.network,
+        'aborted': t.voice.errors.default
       };
-      onErrorRef.current?.(errorMessages[event.error] || '음성인식 오류가 발생했어요');
+      onErrorRef.current?.(errorMessages[event.error] || t.voice.errors.default);
       setIsListening(false);
     };
 

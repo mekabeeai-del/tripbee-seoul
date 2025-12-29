@@ -17,13 +17,15 @@ import BeatyBubble from './components/beaty/BeatyBubble';
 import FaqCardModal from './components/faq/FaqCardModal';
 import { faqCards } from './data/faqCards';
 import type { FaqCard } from './data/faqCards';
-import { DEMO_CAFE_PLACE_IDS, CAFE_KEYWORDS, CAFE_BEATY_MESSAGES } from './data/demoCafes';
+import { DEMO_CAFE_PLACE_IDS, CAFE_KEYWORDS } from './data/demoCafes';
 import { getPlacesByIds } from './services/poiApi';
 import { useGeoLocation } from './hooks/useGeoLocation';
 import { useAuth } from './hooks/useAuth';
 import { useWeather } from './hooks/useWeather';
 import { useBackNavigation } from './hooks/useBackNavigation';
 import { useDiscoveryMode } from './hooks/useDiscoveryMode';
+import { useTranslation } from './hooks/useTranslation';
+import { getSavedLanguage, saveLanguage, type Language } from './locales';
 import type { VisiblePOI } from './hooks/useDiscoveryMode';
 import './App.css';
 
@@ -36,8 +38,21 @@ function App() {
   const [isHomePanelOpen, setIsHomePanelOpen] = useState(false);
   const [isHomePanelClosing, setIsHomePanelClosing] = useState(false);
   const [isBeatyBubbleVisible, setIsBeatyBubbleVisible] = useState(true);
-  const [beatyBubbleMessage, setBeatyBubbleMessage] = useState('멋진 여행 하고 계신가요? 어떤 장소를 원하시나요?');
-  const [language, setLanguage] = useState<'ko' | 'en' | 'ja'>('ko');
+  const [language] = useState<Language>(getSavedLanguage);
+
+  // 번역
+  const t = useTranslation(language);
+  const [beatyBubbleMessage, setBeatyBubbleMessage] = useState(t.beaty.defaultMessage);
+
+  // 언어 변경 핸들러 (앱 재시작)
+  const handleLanguageChange = (newLang: Language) => {
+    if (newLang !== language) {
+      if (window.confirm(t.home.languageChangeConfirm)) {
+        saveLanguage(newLang);
+        window.location.reload();
+      }
+    }
+  };
 
   // 인증 상태
   const { isLoggedIn, currentUser, login, logout } = useAuth();
@@ -59,7 +74,8 @@ function App() {
     map,
     position: gpsPosition,
     weather: currentWeather,
-    onMessage: showBeatyBubble
+    onMessage: showBeatyBubble,
+    language
   });
   const [activeFaq, setActiveFaq] = useState<FaqCard | null>(null);
   const [selectedPOI, setSelectedPOI] = useState<VisiblePOI | null>(null);
@@ -108,10 +124,10 @@ function App() {
     if (isCafeLoading) return;
 
     setIsCafeLoading(true);
-    showBeatyBubble(CAFE_BEATY_MESSAGES.searching);
+    showBeatyBubble(t.cafe.searching);
 
     try {
-      const places = await getPlacesByIds(DEMO_CAFE_PLACE_IDS);
+      const places = await getPlacesByIds(DEMO_CAFE_PLACE_IDS, language);
 
       if (places.length > 0) {
         const newCafePOIs: VisiblePOI[] = places.map(place => ({
@@ -131,11 +147,11 @@ function App() {
           user_rating_count: place.user_rating_count,
           photos: place.photos,
           reviews: place.reviews,
-          beaty_comment: place.beaty_comment || '커피 한 잔의 여유를 즐겨보세요!'
+          beaty_comment: place.beaty_comment || t.cafe.defaultComment
         }));
 
         setCafePOIs(newCafePOIs);
-        showBeatyBubble(CAFE_BEATY_MESSAGES.found(newCafePOIs.length));
+        showBeatyBubble(t.cafe.found(newCafePOIs.length));
 
         // 첫 번째 카페 위치로 지도 이동
         if (map.current && newCafePOIs.length > 0) {
@@ -146,11 +162,11 @@ function App() {
           });
         }
       } else {
-        showBeatyBubble(CAFE_BEATY_MESSAGES.error);
+        showBeatyBubble(t.cafe.error);
       }
     } catch (error) {
       console.error('Failed to search cafes:', error);
-      showBeatyBubble(CAFE_BEATY_MESSAGES.error);
+      showBeatyBubble(t.cafe.error);
     } finally {
       setIsCafeLoading(false);
     }
@@ -176,7 +192,7 @@ function App() {
     } else {
       // 일반 응답
       setIsChatOpen(false);
-      showBeatyBubble(`"${message}"에 대한 답변입니다! 비티가 곧 추천해드릴게요.`);
+      showBeatyBubble(t.beaty.searchResponse(message));
     }
   };
 
@@ -296,7 +312,7 @@ function App() {
           }}
           className="clear-discovery-btn"
         >
-          발견 정보 지우기
+          {t.discovery.clearButton}
         </button>
       )}
 
@@ -334,6 +350,7 @@ function App() {
         isHidden={isDiscovering}
         language={language}
         onSpeechError={showBeatyBubble}
+        placeholder={t.chatBar.placeholder}
       />
 
       {/* Chat Window */}
@@ -341,6 +358,7 @@ function App() {
         isOpen={isChatOpen}
         onClose={() => setIsChatOpen(false)}
         onSendMessage={handleSendMessage}
+        language={language}
       />
 
       {/* POI Detail Panel */}
@@ -358,6 +376,7 @@ function App() {
         imageUrl={selectedPOI?.image || 'https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=800&h=600&fit=crop'}
         expandFrom={clickPosition}
         poi={selectedPOI}
+        language={language}
       />
 
       {/* Beaty Bubble */}
@@ -375,6 +394,7 @@ function App() {
         onClose={() => setIsWeatherDetailOpen(false)}
         latitude={gpsPosition?.latitude}
         longitude={gpsPosition?.longitude}
+        language={language}
       />
 
       {/* Home Panel */}
@@ -383,7 +403,7 @@ function App() {
         onClose={() => setIsHomePanelOpen(false)}
         onClosing={setIsHomePanelClosing}
         language={language}
-        onLanguageChange={setLanguage}
+        onLanguageChange={handleLanguageChange}
         isLoggedIn={isLoggedIn}
         onLogin={handleLogin}
         onLogout={handleLogout}

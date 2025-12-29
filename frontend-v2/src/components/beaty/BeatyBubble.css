@@ -8,6 +8,12 @@
   gap: 10px;
   z-index: 15;
   animation: slideInFromRight 0.4s ease-out;
+  transition: top 0.3s ease;
+}
+
+/* 발견모드일 때 최상단으로 */
+.beaty-floating.discovery-mode {
+  top: 20px;
 }
 
 .beaty-floating.closing {
@@ -81,7 +87,8 @@
 
 .beaty-floating-text {
   min-height: 18px;
-  word-break: keep-all;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 /* Panel variant - 홈/날씨 패널용 */
@@ -121,6 +128,8 @@
   color: #333;
   flex: 1;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 /* 말풍선 꼭지 - 왼쪽으로 향함 */

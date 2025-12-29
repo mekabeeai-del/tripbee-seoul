@@ -11,6 +11,7 @@ interface ChatBarProps {
   isHidden?: boolean;
   language?: 'ko' | 'en' | 'ja';
   onSpeechError?: (error: string) => void;
+  placeholder?: string;
 }
 
 export default function ChatBar({
@@ -19,7 +20,8 @@ export default function ChatBar({
   isChatOpen,
   isHidden,
   language = 'ko',
-  onSpeechError
+  onSpeechError,
+  placeholder = '오늘 여행은 어떤 기분이신가요?'
 }: ChatBarProps) {
   const [message, setMessage] = useState('');
   const [isFocused, setIsFocused] = useState(false);
@@ -71,7 +73,7 @@ export default function ChatBar({
     >
       {!message && !isFocused && !isChatOpen && (
         <div className="chat-bar-placeholder">
-          오늘 여행은 어떤 기분이신가요?
+          {placeholder}
         </div>
       )}
       <input

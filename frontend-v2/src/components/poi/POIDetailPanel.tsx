@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { MdClose, MdPhone, MdLanguage, MdAccessTime, MdStar, MdLocationOn } from 'react-icons/md';
 import type { VisiblePOI } from '../../hooks/useDiscoveryMode';
 import ExpandableOverlay from '../common/ExpandableOverlay';
 import BeatyBubble from '../beaty/BeatyBubble';
+import { getTranslation, type Language } from '../../locales';
 import './POIDetailPanel.css';
 
 type TabType = 'info' | 'reviews' | 'photos';
@@ -16,6 +17,7 @@ interface POIDetailPanelProps {
   description?: string;
   expandFrom?: { x: number; y: number } | null;
   poi?: VisiblePOI | null;
+  language?: Language;
 }
 
 export default function POIDetailPanel({
@@ -25,9 +27,11 @@ export default function POIDetailPanel({
   name,
   imageUrl,
   expandFrom,
-  poi
+  poi,
+  language = 'ko'
 }: POIDetailPanelProps) {
   const [activeTab, setActiveTab] = useState<TabType>('info');
+  const t = useMemo(() => getTranslation(language), [language]);
 
   // 편의시설 아이템 렌더링
   const renderFacilityItem = (label: string, value: boolean | undefined, emoji: string) => {
@@ -36,7 +40,7 @@ export default function POIDetailPanel({
       <div className={`facility-item ${value ? 'available' : 'unavailable'}`}>
         <span className="facility-emoji">{emoji}</span>
         <span className="facility-label">{label}</span>
-        <span className="facility-status">{value ? '가능' : '불가'}</span>
+        <span className="facility-status">{value ? t.poi.facilities.available : t.poi.facilities.unavailable}</span>
       </div>
     );
   };
@@ -71,7 +75,7 @@ export default function POIDetailPanel({
               )}
               {poi?.open_now !== undefined && (
                 <div className={`poi-open-badge ${poi.open_now ? 'open' : 'closed'}`}>
-                  {poi.open_now ? '영업 중' : '영업 종료'}
+                  {poi.open_now ? t.poi.openNow : t.poi.closed}
                 </div>
               )}
             </div>
@@ -93,7 +97,7 @@ export default function POIDetailPanel({
               {poi?.website && (
                 <div className="info-row clickable" onClick={() => window.open(poi.website, '_blank')}>
                   <MdLanguage className="info-icon" />
-                  <span>웹사이트 방문</span>
+                  <span>{t.poi.visitWebsite}</span>
                 </div>
               )}
             </div>
@@ -101,7 +105,7 @@ export default function POIDetailPanel({
             {/* 영업시간 */}
             {poi?.opening_hours && poi.opening_hours.length > 0 && (
               <div className="hours-section">
-                <h4><MdAccessTime /> 영업시간</h4>
+                <h4><MdAccessTime /> {t.poi.hours}</h4>
                 <div className="hours-list">
                   {poi.opening_hours.map((hour, idx) => (
                     <div key={idx} className="hour-item">{hour}</div>
@@ -119,16 +123,16 @@ export default function POIDetailPanel({
 
             {/* 편의시설 (기본정보에 포함) */}
             <div className="facilities-section">
-              <h4>🏷️ 편의시설</h4>
+              <h4>🏷️ {t.poi.facilities.title}</h4>
               <div className="facilities-grid">
-                {renderFacilityItem('주차', poi?.parking_available, '🅿️')}
-                {renderFacilityItem('아이 동반', poi?.good_for_children, '👶')}
-                {renderFacilityItem('휠체어 접근', poi?.wheelchair_accessible, '♿')}
-                {renderFacilityItem('채식 메뉴', poi?.vegetarian_food, '🥗')}
-                {renderFacilityItem('포장', poi?.takeout, '🥡')}
-                {renderFacilityItem('배달', poi?.delivery, '🛵')}
-                {renderFacilityItem('반려견 동반', poi?.allows_dogs, '🐕')}
-                {renderFacilityItem('예약', poi?.reservable, '📅')}
+                {renderFacilityItem(t.poi.facilities.parking, poi?.parking_available, '🅿️')}
+                {renderFacilityItem(t.poi.facilities.children, poi?.good_for_children, '👶')}
+                {renderFacilityItem(t.poi.facilities.wheelchair, poi?.wheelchair_accessible, '♿')}
+                {renderFacilityItem(t.poi.facilities.vegetarian, poi?.vegetarian_food, '🥗')}
+                {renderFacilityItem(t.poi.facilities.takeout, poi?.takeout, '🥡')}
+                {renderFacilityItem(t.poi.facilities.delivery, poi?.delivery, '🛵')}
+                {renderFacilityItem(t.poi.facilities.dogs, poi?.allows_dogs, '🐕')}
+                {renderFacilityItem(t.poi.facilities.reservable, poi?.reservable, '📅')}
               </div>
             </div>
           </div>
@@ -160,7 +164,7 @@ export default function POIDetailPanel({
                 ))}
               </div>
             ) : (
-              <div className="no-data">리뷰가 없습니다</div>
+              <div className="no-data">{t.poi.noReviews}</div>
             )}
           </div>
         );
@@ -177,7 +181,7 @@ export default function POIDetailPanel({
                 ))}
               </div>
             ) : (
-              <div className="no-data">사진이 없습니다</div>
+              <div className="no-data">{t.poi.noPhotos}</div>
             )}
           </div>
         );
@@ -217,19 +221,19 @@ export default function POIDetailPanel({
           className={`poi-tab ${activeTab === 'info' ? 'active' : ''}`}
           onClick={() => setActiveTab('info')}
         >
-          기본정보
+          {t.poi.tabs.info}
         </button>
         <button
           className={`poi-tab ${activeTab === 'reviews' ? 'active' : ''}`}
           onClick={() => setActiveTab('reviews')}
         >
-          리뷰 {poi?.reviews?.length ? `(${poi.reviews.length})` : ''}
+          {t.poi.tabs.reviews} {poi?.reviews?.length ? `(${poi.reviews.length})` : ''}
         </button>
         <button
           className={`poi-tab ${activeTab === 'photos' ? 'active' : ''}`}
           onClick={() => setActiveTab('photos')}
         >
-          사진 {poi?.photos?.length ? `(${poi.photos.length})` : ''}
+          {t.poi.tabs.photos} {poi?.photos?.length ? `(${poi.photos.length})` : ''}
         </button>
       </div>
 

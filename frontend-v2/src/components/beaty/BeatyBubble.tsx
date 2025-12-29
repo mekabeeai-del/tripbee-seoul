@@ -100,7 +100,7 @@ export default function BeatyBubble({
 
   // Floating variant
   return (
-    <div className={`beaty-floating ${isClosing ? 'closing' : ''}`}>
+    <div className={`beaty-floating ${isClosing ? 'closing' : ''} ${isDiscovering ? 'discovery-mode' : ''}`}>
       <div className="beaty-floating-bubble" style={{ backgroundColor: bubbleColor }}>
         <div
           className="beaty-floating-bubble-tail"

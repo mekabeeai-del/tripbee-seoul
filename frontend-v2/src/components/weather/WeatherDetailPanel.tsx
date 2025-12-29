@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { MdClose } from 'react-icons/md';
 import { WiDaySunny, WiCloudy, WiDaySunnyOvercast, WiRain, WiSnow, WiFog } from 'react-icons/wi';
 import BeatyBubble from '../beaty/BeatyBubble';
 import ExpandableOverlay from '../common/ExpandableOverlay';
-import { getCurrentWeather, getWeatherForecast, getWeatherKorean, getWindDirection, type CurrentWeather, type WeatherForecast } from '../../services/weatherApi';
+import { getCurrentWeather, getWeatherForecast, type CurrentWeather, type WeatherForecast } from '../../services/weatherApi';
+import { getTranslation, type Language } from '../../locales';
 import './WeatherDetailPanel.css';
 
 interface WeatherDetailPanelProps {
@@ -12,6 +13,7 @@ interface WeatherDetailPanelProps {
   onClosing?: (isClosing: boolean) => void;
   latitude?: number;
   longitude?: number;
+  language?: Language;
 }
 
 // 날씨 패널 확장 시작 위치 (좌측 하단 - 날씨 버튼 위치)
@@ -20,12 +22,26 @@ const getWeatherExpandFrom = () => ({
   y: window.innerHeight - 134
 });
 
-export default function WeatherDetailPanel({ isOpen, onClose, onClosing, latitude, longitude }: WeatherDetailPanelProps) {
+export default function WeatherDetailPanel({ isOpen, onClose, onClosing, latitude, longitude, language = 'ko' }: WeatherDetailPanelProps) {
   const [currentWeather, setCurrentWeather] = useState<CurrentWeather | null>(null);
   const [forecast, setForecast] = useState<WeatherForecast | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [expandFrom, setExpandFrom] = useState(getWeatherExpandFrom());
+
+  // 번역
+  const t = useMemo(() => getTranslation(language), [language]);
+
+  // 날씨 상태 번역
+  const getWeatherText = (main: string) => {
+    return t.weather.conditions[main as keyof typeof t.weather.conditions] || main;
+  };
+
+  // 풍향 번역
+  const getWindDirectionText = (deg: number) => {
+    const index = Math.round(deg / 45) % 8;
+    return t.weather.windDirections[index];
+  };
 
   // 날씨 데이터 로드
   useEffect(() => {
@@ -58,7 +74,7 @@ export default function WeatherDetailPanel({ isOpen, onClose, onClosing, latitud
       console.log('[Weather] Weather data loaded:', { current, forecastData });
     } catch (err) {
       console.error('[Weather] Failed to load weather:', err);
-      setError('날씨 정보를 가져올 수 없어요 😢');
+      setError(t.weather.error);
     } finally {
       setIsLoading(false);
     }
@@ -80,18 +96,18 @@ export default function WeatherDetailPanel({ isOpen, onClose, onClosing, latitud
 
   // 날씨 메시지 생성
   const getWeatherMessage = () => {
-    if (!currentWeather) return '날씨 정보를 불러오는 중...';
+    if (!currentWeather) return t.weather.loading;
 
-    const weatherKr = getWeatherKorean(currentWeather.weather[0].main);
+    const weatherText = getWeatherText(currentWeather.weather[0].main);
     const temp = Math.round(currentWeather.temp);
 
-    return `현재 날씨는 ${weatherKr}, 온도는 ${temp}도 에요! 오늘 같은 날엔 따뜻한 국물요리 어떠신가요?`;
+    return t.weather.message(weatherText, temp);
   };
 
   // 시간별 예보 데이터 (8개만)
   const hourlyForecast = forecast?.list.slice(0, 8).map((item, index) => {
     const date = new Date(item.dt * 1000);
-    const time = index === 0 ? '지금' : `${date.getHours()}시`;
+    const time = index === 0 ? t.weather.now : `${date.getHours()}${t.weather.hourSuffix}`;
     return {
       time,
       icon: getWeatherIcon(item.weather[0].main),
@@ -112,7 +128,7 @@ export default function WeatherDetailPanel({ isOpen, onClose, onClosing, latitud
         {/* 헤더 */}
         <div className="weather-detail-header">
           <div className="weather-detail-location">
-            <h2>{currentWeather?.name || '서울'} 날씨</h2>
+            <h2>{t.weather.headerTitle(currentWeather?.name || 'Seoul')}</h2>
           </div>
           <button className="weather-detail-close" onClick={onClose}>
             <MdClose size={24} />
@@ -124,7 +140,7 @@ export default function WeatherDetailPanel({ isOpen, onClose, onClosing, latitud
           {/* 로딩 중 */}
           {isLoading && (
             <div style={{ textAlign: 'center', padding: '40px' }}>
-              <p>날씨 정보를 불러오는 중...</p>
+              <p>{t.weather.loading}</p>
             </div>
           )}
 
@@ -149,15 +165,11 @@ export default function WeatherDetailPanel({ isOpen, onClose, onClosing, latitud
         {/* 음식 추천 */}
         <div className="weather-food-section">
           <div className="weather-food-image">
-            <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&fit=crop" alt="음식 추천" />
+            <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&fit=crop" alt={t.weather.foodRecommendation.title} />
           </div>
           <div className="weather-food-content">
-            <h3>인삼돈 불고기</h3>
-            <p>
-              인삼돈불고기는 맛과 영양이 절묘하게 만난 요리로, 신선한 돼지고기에
-              인삼이 어우러져 더욱 풍미가 깊어집니다. 이렇게 만든 불고기는
-              한입으로도 풍부한 맛을 볼 수 있는 이색메뉴에 추천드립니다.
-            </p>
+            <h3>{t.weather.foodRecommendation.title}</h3>
+            <p>{t.weather.foodRecommendation.description}</p>
           </div>
         </div>
 
@@ -169,7 +181,7 @@ export default function WeatherDetailPanel({ isOpen, onClose, onClosing, latitud
                 </div>
                 <div className="weather-info-item">
                   <div className="weather-info-icon">💨</div>
-                  <div className="weather-info-value">{currentWeather.wind.speed} m/s {getWindDirection(currentWeather.wind.deg)}</div>
+                  <div className="weather-info-value">{currentWeather.wind.speed} m/s {getWindDirectionText(currentWeather.wind.deg)}</div>
                 </div>
                 <div className="weather-info-item">
                   <div className="weather-info-icon">🌡️</div>
@@ -183,7 +195,7 @@ export default function WeatherDetailPanel({ isOpen, onClose, onClosing, latitud
 
           {/* 시간별 예보 */}
           <div className="weather-hourly-section">
-            <h3>· 시간별 예보 ·</h3>
+            <h3>{t.weather.hourlyForecast}</h3>
             <div className="weather-hourly-scroll">
               {hourlyForecast.map((hour, index) => (
                 <div key={index} className="weather-hourly-item">
@@ -197,7 +209,7 @@ export default function WeatherDetailPanel({ isOpen, onClose, onClosing, latitud
 
               {/* 날씨 제공처 */}
               <div className="weather-provider">
-                <p>날씨 정보 제공: OpenWeatherMap</p>
+                <p>{t.weather.provider}</p>
               </div>
             </>
           )}

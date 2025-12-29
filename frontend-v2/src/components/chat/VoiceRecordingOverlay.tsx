@@ -1,26 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { MdMic, MdClose } from 'react-icons/md';
+import { getTranslation, type Language } from '../../locales';
 import './VoiceRecordingOverlay.css';
 
 interface VoiceRecordingOverlayProps {
   isRecording: boolean;
   onCancel: () => void;
-  language?: 'ko' | 'en' | 'ja';
+  language?: Language;
 }
-
-// 언어별 예시 문구
-const EXAMPLE_PHRASES = {
-  ko: ['근처 카페 추천해줘', '경복궁 가는 길', '맛집 알려줘'],
-  en: ['Find cafes nearby', 'How to get to Gyeongbokgung', 'Recommend restaurants'],
-  ja: ['近くのカフェを探して', '景福宮への行き方', 'おすすめのレストラン']
-};
-
-const TITLE_TEXT = {
-  ko: '이렇게 말해보세요',
-  en: 'Try saying',
-  ja: 'こう言ってみてください'
-};
 
 /**
  * 음성 녹음 바텀시트
@@ -43,8 +31,9 @@ export default function VoiceRecordingOverlay({
   useEffect(() => {
     if (!isRecording) return;
 
+    const t = getTranslation(language);
     const interval = setInterval(() => {
-      setExampleIndex(prev => (prev + 1) % EXAMPLE_PHRASES[language].length);
+      setExampleIndex(prev => (prev + 1) % t.voice.examples.length);
     }, 3000);
 
     return () => clearInterval(interval);
@@ -114,8 +103,9 @@ export default function VoiceRecordingOverlay({
 
   if (!isRecording) return null;
 
-  const examples = EXAMPLE_PHRASES[language];
-  const title = TITLE_TEXT[language];
+  const t = getTranslation(language);
+  const examples = t.voice.examples;
+  const title = t.voice.title;
 
   // Portal로 body에 직접 렌더링 (부모 CSS 영향 방지)
   return createPortal(

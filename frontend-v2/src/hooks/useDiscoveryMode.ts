@@ -2,6 +2,7 @@ import { useState, useCallback, useRef } from 'react';
 import { generateDiscoveryMessages, DISCOVERY_MESSAGE_INTERVAL } from '../data/discoveryMessages';
 import { discoveryPlaceIds, DISCOVERY_POI_INTERVAL, DISCOVERY_POI_START_DELAY, getEmojiForPlaceType } from '../data/discoveryPOIs';
 import { getPlaceById } from '../services/poiApi';
+import { getTranslation, type Language } from '../locales';
 
 export interface VisiblePOI {
   id: string;
@@ -54,6 +55,7 @@ interface UseDiscoveryModeProps {
   position: { latitude: number; longitude: number } | null;
   weather?: WeatherInfo | null;
   onMessage?: (message: string) => void;
+  language?: Language;
 }
 
 interface UseDiscoveryModeReturn {
@@ -74,7 +76,8 @@ export function useDiscoveryMode({
   map,
   position,
   weather,
-  onMessage
+  onMessage,
+  language = 'ko'
 }: UseDiscoveryModeProps): UseDiscoveryModeReturn {
   const [isDiscovering, setIsDiscovering] = useState(false);
   const [visiblePOIs, setVisiblePOIs] = useState<VisiblePOI[]>([]);
@@ -86,21 +89,21 @@ export function useDiscoveryMode({
   };
 
   const showSequentialMessages = useCallback(() => {
-    const messages = generateDiscoveryMessages(weather || undefined);
+    const messages = generateDiscoveryMessages(weather || undefined, language);
     messages.forEach((message, index) => {
       const timer = setTimeout(() => {
         onMessage?.(message);
       }, index * DISCOVERY_MESSAGE_INTERVAL);
       timersRef.current.push(timer);
     });
-  }, [onMessage, weather]);
+  }, [onMessage, weather, language]);
 
   const showSequentialPOIs = useCallback(() => {
     // Place ID 순차 조회 및 표시
     discoveryPlaceIds.forEach((placeId, index) => {
       const timer = setTimeout(async () => {
         try {
-          const place = await getPlaceById(placeId);
+          const place = await getPlaceById(placeId, language);
 
           if (place) {
             console.log('[Discovery] Place found:', place.name, 'lat:', place.lat, 'lng:', place.lng);
@@ -152,11 +155,12 @@ export function useDiscoveryMode({
             }
 
             // 발견 메시지 표시 (비티 한마디가 있으면 사용)
+            const t = getTranslation(language);
             if (place.beaty_comment) {
-              onMessage?.(`${newPOI.emoji} ${place.name} 발견! ${place.beaty_comment}`);
+              onMessage?.(t.discovery.found(newPOI.emoji, place.name, place.beaty_comment));
             } else {
               const ratingText = place.rating ? ` (⭐${place.rating})` : '';
-              onMessage?.(`${newPOI.emoji} ${place.name}${ratingText}을(를) 발견했어요!`);
+              onMessage?.(t.discovery.found(newPOI.emoji, `${place.name}${ratingText}`));
             }
           } else {
             console.log('[Discovery] Place not found for:', placeId);
@@ -167,20 +171,22 @@ export function useDiscoveryMode({
       }, DISCOVERY_POI_START_DELAY + index * DISCOVERY_POI_INTERVAL);
       timersRef.current.push(timer);
     });
-  }, [map, onMessage]);
+  }, [map, onMessage, language]);
 
   // 마커 전체 제거
   const clearPOIs = useCallback(() => {
+    const t = getTranslation(language);
     setVisiblePOIs([]);
-    onMessage?.('발견한 장소를 모두 지웠어요!');
-  }, [onMessage]);
+    onMessage?.(t.discovery.cleared);
+  }, [onMessage, language]);
 
   const toggleDiscovery = useCallback(() => {
+    const t = getTranslation(language);
     if (isDiscovering) {
       // 발견모드 종료 (마커는 유지)
       setIsDiscovering(false);
       clearAllTimers();
-      onMessage?.('발견모드를 종료했어요!');
+      onMessage?.(t.discovery.ended);
     } else {
       // 발견모드 시작
       setIsDiscovering(true);
@@ -201,7 +207,7 @@ export function useDiscoveryMode({
         });
       }
     }
-  }, [isDiscovering, map, position, onMessage, showSequentialMessages, showSequentialPOIs]);
+  }, [isDiscovering, map, position, onMessage, showSequentialMessages, showSequentialPOIs, language]);
 
   return {
     isDiscovering,

@@ -95,6 +95,12 @@
   border-bottom: 1px solid #FFE082;
 }
 
+.poi-beaty-comment .beaty-panel-bubble {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
+}
+
 .poi-main-image {
   position: relative;
   width: 100%;

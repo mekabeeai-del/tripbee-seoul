@@ -473,13 +473,13 @@
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
+  right: 0;
+  bottom: 0;
   background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1001;
+  z-index: 10000;
 }
 
 .exp-modal {
@@ -600,7 +600,7 @@
   border-radius: 8px;
   font-size: 14px;
   font-weight: 600;
-  z-index: 2000;
+  z-index: 10001;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   animation: tooltipFadeIn 0.2s ease;
   pointer-events: none;

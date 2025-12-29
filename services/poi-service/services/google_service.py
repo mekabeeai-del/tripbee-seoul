@@ -136,8 +136,41 @@ class GoogleService:
 
         return time_period, weather_context
 
-    async def _generate_beaty_comment(self, place_name: str, reviews: List[Dict], rating: Optional[float]) -> Optional[str]:
-        """리뷰 기반으로 비티 한마디 생성 (OpenAI)"""
+    def _get_language_prompt(self, language: str) -> dict:
+        """언어별 프롬프트 설정"""
+        prompts = {
+            "ko": {
+                "system": "당신은 서울을 방문한 여행자에게 한국의 맛과 멋을 소개하는 가이드 캐릭터 '비티'입니다.",
+                "instructions": """위 리뷰들을 참고해서 이 장소를 발견한 이유와 함께 2줄 이내로 소개해주세요.
+- "~요" 체로 친근하게 (예: "좋아요", "추천해요", "있어요")
+- 이모지 1-2개 사용
+- 현재 시간대/날씨에 맞는 추천 이유를 자연스럽게 포함
+- 여행자가 궁금해할 포인트 위주로 (맛, 분위기, 특별한 경험)
+- 절대 인사말로 시작하지 마세요 (안녕하세요, 여러분 등 금지). 바로 장소 소개로 시작하세요."""
+            },
+            "en": {
+                "system": "You are 'Beaty', a friendly guide character introducing Korean food and culture to travelers visiting Seoul.",
+                "instructions": """Based on the reviews above, introduce this place in 2 lines or less with the reason you discovered it.
+- Use a friendly, casual tone
+- Include 1-2 emojis
+- Naturally include recommendations based on current time/weather
+- Focus on what travelers would be curious about (taste, atmosphere, special experiences)
+- NEVER start with greetings (Hello, Hi everyone, etc). Start directly with the place introduction."""
+            },
+            "ja": {
+                "system": "あなたはソウルを訪れる旅行者に韓国の味と美を紹介するガイドキャラクター「ビティ」です。",
+                "instructions": """上記のレビューを参考に、この場所を発見した理由と共に2行以内で紹介してください。
+- 「〜ですよ」「〜ですね」などの親しみやすい口調で
+- 絵文字を1-2個使用
+- 現在の時間帯/天気に合った推薦理由を自然に含める
+- 旅行者が気になるポイント中心に（味、雰囲気、特別な体験）
+- 絶対に挨拶で始めないでください（こんにちは、皆さん等は禁止）。すぐに場所の紹介から始めてください。"""
+            }
+        }
+        return prompts.get(language, prompts["en"])
+
+    async def _generate_beaty_comment(self, place_name: str, reviews: List[Dict], rating: Optional[float], language: str = "ko") -> Optional[str]:
+        """리뷰 기반으로 비티 한마디 생성 (OpenAI) - 다국어 지원"""
         if not self.openai_api_key or not reviews:
             return None
 
@@ -152,20 +185,19 @@ class GoogleService:
             # 현재 시간/날씨 컨텍스트
             time_period, weather_context = self._get_time_context()
 
-            prompt = f"""당신은 서울을 방문한 외국인 여행자에게 한국의 맛과 멋을 소개하는 가이드 캐릭터 '비티'입니다.
+            # 언어별 프롬프트 가져오기
+            lang_prompt = self._get_language_prompt(language)
 
-장소명: {place_name}
-평점: {rating or '정보없음'}
-현재 시간대: {time_period}
-현재 날씨/계절: {weather_context}
-리뷰들:
+            prompt = f"""{lang_prompt["system"]}
+
+Place: {place_name}
+Rating: {rating or 'N/A'}
+Current time: {time_period}
+Current weather/season: {weather_context}
+Reviews:
 {combined_reviews}
 
-위 리뷰들을 참고해서 이 장소를 발견한 이유와 함께 2줄 이내로 소개해주세요.
-- "~요" 체로 친근하게 (예: "좋아요", "추천해요", "있어요")
-- 이모지 1-2개 사용
-- 현재 시간대/날씨에 맞는 추천 이유를 자연스럽게 포함 (예: "추운 겨울엔 따뜻한 국물이 최고예요!", "점심시간에 딱 맞는 든든한 한끼예요!")
-- 외국인 여행자가 궁금해할 포인트 위주로 (맛, 분위기, 특별한 경험)"""
+{lang_prompt["instructions"]}"""
 
             async with httpx.AsyncClient() as client:
                 response = await client.post(
@@ -185,7 +217,7 @@ class GoogleService:
                 response.raise_for_status()
                 data = response.json()
                 comment = data["choices"][0]["message"]["content"].strip()
-                print(f"[BEATY] 한마디 생성: {comment}")
+                print(f"[BEATY] 한마디 생성 ({language}): {comment}")
                 return comment
 
         except Exception as e:
@@ -779,8 +811,8 @@ class GoogleService:
                     "language": review.get("originalText", {}).get("languageCode", "")
                 })
 
-            # 비티 한마디 생성 (리뷰 기반)
-            beaty_comment = await self._generate_beaty_comment(name, reviews, rating)
+            # 비티 한마디 생성 (리뷰 기반, 언어 지원)
+            beaty_comment = await self._generate_beaty_comment(name, reviews, rating, language)
 
             place_info = PlaceInfo(
                 name=name,
