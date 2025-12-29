@@ -4,8 +4,8 @@
  * - Gateway를 통해 라우팅
  */
 
-// 개발: Gateway(8080) 통해 라우팅, 프로덕션: Vercel 환경변수
-const GATEWAY_URL = import.meta.env.VITE_GATEWAY_URL || 'http://localhost:8080';
+// 개발: Gateway(8080) 통해 라우팅, 프로덕션: Render
+const GATEWAY_URL = import.meta.env.VITE_API_GATEWAY_URL || 'http://localhost:8080';
 const POI_SERVICE_URL = `${GATEWAY_URL}/poi`;
 
 export interface PlaceInfo {
