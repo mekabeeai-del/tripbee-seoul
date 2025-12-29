@@ -29,11 +29,13 @@ export default function ChatBar({
   const { isListening, isSupported, startListening, stopListening } = useSpeechRecognition({
     language,
     onResult: (text) => {
-      setMessage(text);
-      // 음성인식 결과를 바로 전송
+      // 음성인식 결과를 채팅바에 입력 (전송은 사용자가 직접)
       if (text.trim()) {
-        onSendMessage(text);
-        setMessage('');
+        setMessage(text);
+        // 입력 필드에 포커스
+        setTimeout(() => {
+          inputRef.current?.focus();
+        }, 100);
       }
     },
     onError: (error) => {
