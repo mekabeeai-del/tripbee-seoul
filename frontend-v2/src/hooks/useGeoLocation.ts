@@ -50,9 +50,9 @@ export function useGeoLocation() {
         setIsLoading(false);
       },
       {
-        enableHighAccuracy: false,  // 네트워크 기반 위치 (빠름)
-        timeout: 15000,
-        maximumAge: 300000
+        enableHighAccuracy: true,   // GPS 위성 사용 (정확)
+        timeout: 10000,
+        maximumAge: 0               // 항상 새 위치
       }
     );
   }, []);
