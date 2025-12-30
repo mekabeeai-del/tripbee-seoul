@@ -240,7 +240,7 @@ function App() {
   if (isAppLoading) {
     return (
       <div className={`app-loading-screen ${!isAppLoading ? 'fade-out' : ''}`}>
-        <img src={`/img/temp/main_loading_${loadingImageSuffix}.png`} alt="Loading" className="app-loading-image" />
+        <img src={`/img/assets/main_loading_${loadingImageSuffix}.png`} alt="Loading" className="app-loading-image" />
       </div>
     );
   }
