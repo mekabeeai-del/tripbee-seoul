@@ -13,7 +13,7 @@ export const en = {
 
   // Chat Bar
   chatBar: {
-    placeholder: 'How are you feeling about today\'s trip?',
+    placeholder: 'Ask Beaty!',
   },
 
   // Chat Demo Messages

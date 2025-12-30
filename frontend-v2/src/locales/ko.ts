@@ -13,7 +13,7 @@ export const ko = {
 
   // 채팅바
   chatBar: {
-    placeholder: '오늘 여행은 어떤 기분이신가요?',
+    placeholder: '비티에게 물어보세요!',
   },
 
   // 채팅창 데모 메시지

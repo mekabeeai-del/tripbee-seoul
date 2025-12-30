@@ -13,7 +13,7 @@ export const ja = {
 
   // チャットバー
   chatBar: {
-    placeholder: '今日の旅行はどんな気分ですか？',
+    placeholder: 'ビーティに聞いてください！',
   },
 
   // チャットデモメッセージ

@@ -235,11 +235,12 @@ function App() {
     }
   };
 
-  // 로딩 화면
+  // 로딩 화면 (언어별 이미지)
+  const loadingImageSuffix = { ko: 'Kor', en: 'Eng', ja: 'Jpn' }[language] || 'Kor';
   if (isAppLoading) {
     return (
       <div className={`app-loading-screen ${!isAppLoading ? 'fade-out' : ''}`}>
-        <img src="/img/temp/main_loading.png" alt="Loading" className="app-loading-image" />
+        <img src={`/img/temp/main_loading_${loadingImageSuffix}.png`} alt="Loading" className="app-loading-image" />
       </div>
     );
   }
