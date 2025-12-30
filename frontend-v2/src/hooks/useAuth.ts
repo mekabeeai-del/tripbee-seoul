@@ -8,7 +8,7 @@ import {
   logout as apiLogout,
   clearSessionTokens
 } from '../services/privacyApi';
-import { loginWithGoogle, loginWithApple } from '../services/googleAuth';
+import { loginWithGoogle, handleOAuthCallback } from '../services/googleAuth';
 
 interface UseAuthReturn {
   isLoggedIn: boolean;
@@ -20,6 +20,7 @@ interface UseAuthReturn {
 
 /**
  * 인증 상태 관리 훅
+ * - OAuth 콜백 처리
  * - 자동 로그인 체크
  * - Google/Apple OAuth 로그인
  * - 로그아웃
@@ -29,27 +30,62 @@ export function useAuth(): UseAuthReturn {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // 자동 로그인 체크 (세션 토큰이 있으면)
+  // OAuth 콜백 처리 + 자동 로그인 체크
   useEffect(() => {
-    const checkSession = async () => {
-      const sessionToken = getSessionToken();
-      if (sessionToken) {
-        try {
-          const response = await getCurrentUser(sessionToken);
-          setCurrentUser(response.user);
+    const initAuth = async () => {
+      try {
+        // 1. OAuth 콜백 확인 (URL에 access_token이 있는 경우)
+        const oauthResponse = await handleOAuthCallback();
+
+        if (oauthResponse) {
+          console.log('[AUTH] OAuth callback detected, logging in...');
+
+          // 백엔드 로그인
+          const loginResponse = await oauthLogin({
+            provider: 'google',
+            provider_user_id: oauthResponse.provider_user_id,
+            provider_email: oauthResponse.provider_email,
+            name: oauthResponse.name,
+            profile_image_url: oauthResponse.profile_image_url,
+            access_token: oauthResponse.access_token,
+            refresh_token: oauthResponse.refresh_token,
+            token_expires_at: oauthResponse.token_expires_at
+          });
+
+          // 세션 토큰 저장
+          saveSessionTokens(loginResponse.session_token, loginResponse.refresh_token);
+
+          // 상태 업데이트
+          setCurrentUser(loginResponse.user);
           setIsLoggedIn(true);
-          console.log('[AUTH] Auto-login successful:', response.user);
-        } catch (error) {
-          console.error('[AUTH] Auto-login failed:', error);
-          // 세션이 만료되었으면 로그아웃 처리
-          setIsLoggedIn(false);
-          setCurrentUser(null);
+
+          console.log('[AUTH] OAuth login successful!', loginResponse.user);
+          setIsLoading(false);
+          return;
         }
+
+        // 2. 기존 세션 확인 (자동 로그인)
+        const sessionToken = getSessionToken();
+        if (sessionToken) {
+          try {
+            const response = await getCurrentUser(sessionToken);
+            setCurrentUser(response.user);
+            setIsLoggedIn(true);
+            console.log('[AUTH] Auto-login successful:', response.user);
+          } catch (error) {
+            console.error('[AUTH] Auto-login failed:', error);
+            setIsLoggedIn(false);
+            setCurrentUser(null);
+          }
+        }
+      } catch (error) {
+        console.error('[AUTH] Init auth error:', error);
       }
+
       setIsLoading(false);
     };
 
-    checkSession();
+    initAuth();
   }, []);
 
   // 로그인 핸들러
@@ -62,38 +98,39 @@ export function useAuth(): UseAuthReturn {
         return { success: false, message: 'Apple 로그인은 준비중입니다! 🚧' };
       }
 
-      // 1. OAuth 로그인 (Google/Apple)
-      let authResponse;
-      if (provider === 'google') {
-        authResponse = await loginWithGoogle();
-      } else {
-        authResponse = await loginWithApple();
+      // Google 로그인
+      const result = loginWithGoogle();
+
+      // Native: Promise 반환, Web: void (리다이렉트)
+      if (result instanceof Promise) {
+        // Android: Deep Link 콜백 대기
+        const oauthResponse = await result;
+
+        // 백엔드 로그인
+        const loginResponse = await oauthLogin({
+          provider: 'google',
+          provider_user_id: oauthResponse.provider_user_id,
+          provider_email: oauthResponse.provider_email,
+          name: oauthResponse.name,
+          profile_image_url: oauthResponse.profile_image_url,
+          access_token: oauthResponse.access_token,
+          refresh_token: oauthResponse.refresh_token,
+          token_expires_at: oauthResponse.token_expires_at
+        });
+
+        // 세션 토큰 저장
+        saveSessionTokens(loginResponse.session_token, loginResponse.refresh_token);
+
+        // 상태 업데이트
+        setCurrentUser(loginResponse.user);
+        setIsLoggedIn(true);
+
+        console.log('[AUTH] Native login successful!', loginResponse.user);
+        return { success: true };
       }
 
-      console.log('[AUTH] OAuth successful, logging in to backend...');
-
-      // 2. 백엔드 로그인
-      const loginResponse = await oauthLogin({
-        provider,
-        provider_user_id: authResponse.provider_user_id,
-        provider_email: authResponse.provider_email,
-        name: authResponse.name,
-        profile_image_url: authResponse.profile_image_url,
-        access_token: authResponse.access_token,
-        refresh_token: authResponse.refresh_token,
-        token_expires_at: authResponse.token_expires_at
-      });
-
-      // 3. 세션 토큰 저장
-      saveSessionTokens(loginResponse.session_token, loginResponse.refresh_token);
-
-      // 4. 상태 업데이트
-      setCurrentUser(loginResponse.user);
-      setIsLoggedIn(true);
-
-      console.log('[AUTH] Login successful!', loginResponse.user);
-
-      return { success: true, message: `환영합니다, ${loginResponse.user.name}님! 🎉` };
+      // Web: 페이지 리다이렉트됨
+      return { success: true };
 
     } catch (error) {
       console.error('[AUTH] Login failed:', error);
