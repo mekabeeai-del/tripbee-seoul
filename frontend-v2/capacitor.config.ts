@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'TripBee Seoul',
   webDir: 'dist',
   server: {
-    androidScheme: 'http'
+    androidScheme: 'https'
   }
 };
 
