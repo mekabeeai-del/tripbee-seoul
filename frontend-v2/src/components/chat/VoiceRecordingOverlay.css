@@ -7,6 +7,8 @@
   bottom: 0;
   background: rgba(0, 0, 0, 0.4);
   z-index: 9998;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* 바텀시트 */
@@ -31,16 +33,24 @@
   position: absolute;
   top: 16px;
   right: 16px;
-  width: 32px;
-  height: 32px;
-  background: transparent;
+  width: 44px;
+  height: 44px;
+  background: #f5f5f5;
   border: none;
+  border-radius: 50%;
   color: #666;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0;
+  z-index: 10;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.voice-close-btn:active {
+  background: #e0e0e0;
 }
 
 /* 안내 텍스트 */
@@ -93,6 +103,12 @@
   background: rgba(0, 102, 204, 0.08);
 }
 
+.voice-wave.wave-3 {
+  width: 120px;
+  height: 120px;
+  background: rgba(0, 102, 204, 0.04);
+}
+
 /* 마이크 버튼 */
 .voice-mic-btn {
   width: 60px;
@@ -107,6 +123,31 @@
   box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
 }
 
+.voice-mic-btn.recording {
+  animation: micPulse 1.5s ease-in-out infinite;
+}
+
+/* 듣고 있어요 텍스트 */
+.voice-listening-text {
+  margin-top: 20px;
+  font-size: 14px;
+  color: #0066CC;
+  font-weight: 500;
+  animation: textPulse 1.5s ease-in-out infinite;
+  text-align: center;
+  max-width: 90%;
+  word-break: keep-all;
+  line-height: 1.4;
+}
+
+/* 실시간 텍스트가 있을 때 */
+.voice-listening-text.has-text {
+  font-size: 18px;
+  color: #333;
+  font-weight: 600;
+  animation: none;
+}
+
 /* 애니메이션 */
 @keyframes voiceSlideUp {
   0% {
@@ -114,5 +155,23 @@
   }
   100% {
     transform: translateY(0);
+  }
+}
+
+@keyframes micPulse {
+  0%, 100% {
+    box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
+  }
+  50% {
+    box-shadow: 0 4px 20px rgba(0, 102, 204, 0.6);
+  }
+}
+
+@keyframes textPulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
   }
 }

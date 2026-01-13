@@ -320,4 +320,59 @@ export const ja = {
     searching: '周辺を探索しています...',
     found: '面白い場所を発見しました！',
   },
+
+  // 経路案内
+  route: {
+    start: '出発',
+    end: '到着',
+    backToList: '一覧に戻る',
+    filterAll: 'すべて',
+    filterBus: 'バス',
+    filterSubway: '地下鉄',
+    filterBusSubway: 'バス+地下鉄',
+    duration: '所要時間',
+    cost: '料金',
+    transfers: '乗換',
+    transfersCount: (count: number) => `乗換${count}回`,
+    distance: '距離',
+    walk: '徒歩',
+    noRoutes: '該当する経路がありません。',
+    navigate: '経路検索',
+  },
+
+  // 予約
+  reservation: {
+    title: '予約する',
+    date: '日付',
+    time: '時間',
+    guests: '人数',
+    adults: '大人',
+    adultsDesc: '13歳以上',
+    children: '子供',
+    childrenDesc: '2～12歳',
+    totalGuests: (count: number) => `合計${count}名`,
+    confirm: '予約確認',
+    makeReservation: '予約する',
+    reservationSuccess: '予約が完了しました！',
+  },
+
+  // クーポン
+  coupon: {
+    issued: '割引クーポンが発行されました！',
+    congratulations: 'おめでとうございます！特別なクーポンを受け取りました',
+    code: 'クーポンコード',
+    validUntil: '有効期限',
+    howToUse: 'お支払い時にクーポンコードを入力すると割引が適用されます。',
+    confirm: '確認',
+  },
+
+  // クーポン一覧
+  couponList: {
+    title: 'クーポン一覧',
+    available: (count: number) => `使用可能なクーポン ${count}枚`,
+    code: 'クーポンコード',
+    use: '使用する',
+    noCoupons: 'クーポンがありません',
+    noCouponsDesc: 'チャットで「쿠폰지급」と入力するとクーポンがもらえます！',
+  },
 };

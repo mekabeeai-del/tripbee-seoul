@@ -1,0 +1,399 @@
+/* 경로 패널 */
+.route-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+}
+
+.route-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  animation: fadeIn 0.2s ease;
+}
+
+.route-content {
+  position: relative;
+  background: white;
+  border-radius: 20px 20px 0 0;
+  margin-top: auto;
+  max-height: 75vh;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s ease;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.1);
+}
+
+/* 헤더 */
+.route-header {
+  flex-shrink: 0;
+  padding: 20px;
+  border-bottom: 1px solid #E0E0E0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.route-title {
+  flex: 1;
+}
+
+.route-locations {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.location-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.location-badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  color: white;
+}
+
+.location-badge.start {
+  background: #4CAF50;
+}
+
+.location-badge.end {
+  background: #F44336;
+}
+
+.location-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.location-arrow {
+  margin: 4px 0;
+  color: #999;
+  font-size: 20px;
+}
+
+.route-close {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: #F5F5F5;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  flex-shrink: 0;
+}
+
+.route-close:hover {
+  background: #E0E0E0;
+}
+
+/* 필터 탭 */
+.route-filters {
+  flex-shrink: 0;
+  display: flex;
+  padding: 12px 16px;
+  gap: 8px;
+  overflow-x: auto;
+  border-bottom: 2px solid #F0F0F0;
+}
+
+.filter-btn {
+  flex-shrink: 0;
+  padding: 8px 16px;
+  border: 1px solid #E0E0E0;
+  border-radius: 20px;
+  background: white;
+  font-size: 13px;
+  font-weight: 600;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.filter-btn.active {
+  background: #2196F3;
+  color: white;
+  border-color: #2196F3;
+}
+
+.filter-btn:hover {
+  border-color: #2196F3;
+}
+
+/* 경로 목록 */
+.route-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.route-card {
+  background: #FAFAFA;
+  border: 1px solid #E0E0E0;
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.route-card:hover {
+  border-color: #2196F3;
+  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.2);
+  transform: translateY(-2px);
+}
+
+.route-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.route-duration {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1976D2;
+}
+
+.route-tags {
+  display: flex;
+  gap: 6px;
+}
+
+.route-tag {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: white;
+}
+
+.route-tag.bus {
+  background: #4CAF50;
+}
+
+.route-tag.subway {
+  background: #FF6B6B;
+}
+
+.route-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 13px;
+  color: #666;
+}
+
+.route-card-meta span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.no-routes {
+  text-align: center;
+  padding: 40px 20px;
+  color: #999;
+  font-size: 14px;
+}
+
+/* 경로 상세 */
+.route-detail {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.back-button {
+  padding: 10px 16px;
+  border: none;
+  background: #F5F5F5;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  cursor: pointer;
+  margin-bottom: 16px;
+  transition: background 0.2s ease;
+}
+
+.back-button:hover {
+  background: #E0E0E0;
+}
+
+.route-summary-card {
+  background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
+  color: white;
+}
+
+.summary-time {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.summary-meta {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+/* 경로 스텝 */
+.route-steps {
+  display: flex;
+  flex-direction: column;
+}
+
+.route-step {
+  display: flex;
+  gap: 16px;
+  padding: 12px 0;
+}
+
+.step-marker {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 4px;
+}
+
+.step-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  z-index: 1;
+  background: white;
+}
+
+.step-icon.walk {
+  color: #FF9800;
+  background: #FFF8E1;
+  border: 2px solid #FF9800;
+}
+
+.step-icon.bus {
+  color: white;
+  background: #4CAF50;
+  border: 2px solid #4CAF50;
+}
+
+.step-icon.subway {
+  color: white;
+  background: #2196F3;
+  border: 2px solid #2196F3;
+}
+
+.step-connector {
+  width: 2px;
+  flex: 1;
+  background: #E0E0E0;
+  margin-top: 4px;
+}
+
+.step-info {
+  flex: 1;
+  padding-bottom: 8px;
+}
+
+.step-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.line-badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: white;
+}
+
+.step-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+}
+
+.step-description {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+
+.step-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  color: #999;
+}
+
+/* 애니메이션 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* 스크롤바 */
+.route-list::-webkit-scrollbar,
+.route-detail::-webkit-scrollbar {
+  width: 6px;
+}
+
+.route-list::-webkit-scrollbar-track,
+.route-detail::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.route-list::-webkit-scrollbar-thumb,
+.route-detail::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 3px;
+}

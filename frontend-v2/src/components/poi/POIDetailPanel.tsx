@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { MdClose, MdPhone, MdLanguage, MdAccessTime, MdStar, MdLocationOn } from 'react-icons/md';
+import { MdClose, MdPhone, MdLanguage, MdAccessTime, MdStar, MdLocationOn, MdDirections, MdEventAvailable } from 'react-icons/md';
 import type { VisiblePOI } from '../../hooks/useDiscoveryMode';
 import ExpandableOverlay from '../common/ExpandableOverlay';
 import BeatyBubble from '../beaty/BeatyBubble';
@@ -18,6 +18,8 @@ interface POIDetailPanelProps {
   expandFrom?: { x: number; y: number } | null;
   poi?: VisiblePOI | null;
   language?: Language;
+  onNavigateClick?: () => void;
+  onReservationClick?: () => void;
 }
 
 export default function POIDetailPanel({
@@ -28,7 +30,9 @@ export default function POIDetailPanel({
   imageUrl,
   expandFrom,
   poi,
-  language = 'ko'
+  language = 'ko',
+  onNavigateClick,
+  onReservationClick
 }: POIDetailPanelProps) {
   const [activeTab, setActiveTab] = useState<TabType>('info');
   const t = useMemo(() => getTranslation(language), [language]);
@@ -101,6 +105,24 @@ export default function POIDetailPanel({
                 </div>
               )}
             </div>
+
+            {/* 액션 버튼 */}
+            {(onNavigateClick || onReservationClick) && (
+              <div className="action-buttons">
+                {onNavigateClick && (
+                  <button className="action-button navigate" onClick={onNavigateClick}>
+                    <MdDirections size={20} />
+                    <span>{t.route.navigate}</span>
+                  </button>
+                )}
+                {onReservationClick && (
+                  <button className="action-button reservation" onClick={onReservationClick}>
+                    <MdEventAvailable size={20} />
+                    <span>{t.reservation.makeReservation}</span>
+                  </button>
+                )}
+              </div>
+            )}
 
             {/* 영업시간 */}
             {poi?.opening_hours && poi.opening_hours.length > 0 && (

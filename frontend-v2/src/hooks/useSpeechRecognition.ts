@@ -1,4 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { SpeechRecognition } from '@capacitor-community/speech-recognition';
+import { Capacitor } from '@capacitor/core';
 import { getTranslation, type Language } from '../locales';
 
 interface UseSpeechRecognitionProps {
@@ -15,21 +17,17 @@ interface UseSpeechRecognitionReturn {
   transcript: string;
 }
 
-// 언어 코드 매핑 (Whisper용)
+// 언어 코드 매핑
 const LANG_MAP: Record<string, string> = {
-  ko: 'ko',
-  en: 'en',
-  ja: 'ja'
+  ko: 'ko-KR',
+  en: 'en-US',
+  ja: 'ja-JP'
 };
-
-// OpenAI Whisper API 엔드포인트
-const WHISPER_API_URL = 'https://api.openai.com/v1/audio/transcriptions';
-const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
 
 /**
  * 음성인식 훅
- * - MediaRecorder + OpenAI Whisper API 사용
- * - WebView 환경에서도 동작
+ * - 네이티브: @capacitor-community/speech-recognition
+ * - 웹: Web Speech API
  */
 export function useSpeechRecognition({
   language = 'ko',
@@ -39,15 +37,18 @@ export function useSpeechRecognition({
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [isSupported, setIsSupported] = useState(false);
+  const isNative = Capacitor.isNativePlatform();
 
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
-  const streamRef = useRef<MediaStream | null>(null);
+  // 웹용 SpeechRecognition ref
+  const webRecognitionRef = useRef<globalThis.SpeechRecognition | null>(null);
 
-  // 콜백을 ref로 저장 (재생성 방지)
+  // 콜백을 ref로 저장
   const onResultRef = useRef(onResult);
   const onErrorRef = useRef(onError);
   const languageRef = useRef(language);
+
+  // 취소 플래그
+  const cancelledRef = useRef(false);
 
   useEffect(() => {
     onResultRef.current = onResult;
@@ -55,191 +56,194 @@ export function useSpeechRecognition({
     languageRef.current = language;
   }, [onResult, onError, language]);
 
-  // 초기화: MediaRecorder 지원 여부 확인
+  // 초기화
   useEffect(() => {
-    const checkSupport = () => {
-      const hasNavigator = typeof navigator !== 'undefined';
-      const hasMediaDevices = hasNavigator && !!navigator.mediaDevices;
-      const hasGetUserMedia = hasMediaDevices && typeof navigator.mediaDevices.getUserMedia === 'function';
-      const hasMediaRecorder = typeof MediaRecorder !== 'undefined';
-      const hasApiKey = !!OPENAI_API_KEY;
+    const init = async () => {
+      if (isNative) {
+        try {
+          const { speechRecognition } = await SpeechRecognition.checkPermissions();
+          console.log('[STT] Native permission status:', speechRecognition);
 
-      console.log('[STT] Support check:', {
-        hasNavigator,
-        hasMediaDevices,
-        hasGetUserMedia,
-        hasMediaRecorder,
-        hasApiKey,
-        apiKeyLength: OPENAI_API_KEY?.length || 0
-      });
+          if (speechRecognition !== 'granted') {
+            const result = await SpeechRecognition.requestPermissions();
+            setIsSupported(result.speechRecognition === 'granted');
+          } else {
+            setIsSupported(true);
+          }
 
-      // 항상 지원하는 것으로 표시 (에러는 실행 시 처리)
-      setIsSupported(true);
+          const available = await SpeechRecognition.available();
+          console.log('[STT] Native available:', available);
+          setIsSupported(available.available);
+
+        } catch (error) {
+          console.error('[STT] Native init error:', error);
+          setIsSupported(false);
+        }
+      } else {
+        // 웹: Web Speech API
+        const webSupported = typeof window !== 'undefined' &&
+          ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window);
+
+        if (webSupported) {
+          const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+          const recognition = new SpeechRecognitionAPI();
+          recognition.continuous = true;
+          recognition.interimResults = true;
+          recognition.lang = LANG_MAP[language];
+
+          recognition.onresult = (event) => {
+            let interimTranscript = '';
+            let finalTranscript = '';
+
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+              const result = event.results[i];
+              if (result.isFinal) {
+                finalTranscript += result[0].transcript;
+              } else {
+                interimTranscript += result[0].transcript;
+              }
+            }
+
+            const currentText = finalTranscript || interimTranscript;
+            setTranscript(currentText);
+
+            if (finalTranscript) {
+              onResultRef.current?.(finalTranscript);
+              setIsListening(false);
+            }
+          };
+
+          recognition.onerror = (event) => {
+            console.error('[STT] Web error:', event.error);
+            const t = getTranslation(languageRef.current || 'ko');
+            onErrorRef.current?.(t.voice.errors.default);
+            setIsListening(false);
+          };
+
+          recognition.onend = () => setIsListening(false);
+
+          webRecognitionRef.current = recognition;
+          setIsSupported(true);
+          console.log('[STT] Web Speech API initialized');
+        }
+      }
     };
 
-    checkSupport();
-  }, []);
+    init();
 
-  // Whisper API로 음성을 텍스트로 변환
-  const transcribeAudio = async (audioBlob: Blob): Promise<string> => {
-    const formData = new FormData();
-    formData.append('file', audioBlob, 'audio.webm');
-    formData.append('model', 'whisper-1');
-    formData.append('language', LANG_MAP[languageRef.current] || 'ko');
-
-    const response = await fetch(WHISPER_API_URL, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${OPENAI_API_KEY}`
-      },
-      body: formData
-    });
-
-    if (!response.ok) {
-      const error = await response.text();
-      console.error('[STT] Whisper API error:', error);
-      throw new Error('Transcription failed');
-    }
-
-    const data = await response.json();
-    return data.text || '';
-  };
+    return () => {
+      if (isNative) {
+        SpeechRecognition.removeAllListeners();
+        SpeechRecognition.stop().catch(() => {});
+      }
+    };
+  }, [isNative, language]);
 
   const startListening = useCallback(async () => {
     if (isListening) {
-      console.log('[STT] Already listening');
+      console.log('[STT] Already listening, ignoring start');
       return;
     }
 
     setTranscript('');
-    audioChunksRef.current = [];
-
-    // 사전 체크
-    if (!navigator.mediaDevices) {
-      console.error('[STT] navigator.mediaDevices not available');
-      onErrorRef.current?.('마이크를 사용할 수 없어요 (mediaDevices 없음)');
-      return;
-    }
-
-    if (!OPENAI_API_KEY) {
-      console.error('[STT] OpenAI API key missing');
-      onErrorRef.current?.('API 키가 설정되지 않았어요');
-      return;
-    }
+    setIsListening(true);
+    cancelledRef.current = false;
 
     try {
-      console.log('[STT] Requesting microphone permission...');
+      if (isNative) {
+        const lang = LANG_MAP[languageRef.current] || 'ko-KR';
+        console.log('[STT] Starting native speech recognition with language:', lang);
 
-      // 마이크 접근 권한 요청 (단순한 설정으로)
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: true
-      });
-      streamRef.current = stream;
-      console.log('[STT] Microphone permission granted');
+        // 기존 상태 정리
+        await SpeechRecognition.removeAllListeners();
+        try { await SpeechRecognition.stop(); } catch { /* ignore */ }
 
-      // MediaRecorder 설정
-      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-        ? 'audio/webm;codecs=opus'
-        : 'audio/webm';
-
-      const mediaRecorder = new MediaRecorder(stream, { mimeType });
-      mediaRecorderRef.current = mediaRecorder;
-
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
-        }
-      };
-
-      mediaRecorder.onstop = async () => {
-        console.log('[STT] Recording stopped, processing...');
-
-        // 스트림 정리
-        if (streamRef.current) {
-          streamRef.current.getTracks().forEach(track => track.stop());
-          streamRef.current = null;
-        }
-
-        // 오디오 청크가 있으면 Whisper API 호출
-        if (audioChunksRef.current.length > 0) {
-          const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
-
-          try {
-            const text = await transcribeAudio(audioBlob);
-            console.log('[STT] Result:', text);
-
-            if (text.trim()) {
-              setTranscript(text);
-              onResultRef.current?.(text);
-            } else {
-              const t = getTranslation(languageRef.current || 'ko');
-              onErrorRef.current?.(t.voice.errors.noSpeech);
-            }
-          } catch (error) {
-            console.error('[STT] Transcription error:', error);
-            const t = getTranslation(languageRef.current || 'ko');
-            onErrorRef.current?.(t.voice.errors.network);
+        // 실시간 결과 리스너 (partialResults)
+        await SpeechRecognition.addListener('partialResults', (data: { matches: string[] }) => {
+          console.log('[STT] partialResults event:', data);
+          if (data.matches && data.matches.length > 0 && !cancelledRef.current) {
+            const text = data.matches[0];
+            setTranscript(text);
           }
+        });
+
+        // 음성인식 시작 - Promise 방식으로 최종 결과 받기
+        console.log('[STT] Calling SpeechRecognition.start()...');
+
+        const result = await SpeechRecognition.start({
+          language: lang,
+          maxResults: 5,
+          prompt: '',
+          partialResults: true,
+          popup: false
+        });
+
+        console.log('[STT] SpeechRecognition.start() returned:', result);
+
+        // 결과 처리
+        if (!cancelledRef.current) {
+          if (result && result.matches && result.matches.length > 0) {
+            const finalText = result.matches[0];
+            console.log('[STT] Final result:', finalText);
+            setTranscript(finalText);
+            onResultRef.current?.(finalText);
+          } else {
+            console.log('[STT] No matches in result');
+          }
+        } else {
+          console.log('[STT] Recognition was cancelled');
         }
 
+        // 정리
+        await SpeechRecognition.removeAllListeners();
         setIsListening(false);
-      };
 
-      mediaRecorder.onerror = (event) => {
-        console.error('[STT] MediaRecorder error:', event);
-        const t = getTranslation(languageRef.current || 'ko');
-        onErrorRef.current?.(t.voice.errors.default);
-        setIsListening(false);
-      };
-
-      // 녹음 시작
-      mediaRecorder.start(100); // 100ms 간격으로 데이터 수집
-      setIsListening(true);
-      console.log('[STT] Recording started');
-
+      } else {
+        // 웹 음성인식 시작
+        if (webRecognitionRef.current) {
+          webRecognitionRef.current.lang = LANG_MAP[languageRef.current];
+          webRecognitionRef.current.start();
+          console.log('[STT] Web speech recognition started');
+        }
+      }
     } catch (error) {
       console.error('[STT] Start error:', error);
-
-      // 에러 메시지를 구체적으로 표시
-      let errorMsg = '음성인식 오류';
-      if (error instanceof Error) {
-        errorMsg = `오류: ${error.name} - ${error.message}`;
-      } else if (error instanceof DOMException) {
-        errorMsg = `DOM 오류: ${error.name}`;
-      } else {
-        errorMsg = `알 수 없는 오류: ${String(error)}`;
+      if (!cancelledRef.current) {
+        onErrorRef.current?.(`음성인식 오류: ${error instanceof Error ? error.message : String(error)}`);
       }
-
-      onErrorRef.current?.(errorMsg);
       setIsListening(false);
     }
-  }, [isListening]);
+  }, [isListening, isNative]);
 
   const stopListening = useCallback(async () => {
-    if (!isListening) return;
+    console.log('[STT] stopListening called');
+
+    // 취소 플래그 설정
+    cancelledRef.current = true;
+
+    // UI 즉시 업데이트
+    setIsListening(false);
 
     try {
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-        mediaRecorderRef.current.stop();
-        console.log('[STT] Stop called');
+      if (isNative) {
+        console.log('[STT] Stopping native speech recognition...');
+        await SpeechRecognition.removeAllListeners();
+        try {
+          await SpeechRecognition.stop();
+        } catch {
+          // 이미 중지된 경우 무시
+        }
+      } else {
+        if (webRecognitionRef.current) {
+          webRecognitionRef.current.stop();
+        }
       }
     } catch (error) {
       console.error('[STT] Stop error:', error);
-      setIsListening(false);
     }
-  }, [isListening]);
 
-  // 컴포넌트 언마운트 시 정리
-  useEffect(() => {
-    return () => {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
-      }
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-        mediaRecorderRef.current.stop();
-      }
-    };
-  }, []);
+    setTranscript('');
+  }, [isNative]);
 
   return {
     isListening,

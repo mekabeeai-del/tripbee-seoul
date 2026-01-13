@@ -1,0 +1,337 @@
+/* 쿠폰 목록 패널 */
+.coupon-list-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+}
+
+.coupon-list-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  animation: fadeIn 0.2s ease;
+}
+
+.coupon-list-content {
+  position: relative;
+  background: white;
+  border-radius: 20px 20px 0 0;
+  margin-top: auto;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s ease;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.1);
+}
+
+/* 헤더 */
+.coupon-list-header {
+  flex-shrink: 0;
+  padding: 20px;
+  border-bottom: 1px solid #E0E0E0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(135deg, #FFF9E6 0%, #FFF3CD 100%);
+}
+
+.header-info h2 {
+  margin: 0 0 4px 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #333;
+}
+
+.coupon-count {
+  margin: 0;
+  font-size: 13px;
+  color: #F57C00;
+  font-weight: 600;
+}
+
+.coupon-list-close {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.coupon-list-close:hover {
+  background: white;
+}
+
+/* 쿠폰 목록 바디 */
+.coupon-list-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+/* 쿠폰 그리드 */
+.coupon-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+/* 쿠폰 썸네일 */
+.coupon-thumbnail {
+  cursor: pointer;
+  animation: fadeInUp 0.4s ease backwards;
+}
+
+.coupon-thumbnail:nth-child(1) { animation-delay: 0.05s; }
+.coupon-thumbnail:nth-child(2) { animation-delay: 0.1s; }
+.coupon-thumbnail:nth-child(3) { animation-delay: 0.15s; }
+.coupon-thumbnail:nth-child(4) { animation-delay: 0.2s; }
+.coupon-thumbnail:nth-child(5) { animation-delay: 0.25s; }
+.coupon-thumbnail:nth-child(6) { animation-delay: 0.3s; }
+.coupon-thumbnail:nth-child(7) { animation-delay: 0.35s; }
+.coupon-thumbnail:nth-child(8) { animation-delay: 0.4s; }
+.coupon-thumbnail:nth-child(9) { animation-delay: 0.45s; }
+.coupon-thumbnail:nth-child(10) { animation-delay: 0.5s; }
+.coupon-thumbnail:nth-child(11) { animation-delay: 0.55s; }
+.coupon-thumbnail:nth-child(12) { animation-delay: 0.6s; }
+
+.coupon-thumbnail-card {
+  background: linear-gradient(135deg, #FFE082 0%, #FFD54F 100%);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 4px 12px rgba(255, 152, 0, 0.2);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  height: 160px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.coupon-thumbnail-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 10px,
+      rgba(255, 255, 255, 0.1) 10px,
+      rgba(255, 255, 255, 0.1) 20px
+    );
+  pointer-events: none;
+}
+
+.coupon-thumbnail:hover .coupon-thumbnail-card {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 16px rgba(255, 152, 0, 0.35);
+}
+
+/* 할인율 */
+.thumbnail-discount {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+}
+
+.discount-icon {
+  font-size: 20px;
+  color: #F57C00;
+}
+
+.discount-value {
+  font-size: 22px;
+  font-weight: 900;
+  color: #E65100;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* 쿠폰 정보 */
+.thumbnail-info {
+  position: relative;
+  flex: 1;
+}
+
+.thumbnail-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #333;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.thumbnail-description {
+  display: none;
+}
+
+/* 쿠폰 코드 */
+.thumbnail-code {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 6px;
+  position: relative;
+}
+
+.code-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: #666;
+}
+
+.code-value {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: #FF9800;
+  letter-spacing: 0.5px;
+}
+
+/* 유효기간 */
+.thumbnail-validity {
+  display: none;
+}
+
+.validity-icon {
+  font-size: 14px;
+  color: #4CAF50;
+}
+
+/* 사용하기 버튼 */
+.use-coupon-btn {
+  display: none;
+}
+
+/* 쿠폰 없음 */
+.no-coupons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.no-coupons-icon {
+  font-size: 80px;
+  margin-bottom: 20px;
+  opacity: 0.5;
+}
+
+.no-coupons-title {
+  margin: 0 0 12px 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #333;
+}
+
+.no-coupons-desc {
+  margin: 0;
+  font-size: 14px;
+  color: #999;
+  line-height: 1.6;
+}
+
+/* 애니메이션 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 스크롤바 */
+.coupon-list-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.coupon-list-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.coupon-list-body::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 3px;
+}
+
+/* 반응형 */
+@media (max-width: 900px) {
+  .coupon-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .coupon-thumbnail-card {
+    height: 140px;
+    padding: 12px;
+  }
+}
+
+@media (max-width: 600px) {
+  .coupon-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .coupon-thumbnail-card {
+    height: 130px;
+    padding: 10px;
+  }
+
+  .discount-value {
+    font-size: 18px;
+  }
+
+  .thumbnail-title {
+    font-size: 12px;
+  }
+}

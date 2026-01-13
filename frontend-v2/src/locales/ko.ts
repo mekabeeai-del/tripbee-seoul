@@ -323,6 +323,61 @@ export const ko = {
     searching: '주변을 탐색하고 있어요...',
     found: '흥미로운 장소를 발견했어요!',
   },
+
+  // 경로 안내
+  route: {
+    start: '출발',
+    end: '도착',
+    backToList: '목록으로',
+    filterAll: '전체',
+    filterBus: '버스',
+    filterSubway: '지하철',
+    filterBusSubway: '버스+지하철',
+    duration: '소요시간',
+    cost: '요금',
+    transfers: '환승',
+    transfersCount: (count: number) => `환승 ${count}회`,
+    distance: '거리',
+    walk: '도보',
+    noRoutes: '해당 조건의 경로가 없습니다.',
+    navigate: '길찾기',
+  },
+
+  // 예약
+  reservation: {
+    title: '예약하기',
+    date: '날짜',
+    time: '시간',
+    guests: '인원',
+    adults: '성인',
+    adultsDesc: '13세 이상',
+    children: '어린이',
+    childrenDesc: '2~12세',
+    totalGuests: (count: number) => `총 ${count}명`,
+    confirm: '예약 확인',
+    makeReservation: '예약하기',
+    reservationSuccess: '예약이 완료되었습니다!',
+  },
+
+  // 쿠폰
+  coupon: {
+    issued: '할인쿠폰이 발급되었어요!',
+    congratulations: '축하합니다! 특별한 쿠폰을 받으셨어요',
+    code: '쿠폰 코드',
+    validUntil: '유효기간',
+    howToUse: '결제 시 쿠폰 코드를 입력하시면 할인이 적용됩니다.',
+    confirm: '확인',
+  },
+
+  // 쿠폰 목록
+  couponList: {
+    title: '쿠폰 목록',
+    available: (count: number) => `사용 가능한 쿠폰 ${count}개`,
+    code: '쿠폰 코드',
+    use: '사용하기',
+    noCoupons: '보유한 쿠폰이 없습니다',
+    noCouponsDesc: '채팅창에서 "쿠폰지급"을 입력하면 쿠폰을 받을 수 있어요!',
+  },
 };
 
 export type TranslationKeys = typeof ko;

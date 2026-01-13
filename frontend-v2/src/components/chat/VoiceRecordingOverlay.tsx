@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { MdMic, MdClose } from 'react-icons/md';
+import { Capacitor } from '@capacitor/core';
 import { getTranslation, type Language } from '../../locales';
 import './VoiceRecordingOverlay.css';
 
@@ -8,6 +9,7 @@ interface VoiceRecordingOverlayProps {
   isRecording: boolean;
   onCancel: () => void;
   language?: Language;
+  transcript?: string;
 }
 
 /**
@@ -18,7 +20,8 @@ interface VoiceRecordingOverlayProps {
 export default function VoiceRecordingOverlay({
   isRecording,
   onCancel,
-  language = 'ko'
+  language = 'ko',
+  transcript = ''
 }: VoiceRecordingOverlayProps) {
   const [audioLevel, setAudioLevel] = useState(0);
   const [exampleIndex, setExampleIndex] = useState(0);
@@ -26,6 +29,7 @@ export default function VoiceRecordingOverlay({
   const analyserRef = useRef<AnalyserNode | null>(null);
   const animationRef = useRef<number | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const isNative = Capacitor.isNativePlatform();
 
   // 예시 문구 순환
   useEffect(() => {
@@ -39,21 +43,54 @@ export default function VoiceRecordingOverlay({
     return () => clearInterval(interval);
   }, [isRecording, language]);
 
+  // 네이티브용 펄스 애니메이션
   useEffect(() => {
-    if (!isRecording) {
-      // 정리
+    if (!isRecording || !isNative) return;
+
+    // 네이티브에서는 getUserMedia가 안 되므로 펄스 애니메이션
+    let direction = 1;
+    let level = 0;
+
+    const animate = () => {
+      level += direction * 0.05;
+      if (level >= 1) {
+        direction = -1;
+      } else if (level <= 0.3) {
+        direction = 1;
+      }
+      setAudioLevel(level);
+      animationRef.current = requestAnimationFrame(animate);
+    };
+
+    animate();
+
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+      setAudioLevel(0);
+    };
+  }, [isRecording, isNative]);
+
+  // 웹용 오디오 분석
+  useEffect(() => {
+    if (!isRecording || isNative) return;
+
+    // 정리 함수
+    const cleanup = () => {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current = null;
       }
       if (audioContextRef.current) {
         audioContextRef.current.close();
+        audioContextRef.current = null;
       }
       setAudioLevel(0);
-      return;
-    }
+    };
 
     // 오디오 분석 시작
     const startAudioAnalysis = async () => {
@@ -89,17 +126,24 @@ export default function VoiceRecordingOverlay({
         updateLevel();
       } catch (error) {
         console.error('Audio analysis error:', error);
+        // 에러 시 펄스 애니메이션 fallback
+        let direction = 1;
+        let level = 0.3;
+        const animate = () => {
+          level += direction * 0.03;
+          if (level >= 0.8) direction = -1;
+          else if (level <= 0.3) direction = 1;
+          setAudioLevel(level);
+          animationRef.current = requestAnimationFrame(animate);
+        };
+        animate();
       }
     };
 
     startAudioAnalysis();
 
-    return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-    };
-  }, [isRecording]);
+    return cleanup;
+  }, [isRecording, isNative]);
 
   if (!isRecording) return null;
 
@@ -107,16 +151,28 @@ export default function VoiceRecordingOverlay({
   const examples = t.voice.examples;
   const title = t.voice.title;
 
+  const handleClose = (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('[VoiceOverlay] Close button clicked');
+    onCancel();
+  };
+
   // Portal로 body에 직접 렌더링 (부모 CSS 영향 방지)
   return createPortal(
     <>
       {/* 배경 딤 */}
-      <div className="voice-backdrop" onClick={onCancel} />
+      <div className="voice-backdrop" onClick={handleClose} onTouchEnd={handleClose} />
 
       {/* 바텀시트 */}
       <div className="voice-sheet">
         {/* 닫기 버튼 */}
-        <button className="voice-close-btn" onClick={onCancel}>
+        <button
+          type="button"
+          className="voice-close-btn"
+          onClick={handleClose}
+          onTouchEnd={handleClose}
+        >
           <MdClose size={24} />
         </button>
 
@@ -133,17 +189,26 @@ export default function VoiceRecordingOverlay({
           {/* 음성 파동 원들 */}
           <div
             className="voice-wave wave-1"
-            style={{ transform: `scale(${1 + audioLevel * 0.4})` }}
+            style={{ transform: `scale(${1 + audioLevel * 0.5})`, opacity: 0.3 + audioLevel * 0.3 }}
           />
           <div
             className="voice-wave wave-2"
-            style={{ transform: `scale(${1 + audioLevel * 0.3})` }}
+            style={{ transform: `scale(${1 + audioLevel * 0.35})`, opacity: 0.4 + audioLevel * 0.3 }}
+          />
+          <div
+            className="voice-wave wave-3"
+            style={{ transform: `scale(${1 + audioLevel * 0.2})`, opacity: 0.5 + audioLevel * 0.3 }}
           />
 
           {/* 마이크 버튼 */}
-          <div className="voice-mic-btn">
+          <div className="voice-mic-btn recording">
             <MdMic size={32} />
           </div>
+        </div>
+
+        {/* 실시간 텍스트 또는 듣고 있어요 */}
+        <div className={`voice-listening-text ${transcript ? 'has-text' : ''}`}>
+          {transcript || '듣고 있어요...'}
         </div>
       </div>
     </>,

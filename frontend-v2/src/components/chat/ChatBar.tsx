@@ -28,7 +28,7 @@ export default function ChatBar({
   const inputRef = useRef<HTMLInputElement>(null);
 
   // 음성인식 훅
-  const { isListening, isSupported, startListening, stopListening } = useSpeechRecognition({
+  const { isListening, isSupported, startListening, stopListening, transcript } = useSpeechRecognition({
     language,
     onResult: (text) => {
       // 음성인식 결과를 채팅바에 입력 (전송은 사용자가 직접)
@@ -124,6 +124,7 @@ export default function ChatBar({
         isRecording={isListening}
         onCancel={stopListening}
         language={language}
+        transcript={transcript}
       />
     </div>
   );

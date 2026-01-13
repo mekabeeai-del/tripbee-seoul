@@ -320,4 +320,59 @@ export const en = {
     searching: 'Exploring nearby...',
     found: 'Found an interesting place!',
   },
+
+  // Route Navigation
+  route: {
+    start: 'Start',
+    end: 'End',
+    backToList: 'Back to list',
+    filterAll: 'All',
+    filterBus: 'Bus',
+    filterSubway: 'Subway',
+    filterBusSubway: 'Bus+Subway',
+    duration: 'Duration',
+    cost: 'Cost',
+    transfers: 'Transfers',
+    transfersCount: (count: number) => `${count} transfer${count > 1 ? 's' : ''}`,
+    distance: 'Distance',
+    walk: 'Walk',
+    noRoutes: 'No routes found for the selected criteria.',
+    navigate: 'Navigate',
+  },
+
+  // Reservation
+  reservation: {
+    title: 'Make a Reservation',
+    date: 'Date',
+    time: 'Time',
+    guests: 'Guests',
+    adults: 'Adults',
+    adultsDesc: 'Ages 13 or above',
+    children: 'Children',
+    childrenDesc: 'Ages 2-12',
+    totalGuests: (count: number) => `${count} guest${count > 1 ? 's' : ''}`,
+    confirm: 'Confirm Reservation',
+    makeReservation: 'Reserve',
+    reservationSuccess: 'Reservation confirmed!',
+  },
+
+  // Coupon
+  coupon: {
+    issued: 'Discount Coupon Issued!',
+    congratulations: 'Congratulations! You received a special coupon',
+    code: 'Coupon Code',
+    validUntil: 'Valid Until',
+    howToUse: 'Enter the coupon code at checkout to apply the discount.',
+    confirm: 'Confirm',
+  },
+
+  // Coupon List
+  couponList: {
+    title: 'My Coupons',
+    available: (count: number) => `${count} coupon${count !== 1 ? 's' : ''} available`,
+    code: 'Code',
+    use: 'Use Coupon',
+    noCoupons: 'No coupons available',
+    noCouponsDesc: 'Type "쿠폰지급" in chat to get a coupon!',
+  },
 };
